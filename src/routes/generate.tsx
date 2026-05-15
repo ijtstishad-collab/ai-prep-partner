@@ -12,6 +12,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateQuestions } from "@/lib/ai.functions";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 
 export const Route = createFileRoute("/generate")({ component: GeneratePage });
 

@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles } from "lucide-react";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/practice/$chapterId")({ component: PracticePage });

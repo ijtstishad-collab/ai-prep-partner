@@ -101,12 +101,6 @@ function Dashboard() {
             </Card>
           )}
         </div>
-            <BookOpen className="h-8 w-8 mb-3 text-primary" />
-            <h3 className="text-xl font-semibold mb-1">Practice by Chapter</h3>
-            <p className="text-sm text-muted-foreground mb-4">Browse subjects & chapters.</p>
-            <Button asChild><Link to="/subjects">Browse Subjects →</Link></Button>
-          </Card>
-        </div>
 
         <Card className="p-6">
           <h3 className="font-semibold mb-4">Recent Tests</h3>

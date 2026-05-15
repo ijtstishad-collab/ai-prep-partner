@@ -13,8 +13,9 @@ export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 function Dashboard() {
   const { user, profile, loading } = useAuth();
   const nav = useNavigate();
-  const [stats, setStats] = useState({ attempts: 0, accuracy: 0, weakChapters: 0 });
+  const [stats, setStats] = useState({ attempts: 0, accuracy: 0, weakChapters: 0, readiness: 0 });
   const [recent, setRecent] = useState<any[]>([]);
+  const [suggested, setSuggested] = useState<any>(null);
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
@@ -33,16 +34,22 @@ function Dashboard() {
         .limit(5);
       const { data: perf } = await supabase
         .from("performance_summary")
-        .select("total_attempted, total_correct")
+        .select("total_attempted, total_correct, chapters(id, name), subjects(name)")
         .eq("user_id", user.id);
       const totalA = perf?.reduce((s, p) => s + p.total_attempted, 0) ?? 0;
       const totalC = perf?.reduce((s, p) => s + p.total_correct, 0) ?? 0;
-      const weak = perf?.filter((p) => p.total_attempted >= 3 && p.total_correct / p.total_attempted < 0.6).length ?? 0;
+      const eligible = (perf ?? []).filter((p) => p.total_attempted >= 3);
+      const weak = eligible.filter((p) => p.total_correct / p.total_attempted < 0.6);
+      const next = [...eligible].sort((a, b) =>
+        (a.total_correct / a.total_attempted) - (b.total_correct / b.total_attempted)
+      )[0] ?? null;
       setRecent(attempts ?? []);
+      setSuggested(next);
       setStats({
         attempts: attempts?.length ?? 0,
         accuracy: totalA > 0 ? Math.round((totalC / totalA) * 100) : 0,
-        weakChapters: weak,
+        weakChapters: weak.length,
+        readiness: totalA > 0 ? Math.round((totalC / totalA) * 100) : 0,
       });
     })();
   }, [user]);

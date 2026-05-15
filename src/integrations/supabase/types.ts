@@ -14,16 +14,345 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chapters: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          name_bn: string | null
+          order_index: number
+          subject_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          name_bn?: string | null
+          order_index?: number
+          subject_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_bn?: string | null
+          order_index?: number
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapters_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_summary: {
+        Row: {
+          chapter_id: string | null
+          id: string
+          last_attempt_at: string | null
+          subject_id: string | null
+          total_attempted: number
+          total_correct: number
+          user_id: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          subject_id?: string | null
+          total_attempted?: number
+          total_correct?: number
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          subject_id?: string | null
+          total_attempted?: number
+          total_correct?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_summary_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_summary_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          class: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          onboarded: boolean
+          student_group: string | null
+          subscription_tier: string
+          target_exam_year: number | null
+          updated_at: string
+        }
+        Insert: {
+          class?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          onboarded?: boolean
+          student_group?: string | null
+          subscription_tier?: string
+          target_exam_year?: number | null
+          updated_at?: string
+        }
+        Update: {
+          class?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          onboarded?: boolean
+          student_group?: string | null
+          subscription_tier?: string
+          target_exam_year?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          chapter_id: string
+          correct_answer: string
+          created_at: string
+          created_by: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn: string | null
+          id: string
+          is_approved: boolean
+          options: Json | null
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+          source: string | null
+          teacher_reviewed: boolean
+        }
+        Insert: {
+          chapter_id: string
+          correct_answer: string
+          created_at?: string
+          created_by?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn?: string | null
+          id?: string
+          is_approved?: boolean
+          options?: Json | null
+          question_text: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          source?: string | null
+          teacher_reviewed?: boolean
+        }
+        Update: {
+          chapter_id?: string
+          correct_answer?: string
+          created_at?: string
+          created_by?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn?: string | null
+          id?: string
+          is_approved?: boolean
+          options?: Json | null
+          question_text?: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          source?: string | null
+          teacher_reviewed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          name_bn: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          name_bn?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_bn?: string | null
+          slug?: string
+        }
+        Relationships: []
+      }
+      test_attempts: {
+        Row: {
+          chapter_id: string | null
+          completed_at: string | null
+          correct_count: number
+          id: string
+          score: number
+          started_at: string
+          subject_id: string | null
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          completed_at?: string | null
+          correct_count?: number
+          id?: string
+          score?: number
+          started_at?: string
+          subject_id?: string | null
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string | null
+          completed_at?: string | null
+          correct_count?: number
+          id?: string
+          score?: number
+          started_at?: string
+          subject_id?: string | null
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_attempts_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_attempts_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_answers: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          user_answer: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id: string
+          user_answer?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          user_answer?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "test_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "student"
+      difficulty_level: "easy" | "medium" | "hard"
+      question_type: "mcq" | "short" | "written"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +479,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "student"],
+      difficulty_level: ["easy", "medium", "hard"],
+      question_type: ["mcq", "short", "written"],
+    },
   },
 } as const

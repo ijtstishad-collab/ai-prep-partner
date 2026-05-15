@@ -125,9 +125,13 @@ function GeneratePage() {
                   <div className="text-sm text-muted-foreground">Q{i + 1} · {q.difficulty} · {q.question_type}</div>
                   <ReportIssueButton questionId={q.id} />
                 </div>
-                <Badge variant="secondary" className="mb-2 gap-1">
-                  <Sparkles className="h-3 w-3" /> AI Generated — verify with textbook/teacher if needed
-                </Badge>
+                {q.status === "approved" && q.is_teacher_reviewed ? (
+                  <Badge className="mb-2 gap-1 bg-success text-success-foreground">✓ Verified</Badge>
+                ) : (
+                  <Badge variant="secondary" className="mb-2 gap-1">
+                    <Sparkles className="h-3 w-3" /> AI Generated — verify with textbook/teacher if needed
+                  </Badge>
+                )}
                 <p className="font-medium">{q.question_text}</p>
                 {q.options && (
                   <ul className="mt-2 space-y-1 text-sm">

@@ -52,6 +52,129 @@ export type Database = {
           },
         ]
       }
+      generated_questions: {
+        Row: {
+          chapter_id: string
+          correct_answer: string
+          created_at: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn: string | null
+          id: string
+          is_teacher_reviewed: boolean
+          options: Json | null
+          quality_score: number | null
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+          source_context: Json | null
+          status: string
+          subject_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id: string
+          correct_answer: string
+          created_at?: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn?: string | null
+          id?: string
+          is_teacher_reviewed?: boolean
+          options?: Json | null
+          quality_score?: number | null
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+          source_context?: Json | null
+          status?: string
+          subject_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string
+          correct_answer?: string
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn?: string | null
+          id?: string
+          is_teacher_reviewed?: boolean
+          options?: Json | null
+          quality_score?: number | null
+          question_text?: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          source_context?: Json | null
+          status?: string
+          subject_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      generation_rules: {
+        Row: {
+          created_at: string
+          id: string
+          instructions: string
+          is_active: boolean
+          question_type: Database["public"]["Enums"]["question_type"]
+          subject_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructions: string
+          is_active?: boolean
+          question_type: Database["public"]["Enums"]["question_type"]
+          subject_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructions?: string
+          is_active?: boolean
+          question_type?: Database["public"]["Enums"]["question_type"]
+          subject_id?: string
+        }
+        Relationships: []
+      }
+      past_questions: {
+        Row: {
+          answer: string | null
+          board: string | null
+          chapter_id: string
+          created_at: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          id: string
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+          subject_id: string
+          year: number | null
+        }
+        Insert: {
+          answer?: string | null
+          board?: string | null
+          chapter_id: string
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          question_text: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          subject_id: string
+          year?: number | null
+        }
+        Update: {
+          answer?: string | null
+          board?: string | null
+          chapter_id?: string
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          question_text?: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          subject_id?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       performance_summary: {
         Row: {
           chapter_id: string | null
@@ -171,6 +294,44 @@ export type Database = {
           },
         ]
       }
+      question_reviews: {
+        Row: {
+          action: string
+          created_at: string
+          generated_question_id: string
+          id: string
+          notes: string | null
+          quality_score: number | null
+          reviewer_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          generated_question_id: string
+          id?: string
+          notes?: string | null
+          quality_score?: number | null
+          reviewer_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          generated_question_id?: string
+          id?: string
+          notes?: string | null
+          quality_score?: number | null
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_reviews_generated_question_id_fkey"
+            columns: ["generated_question_id"]
+            isOneToOne: false
+            referencedRelation: "generated_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questions: {
         Row: {
           chapter_id: string
@@ -257,6 +418,39 @@ export type Database = {
         }
         Relationships: []
       }
+      syllabus_units: {
+        Row: {
+          chapter_id: string
+          created_at: string
+          id: string
+          keywords: string[] | null
+          learning_objectives: string[] | null
+          subject_id: string
+          title: string
+          title_bn: string | null
+        }
+        Insert: {
+          chapter_id: string
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          learning_objectives?: string[] | null
+          subject_id: string
+          title: string
+          title_bn?: string | null
+        }
+        Update: {
+          chapter_id?: string
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          learning_objectives?: string[] | null
+          subject_id?: string
+          title?: string
+          title_bn?: string | null
+        }
+        Relationships: []
+      }
       test_attempts: {
         Row: {
           chapter_id: string | null
@@ -307,6 +501,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      textbook_chunks: {
+        Row: {
+          chapter_id: string
+          content: string
+          created_at: string
+          id: string
+          page_ref: string | null
+          source: string | null
+          subject_id: string
+        }
+        Insert: {
+          chapter_id: string
+          content: string
+          created_at?: string
+          id?: string
+          page_ref?: string | null
+          source?: string | null
+          subject_id: string
+        }
+        Update: {
+          chapter_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          page_ref?: string | null
+          source?: string | null
+          subject_id?: string
+        }
+        Relationships: []
       }
       user_answers: {
         Row: {

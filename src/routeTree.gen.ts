@@ -9,21 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WeaknessRouteImport } from './routes/weakness'
 import { Route as SubjectsRouteImport } from './routes/subjects'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsSlugRouteImport } from './routes/subjects.$slug'
+import { Route as ResultAttemptIdRouteImport } from './routes/result.$attemptId'
+import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapterId'
 
+const WeaknessRoute = WeaknessRouteImport.update({
+  id: '/weakness',
+  path: '/weakness',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
   path: '/subjects',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateRoute = GenerateRouteImport.update({
+  id: '/generate',
+  path: '/generate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -36,6 +57,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -46,69 +72,128 @@ const SubjectsSlugRoute = SubjectsSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => SubjectsRoute,
 } as any)
+const ResultAttemptIdRoute = ResultAttemptIdRouteImport.update({
+  id: '/result/$attemptId',
+  path: '/result/$attemptId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeChapterIdRoute = PracticeChapterIdRouteImport.update({
+  id: '/practice/$chapterId',
+  path: '/practice/$chapterId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/weakness': typeof WeaknessRoute
+  '/practice/$chapterId': typeof PracticeChapterIdRoute
+  '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/weakness': typeof WeaknessRoute
+  '/practice/$chapterId': typeof PracticeChapterIdRoute
+  '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/weakness': typeof WeaknessRoute
+  '/practice/$chapterId': typeof PracticeChapterIdRoute
+  '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/generate'
     | '/onboarding'
+    | '/pricing'
     | '/subjects'
+    | '/weakness'
+    | '/practice/$chapterId'
+    | '/result/$attemptId'
     | '/subjects/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/generate'
     | '/onboarding'
+    | '/pricing'
     | '/subjects'
+    | '/weakness'
+    | '/practice/$chapterId'
+    | '/result/$attemptId'
     | '/subjects/$slug'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/generate'
     | '/onboarding'
+    | '/pricing'
     | '/subjects'
+    | '/weakness'
+    | '/practice/$chapterId'
+    | '/result/$attemptId'
     | '/subjects/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  GenerateRoute: typeof GenerateRoute
   OnboardingRoute: typeof OnboardingRoute
+  PricingRoute: typeof PricingRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
+  WeaknessRoute: typeof WeaknessRoute
+  PracticeChapterIdRoute: typeof PracticeChapterIdRoute
+  ResultAttemptIdRoute: typeof ResultAttemptIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/weakness': {
+      id: '/weakness'
+      path: '/weakness'
+      fullPath: '/weakness'
+      preLoaderRoute: typeof WeaknessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/subjects': {
       id: '/subjects'
       path: '/subjects'
@@ -116,11 +201,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate': {
+      id: '/generate'
+      path: '/generate'
+      fullPath: '/generate'
+      preLoaderRoute: typeof GenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -137,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -150,6 +256,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/subjects/$slug'
       preLoaderRoute: typeof SubjectsSlugRouteImport
       parentRoute: typeof SubjectsRoute
+    }
+    '/result/$attemptId': {
+      id: '/result/$attemptId'
+      path: '/result/$attemptId'
+      fullPath: '/result/$attemptId'
+      preLoaderRoute: typeof ResultAttemptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice/$chapterId': {
+      id: '/practice/$chapterId'
+      path: '/practice/$chapterId'
+      fullPath: '/practice/$chapterId'
+      preLoaderRoute: typeof PracticeChapterIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -168,10 +288,16 @@ const SubjectsRouteWithChildren = SubjectsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  GenerateRoute: GenerateRoute,
   OnboardingRoute: OnboardingRoute,
+  PricingRoute: PricingRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
+  WeaknessRoute: WeaknessRoute,
+  PracticeChapterIdRoute: PracticeChapterIdRoute,
+  ResultAttemptIdRoute: ResultAttemptIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

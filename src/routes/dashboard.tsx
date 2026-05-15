@@ -68,6 +68,15 @@ function Dashboard() {
           <StatCard icon={TrendingDown} label="Weak Chapters" value={String(stats.weakChapters)} tone="warning" />
         </div>
 
+        <Card className="p-6 mb-8 shadow-soft">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold">HSC Readiness Score</h3>
+            <span className="text-2xl font-bold text-primary">{stats.readiness}%</span>
+          </div>
+          <Progress value={stats.readiness} />
+          <p className="text-xs text-muted-foreground mt-2">Based on overall accuracy across all attempted chapters.</p>
+        </Card>
+
         <div className="grid md:grid-cols-2 gap-4 mb-8">
           <Card className="p-6 bg-gradient-hero text-primary-foreground shadow-soft">
             <Sparkles className="h-8 w-8 mb-3" />
@@ -75,7 +84,23 @@ function Dashboard() {
             <p className="text-sm opacity-90 mb-4">Pick a chapter, type, and difficulty.</p>
             <Button asChild variant="secondary"><Link to="/generate">Start →</Link></Button>
           </Card>
-          <Card className="p-6 shadow-soft">
+          {suggested ? (
+            <Card className="p-6 shadow-soft border-warning/40">
+              <TrendingDown className="h-8 w-8 mb-3 text-warning" />
+              <h3 className="text-xl font-semibold mb-1">Suggested Next Practice</h3>
+              <p className="text-sm text-muted-foreground mb-1">{suggested.subjects?.name} · {suggested.chapters?.name}</p>
+              <p className="text-xs text-muted-foreground mb-4">Accuracy {Math.round((suggested.total_correct / suggested.total_attempted) * 100)}% — focus here next.</p>
+              <Button asChild><Link to="/practice/$chapterId" params={{ chapterId: suggested.chapters?.id }}>Practice now →</Link></Button>
+            </Card>
+          ) : (
+            <Card className="p-6 shadow-soft">
+              <BookOpen className="h-8 w-8 mb-3 text-primary" />
+              <h3 className="text-xl font-semibold mb-1">Practice by Chapter</h3>
+              <p className="text-sm text-muted-foreground mb-4">Browse subjects & chapters.</p>
+              <Button asChild><Link to="/subjects">Browse Subjects →</Link></Button>
+            </Card>
+          )}
+        </div>
             <BookOpen className="h-8 w-8 mb-3 text-primary" />
             <h3 className="text-xl font-semibold mb-1">Practice by Chapter</h3>
             <p className="text-sm text-muted-foreground mb-4">Browse subjects & chapters.</p>

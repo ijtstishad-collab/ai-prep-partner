@@ -12,6 +12,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateQuestions } from "@/lib/ai.functions";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 
 export const Route = createFileRoute("/generate")({ component: GeneratePage });
 
@@ -119,7 +121,13 @@ function GeneratePage() {
             <h2 className="font-semibold">Preview</h2>
             {questions.map((q, i) => (
               <Card key={q.id} className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Q{i + 1} · {q.difficulty} · {q.question_type}</div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-sm text-muted-foreground">Q{i + 1} · {q.difficulty} · {q.question_type}</div>
+                  <ReportIssueButton questionId={q.id} />
+                </div>
+                <Badge variant="secondary" className="mb-2 gap-1">
+                  <Sparkles className="h-3 w-3" /> AI Generated — verify with textbook/teacher if needed
+                </Badge>
                 <p className="font-medium">{q.question_text}</p>
                 {q.options && (
                   <ul className="mt-2 space-y-1 text-sm">

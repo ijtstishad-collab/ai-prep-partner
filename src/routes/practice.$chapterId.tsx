@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles } from "lucide-react";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/practice/$chapterId")({ component: PracticePage });
@@ -102,8 +105,17 @@ function PracticePage() {
         </div>
 
         <Card className="p-6 shadow-soft">
-          <div className="text-xs text-muted-foreground uppercase mb-2">{current.difficulty} · {current.question_type}</div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs text-muted-foreground uppercase">{current.difficulty} · {current.question_type}</div>
+            <ReportIssueButton questionId={current.id} />
+          </div>
+          {current.source === "ai" && (
+            <Badge variant="secondary" className="mb-3 gap-1">
+              <Sparkles className="h-3 w-3" /> AI Generated — please verify with your textbook/teacher
+            </Badge>
+          )}
           <h2 className="text-lg font-semibold mb-4">{current.question_text}</h2>
+
 
           {current.question_type === "mcq" && Array.isArray(current.options) && (
             <div className="space-y-2">

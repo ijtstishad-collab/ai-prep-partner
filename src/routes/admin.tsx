@@ -382,7 +382,7 @@ function AdminPage() {
             ))}
           </TabsContent>
 
-
+          <TabsContent value="syllabus" className="mt-4 space-y-3">
             <Card className="p-4">
               <form onSubmit={addUnit} className="grid md:grid-cols-2 gap-3">
                 <div>

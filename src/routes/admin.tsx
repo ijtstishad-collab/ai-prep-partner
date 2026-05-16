@@ -12,6 +12,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { CheckCircle2, ShieldCheck, Sparkles, Star } from "lucide-react";
+import {
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/admin")({ component: AdminPage });
 
@@ -348,13 +353,32 @@ function AdminPage() {
                 <div className="flex gap-2 flex-wrap">
                   <Button size="sm" variant="outline" onClick={selectAllQueue}>Select all</Button>
                   <Button size="sm" variant="outline" onClick={clearSelection} disabled={selectedIds.size === 0}>Clear</Button>
-                  <Button size="sm" variant="outline" onClick={() => bulkAction("mark_reviewed")} disabled={selectedIds.size === 0}>Mark reviewed</Button>
-                  <Button size="sm" variant="outline" onClick={() => bulkAction("unmark_reviewed")} disabled={selectedIds.size === 0}>Unmark reviewed</Button>
-                  <Button size="sm" variant="destructive" onClick={() => bulkAction("reject")} disabled={selectedIds.size === 0}>Bulk reject</Button>
-                  <Button size="sm" onClick={() => bulkAction("approve")} disabled={selectedIds.size === 0}>Bulk approve</Button>
+                  <ConfirmBulk
+                    trigger={<Button size="sm" variant="outline" disabled={selectedIds.size === 0}>Mark reviewed</Button>}
+                    title="Mark questions as teacher-reviewed?"
+                    description={`This will mark ${selectedIds.size} question${selectedIds.size === 1 ? "" : "s"} as teacher-reviewed.`}
+                    confirmLabel="Mark reviewed"
+                    onConfirm={() => bulkAction("mark_reviewed")}
+                  />
+                  <ConfirmBulk
+                    trigger={<Button size="sm" variant="destructive" disabled={selectedIds.size === 0}>Bulk reject</Button>}
+                    title="Reject selected questions?"
+                    description={`This will set ${selectedIds.size} question${selectedIds.size === 1 ? "" : "s"} to rejected. Students will not see them.`}
+                    confirmLabel="Reject"
+                    destructive
+                    onConfirm={() => bulkAction("reject")}
+                  />
+                  <ConfirmBulk
+                    trigger={<Button size="sm" disabled={selectedIds.size === 0}>Bulk approve</Button>}
+                    title="Approve selected questions?"
+                    description={`This will approve ${selectedIds.size} question${selectedIds.size === 1 ? "" : "s"} and make them visible to students.`}
+                    confirmLabel="Approve"
+                    onConfirm={() => bulkAction("approve")}
+                  />
                 </div>
               </div>
             </Card>
+
 
             {queueList.length === 0 && <Card className="p-4 text-sm text-muted-foreground">No questions match these filters.</Card>}
             {queueList.map((q) => (
@@ -586,4 +610,34 @@ function parseCsvLine(line: string): string[] {
   }
   out.push(cur);
   return out.map((x) => x.trim());
+}
+
+function ConfirmBulk({ trigger, title, description, confirmLabel, onConfirm, destructive }: {
+  trigger: React.ReactNode;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  onConfirm: () => void | Promise<void>;
+  destructive?: boolean;
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => onConfirm()}
+            className={destructive ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : undefined}
+          >
+            {confirmLabel}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }

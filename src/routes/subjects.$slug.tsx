@@ -35,20 +35,26 @@ function ChaptersPage() {
         <Link to="/subjects" className="text-sm text-muted-foreground hover:text-foreground">← All subjects</Link>
         <h1 className="text-3xl font-bold mt-2">{subject?.name}</h1>
         <p className="text-muted-foreground mb-6">{subject?.name_bn} · Chapters</p>
-        <div className="grid md:grid-cols-2 gap-3">
-          {chapters.map((c) => (
-            <Card key={c.id} className="p-4 flex items-center gap-3 hover:shadow-soft transition">
-              <div className="h-10 w-10 rounded-lg bg-accent text-accent-foreground flex items-center justify-center font-bold">{c.order_index}</div>
-              <div className="flex-1">
-                <div className="font-medium">{c.name}</div>
-                <div className="text-xs text-muted-foreground">{c.name_bn}</div>
-              </div>
-              <Button asChild size="sm" variant="outline">
-                <Link to="/practice/$chapterId" params={{ chapterId: c.id }}>Practice <ChevronRight className="h-4 w-4" /></Link>
-              </Button>
-            </Card>
-          ))}
-        </div>
+        {chapters.length === 0 ? (
+          <Card className="p-10 text-center text-sm text-muted-foreground">
+            Chapters for this subject are being prepared. Please check back shortly.
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-3">
+            {chapters.map((c) => (
+              <Card key={c.id} className="p-4 flex items-center gap-3 hover:shadow-soft transition">
+                <div className="h-10 w-10 rounded-lg bg-accent text-accent-foreground flex items-center justify-center font-bold">{c.order_index}</div>
+                <div className="flex-1">
+                  <div className="font-medium">{c.name}</div>
+                  <div className="text-xs text-muted-foreground">{c.name_bn}</div>
+                </div>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/practice/$chapterId" params={{ chapterId: c.id }}>Practice <ChevronRight className="h-4 w-4" /></Link>
+                </Button>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </AppShell>
   );

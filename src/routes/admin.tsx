@@ -246,6 +246,7 @@ function AdminPage() {
           <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="ai-review">AI Review</TabsTrigger>
+            <TabsTrigger value="review-queue">Review Queue</TabsTrigger>
             <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
             <TabsTrigger value="textbook">Textbook</TabsTrigger>
             <TabsTrigger value="past">Past Questions</TabsTrigger>

@@ -103,9 +103,14 @@ function Dashboard() {
         </div>
 
         <Card className="p-6">
-          <h3 className="font-semibold mb-4">Recent Tests</h3>
+          <h3 className="font-semibold mb-4">Recent tests</h3>
           {recent.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tests yet. Start practicing!</p>
+            <div className="text-center py-8">
+              <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium mb-1">No tests yet</p>
+              <p className="text-sm text-muted-foreground mb-4">Take your first practice test to see your progress here.</p>
+              <Button asChild><Link to="/subjects">Start your first practice →</Link></Button>
+            </div>
           ) : (
             <div className="space-y-3">
               {recent.map((a) => {

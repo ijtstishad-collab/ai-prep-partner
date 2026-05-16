@@ -7,9 +7,9 @@ import { Check } from "lucide-react";
 export const Route = createFileRoute("/pricing")({ component: PricingPage });
 
 const tiers = [
-  { name: "Free", price: "৳0", period: "forever", features: ["3 AI questions / day", "Practice tests", "Basic progress tracking"], cta: "Start Free", highlight: false },
-  { name: "Premium", price: "৳299", period: "/month", features: ["Unlimited AI questions", "All subjects & chapters", "Mock exams", "Weak-area analytics", "Bangla explanations"], cta: "Go Premium", highlight: true },
-  { name: "Yearly", price: "৳2,499", period: "/year", features: ["Everything in Premium", "Save ৳1,089", "Priority support", "Teacher reviewed Q-bank"], cta: "Choose Yearly", highlight: false },
+  { name: "Free", price: "৳0", period: "forever", features: ["3 AI-generated questions per day", "Practice tests", "Basic progress tracking"], cta: "Start Free", highlight: false },
+  { name: "Premium", price: "৳299", period: "/month", features: ["Unlimited AI-generated questions", "All subjects & chapters", "Mock exams", "Weak area analysis", "Simple Bangla explanations"], cta: "Go Premium", highlight: true },
+  { name: "Yearly", price: "৳2,499", period: "/year", features: ["Everything in Premium", "Save ৳1,089", "Priority support", "Teacher-reviewed question bank"], cta: "Choose Yearly", highlight: false },
 ];
 
 function PricingPage() {

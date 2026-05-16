@@ -200,8 +200,9 @@ function AdminPage() {
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         </div>
 
-        <Tabs defaultValue="ai-review">
+        <Tabs defaultValue="overview">
           <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="ai-review">AI Review</TabsTrigger>
             <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
             <TabsTrigger value="textbook">Textbook</TabsTrigger>
@@ -211,6 +212,19 @@ function AdminPage() {
             <TabsTrigger value="subjects">Subjects</TabsTrigger>
             <TabsTrigger value="chapters">Chapters</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview" className="mt-4">
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Subjects</div><div className="text-2xl font-bold">{subjects.length}</div></Card>
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Chapters</div><div className="text-2xl font-bold">{chapters.length}</div></Card>
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Pending AI questions</div><div className="text-2xl font-bold">{generated.filter((q) => q.status === "pending").length}</div></Card>
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Approved AI questions</div><div className="text-2xl font-bold">{generated.filter((q) => q.status === "approved").length}</div></Card>
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Syllabus units</div><div className="text-2xl font-bold">{units.length}</div></Card>
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Textbook chunks</div><div className="text-2xl font-bold">{chunks.length}</div></Card>
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Past questions</div><div className="text-2xl font-bold">{pastQs.length}</div></Card>
+              <Card className="p-4"><div className="text-xs text-muted-foreground">Generation rules</div><div className="text-2xl font-bold">{rules.length}</div></Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="ai-review" className="mt-4 space-y-3">
             <p className="text-sm text-muted-foreground flex items-center gap-1"><Sparkles className="h-4 w-4" /> AI-generated questions awaiting review</p>

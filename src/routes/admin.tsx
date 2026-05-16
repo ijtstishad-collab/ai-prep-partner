@@ -313,7 +313,76 @@ function AdminPage() {
             ))}
           </TabsContent>
 
-          <TabsContent value="syllabus" className="mt-4 space-y-3">
+          <TabsContent value="review-queue" className="mt-4 space-y-3">
+            <Card className="p-4 space-y-3">
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div>
+                  <Label>Subject</Label>
+                  <select value={queueSubject} onChange={(e) => { setQueueSubject(e.target.value); clearSelection(); }} className="w-full h-10 rounded-md border bg-background px-3 text-sm">
+                    <option value="all">All subjects</option>
+                    {subjects.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <select value={queueStatus} onChange={(e) => { setQueueStatus(e.target.value); clearSelection(); }} className="w-full h-10 rounded-md border bg-background px-3 text-sm">
+                    <option value="pending">Pending approval</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="all">All</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Teacher reviewed</Label>
+                  <select value={queueReviewed} onChange={(e) => { setQueueReviewed(e.target.value); clearSelection(); }} className="w-full h-10 rounded-md border bg-background px-3 text-sm">
+                    <option value="all">Any</option>
+                    <option value="yes">Reviewed</option>
+                    <option value="no">Not reviewed</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t">
+                <div className="text-sm text-muted-foreground">
+                  {selectedIds.size} of {queueList.length} selected
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Button size="sm" variant="outline" onClick={selectAllQueue}>Select all</Button>
+                  <Button size="sm" variant="outline" onClick={clearSelection} disabled={selectedIds.size === 0}>Clear</Button>
+                  <Button size="sm" variant="outline" onClick={() => bulkAction("mark_reviewed")} disabled={selectedIds.size === 0}>Mark reviewed</Button>
+                  <Button size="sm" variant="outline" onClick={() => bulkAction("unmark_reviewed")} disabled={selectedIds.size === 0}>Unmark reviewed</Button>
+                  <Button size="sm" variant="destructive" onClick={() => bulkAction("reject")} disabled={selectedIds.size === 0}>Bulk reject</Button>
+                  <Button size="sm" onClick={() => bulkAction("approve")} disabled={selectedIds.size === 0}>Bulk approve</Button>
+                </div>
+              </div>
+            </Card>
+
+            {queueList.length === 0 && <Card className="p-4 text-sm text-muted-foreground">No questions match these filters.</Card>}
+            {queueList.map((q) => (
+              <Card key={q.id} className="p-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4"
+                    checked={selectedIds.has(q.id)}
+                    onChange={() => toggleSelect(q.id)}
+                    aria-label="Select question"
+                  />
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">{q.chapters?.subjects?.name} · {q.chapters?.name} · {q.difficulty} · {q.question_type}</div>
+                    <p className="font-medium mt-1">{q.question_text}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Answer: {q.correct_answer}</p>
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      <Badge variant={q.status === "approved" ? "default" : q.status === "rejected" ? "destructive" : "secondary"}>{q.status}</Badge>
+                      {q.is_teacher_reviewed && <Badge className="bg-primary text-primary-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Reviewed</Badge>}
+                      {q.quality_score && <Badge variant="outline"><Star className="h-3 w-3 mr-1" />{q.quality_score}/5</Badge>}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </TabsContent>
+
+
             <Card className="p-4">
               <form onSubmit={addUnit} className="grid md:grid-cols-2 gap-3">
                 <div>

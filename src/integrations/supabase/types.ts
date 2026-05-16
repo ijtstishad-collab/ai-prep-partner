@@ -22,6 +22,7 @@ export type Database = {
           name: string
           name_bn: string | null
           order_index: number
+          readiness_status: string
           subject_id: string
         }
         Insert: {
@@ -31,6 +32,7 @@ export type Database = {
           name: string
           name_bn?: string | null
           order_index?: number
+          readiness_status?: string
           subject_id: string
         }
         Update: {
@@ -40,6 +42,7 @@ export type Database = {
           name?: string
           name_bn?: string | null
           order_index?: number
+          readiness_status?: string
           subject_id?: string
         }
         Relationships: [
@@ -51,6 +54,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      demo_questions: {
+        Row: {
+          chapter_id: string
+          correct_answer: string
+          created_at: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn: string | null
+          id: string
+          options: Json | null
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+          subject_id: string
+        }
+        Insert: {
+          chapter_id: string
+          correct_answer: string
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn?: string | null
+          id?: string
+          options?: Json | null
+          question_text: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          subject_id: string
+        }
+        Update: {
+          chapter_id?: string
+          correct_answer?: string
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation_bn?: string | null
+          id?: string
+          options?: Json | null
+          question_text?: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          subject_id?: string
+        }
+        Relationships: []
       }
       generated_questions: {
         Row: {
@@ -603,6 +645,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      compute_chapter_readiness: {
+        Args: { _chapter_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

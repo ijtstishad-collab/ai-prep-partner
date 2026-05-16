@@ -611,3 +611,33 @@ function parseCsvLine(line: string): string[] {
   out.push(cur);
   return out.map((x) => x.trim());
 }
+
+function ConfirmBulk({ trigger, title, description, confirmLabel, onConfirm, destructive }: {
+  trigger: React.ReactNode;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  onConfirm: () => void | Promise<void>;
+  destructive?: boolean;
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => onConfirm()}
+            className={destructive ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : undefined}
+          >
+            {confirmLabel}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}

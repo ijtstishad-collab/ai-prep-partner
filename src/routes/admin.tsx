@@ -27,6 +27,10 @@ function AdminPage() {
   const [rules, setRules] = useState<any[]>([]);
   const [generated, setGenerated] = useState<any[]>([]);
   const [filterSubject, setFilterSubject] = useState<string>("");
+  const [queueSubject, setQueueSubject] = useState<string>("all");
+  const [queueStatus, setQueueStatus] = useState<string>("pending");
+  const [queueReviewed, setQueueReviewed] = useState<string>("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });

@@ -196,6 +196,44 @@ function AdminPage() {
 
   const filteredQs = filterSubject ? questions.filter((q) => q.chapters?.subjects?.name === filterSubject) : questions;
 
+  const queueList = generated.filter((q) => {
+    if (queueSubject !== "all" && q.chapters?.subjects?.name !== queueSubject) return false;
+    if (queueStatus !== "all" && q.status !== queueStatus) return false;
+    if (queueReviewed === "yes" && !q.is_teacher_reviewed) return false;
+    if (queueReviewed === "no" && q.is_teacher_reviewed) return false;
+    return true;
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const selectAllQueue = () => setSelectedIds(new Set(queueList.map((q) => q.id)));
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const bulkAction = async (action: "approve" | "reject" | "mark_reviewed" | "unmark_reviewed") => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return toast.error("Select at least one question");
+    let updates: any = {};
+    if (action === "approve") updates = { status: "approved" };
+    else if (action === "reject") updates = { status: "rejected" };
+    else if (action === "mark_reviewed") updates = { is_teacher_reviewed: true };
+    else updates = { is_teacher_reviewed: false };
+    const { error } = await (supabase.from as any)("generated_questions").update(updates).in("id", ids);
+    if (error) return toast.error(error.message);
+    if (action === "approve" || action === "reject") {
+      await (supabase.from as any)("question_reviews").insert(
+        ids.map((id) => ({ generated_question_id: id, reviewer_id: user!.id, action }))
+      );
+    }
+    toast.success(`Updated ${ids.length} question${ids.length > 1 ? "s" : ""}`);
+    clearSelection();
+    reload();
+  };
+
   return (
     <AppShell>
       <div className="container mx-auto px-4 py-8">

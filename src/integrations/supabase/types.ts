@@ -645,10 +645,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      compute_chapter_readiness: {
-        Args: { _chapter_id: string }
-        Returns: string
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

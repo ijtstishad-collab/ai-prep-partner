@@ -56,15 +56,15 @@ function HomePage() {
       </section>
 
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-10">Everything you need to crack HSC</h2>
+        <h2 className="text-3xl font-bold text-center mb-10">Everything you need to prepare smarter for HSC</h2>
         <div className="grid md:grid-cols-3 gap-4">
           {[
-            { icon: Sparkles, title: "AI Question Generator", desc: "Generate MCQs, short and written questions per chapter & difficulty." },
-            { icon: MessageSquare, title: "Bangla Explanations", desc: "প্রতিটি উত্তরের সাথে সহজ বাংলা ব্যাখ্যা।" },
-            { icon: BookOpen, title: "Chapter-wise Practice", desc: "Physics, Chemistry, Biology — 1st papers, all chapters." },
-            { icon: Target, title: "Mock Tests", desc: "Timed practice tests with instant scoring." },
-            { icon: BarChart3, title: "Weak Area Tracking", desc: "See exactly which chapters need more work." },
-            { icon: CheckCircle2, title: "Teacher Reviewed", desc: "Quality questions vetted by teachers." },
+            { icon: Sparkles, title: "AI Question Generator", desc: "Generate MCQs, short questions, and written questions by chapter and difficulty." },
+            { icon: MessageSquare, title: "Simple Bangla explanations", desc: "প্রতিটি উত্তরের সাথে সহজ বাংলা ব্যাখ্যা।" },
+            { icon: BookOpen, title: "Chapter-wise practice", desc: "Physics, Chemistry, and Biology — 1st papers, all chapters." },
+            { icon: Target, title: "Mock tests", desc: "Timed practice tests with instant scoring." },
+            { icon: BarChart3, title: "Weak area analysis", desc: "See exactly which chapters need more work." },
+            { icon: CheckCircle2, title: "Teacher-reviewed question bank", desc: "Quality questions vetted by teachers." },
           ].map(({ icon: Icon, title, desc }) => (
             <Card key={title} className="p-6 hover:shadow-soft transition">
               <div className="h-10 w-10 rounded-xl bg-accent text-accent-foreground flex items-center justify-center mb-4">
@@ -79,9 +79,9 @@ function HomePage() {
 
       <section className="container mx-auto px-4 py-16">
         <Card className="p-10 bg-gradient-hero text-primary-foreground text-center shadow-elegant">
-          <h2 className="text-3xl font-bold mb-2">Ready to ace HSC?</h2>
+          <h2 className="text-3xl font-bold mb-2">Ready to prepare smarter for HSC?</h2>
           <p className="opacity-90 mb-6">আজই শুরু করুন — ফ্রি একাউন্ট খুলে practice শুরু করুন।</p>
-          <Button asChild size="lg" variant="secondary"><Link to="/auth">Create Free Account</Link></Button>
+          <Button asChild size="lg" variant="secondary"><Link to="/auth">Create free account</Link></Button>
         </Card>
       </section>
     </AppShell>

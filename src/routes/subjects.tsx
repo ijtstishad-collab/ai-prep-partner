@@ -26,22 +26,28 @@ function SubjectsPage() {
       <div className="container mx-auto px-4 py-10">
         <h1 className="text-3xl font-bold mb-2">Choose a subject</h1>
         <p className="text-muted-foreground mb-8">HSC Science · বিষয় নির্বাচন করুন</p>
-        <div className="grid md:grid-cols-3 gap-4">
-          {subjects.map((s) => {
-            const Icon = ICONS[s.icon ?? "BookOpen"] ?? Atom;
-            return (
-              <Link key={s.id} to="/subjects/$slug" params={{ slug: s.slug }}>
-                <Card className="p-6 hover:shadow-elegant transition cursor-pointer h-full bg-gradient-card">
-                  <div className="h-12 w-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center mb-4">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h2 className="text-xl font-semibold">{s.name}</h2>
-                  <p className="text-sm text-muted-foreground">{s.name_bn}</p>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+        {subjects.length === 0 ? (
+          <Card className="p-10 text-center text-sm text-muted-foreground">
+            Subjects are being prepared. Please check back shortly.
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-4">
+            {subjects.map((s) => {
+              const Icon = ICONS[s.icon ?? "BookOpen"] ?? Atom;
+              return (
+                <Link key={s.id} to="/subjects/$slug" params={{ slug: s.slug }}>
+                  <Card className="p-6 hover:shadow-elegant transition cursor-pointer h-full bg-gradient-card">
+                    <div className="h-12 w-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center mb-4">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h2 className="text-xl font-semibold">{s.name}</h2>
+                    <p className="text-sm text-muted-foreground">{s.name_bn}</p>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </AppShell>
   );

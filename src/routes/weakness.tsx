@@ -71,7 +71,12 @@ function WeaknessPage() {
         <p className="text-muted-foreground mb-6">দুর্বল chapter চিহ্নিত করে practice করুন</p>
 
         {rows.length === 0 ? (
-          <Card className="p-10 text-center text-muted-foreground">Take a few tests to see your performance breakdown.</Card>
+          <Card className="p-10 text-center">
+            <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="font-medium mb-1">No performance data yet</p>
+            <p className="text-sm text-muted-foreground mb-4">Take a few practice tests and we'll show your weak, improving, and strong chapters here.</p>
+            <Button asChild><Link to="/subjects">Browse subjects →</Link></Button>
+          </Card>
         ) : (
           <>
             <div className="grid sm:grid-cols-3 gap-4 mb-8">

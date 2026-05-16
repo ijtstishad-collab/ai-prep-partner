@@ -27,6 +27,10 @@ function AdminPage() {
   const [rules, setRules] = useState<any[]>([]);
   const [generated, setGenerated] = useState<any[]>([]);
   const [filterSubject, setFilterSubject] = useState<string>("");
+  const [queueSubject, setQueueSubject] = useState<string>("all");
+  const [queueStatus, setQueueStatus] = useState<string>("pending");
+  const [queueReviewed, setQueueReviewed] = useState<string>("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
@@ -192,6 +196,44 @@ function AdminPage() {
 
   const filteredQs = filterSubject ? questions.filter((q) => q.chapters?.subjects?.name === filterSubject) : questions;
 
+  const queueList = generated.filter((q) => {
+    if (queueSubject !== "all" && q.chapters?.subjects?.name !== queueSubject) return false;
+    if (queueStatus !== "all" && q.status !== queueStatus) return false;
+    if (queueReviewed === "yes" && !q.is_teacher_reviewed) return false;
+    if (queueReviewed === "no" && q.is_teacher_reviewed) return false;
+    return true;
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const selectAllQueue = () => setSelectedIds(new Set(queueList.map((q) => q.id)));
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const bulkAction = async (action: "approve" | "reject" | "mark_reviewed" | "unmark_reviewed") => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return toast.error("Select at least one question");
+    let updates: any = {};
+    if (action === "approve") updates = { status: "approved" };
+    else if (action === "reject") updates = { status: "rejected" };
+    else if (action === "mark_reviewed") updates = { is_teacher_reviewed: true };
+    else updates = { is_teacher_reviewed: false };
+    const { error } = await (supabase.from as any)("generated_questions").update(updates).in("id", ids);
+    if (error) return toast.error(error.message);
+    if (action === "approve" || action === "reject") {
+      await (supabase.from as any)("question_reviews").insert(
+        ids.map((id) => ({ generated_question_id: id, reviewer_id: user!.id, action }))
+      );
+    }
+    toast.success(`Updated ${ids.length} question${ids.length > 1 ? "s" : ""}`);
+    clearSelection();
+    reload();
+  };
+
   return (
     <AppShell>
       <div className="container mx-auto px-4 py-8">
@@ -204,6 +246,7 @@ function AdminPage() {
           <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="ai-review">AI Review</TabsTrigger>
+            <TabsTrigger value="review-queue">Review Queue</TabsTrigger>
             <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
             <TabsTrigger value="textbook">Textbook</TabsTrigger>
             <TabsTrigger value="past">Past Questions</TabsTrigger>
@@ -263,6 +306,75 @@ function AdminPage() {
                       <Button size="sm" variant="outline" onClick={() => toggleTeacherReviewed(q)}>{q.is_teacher_reviewed ? "Unmark" : "Mark Reviewed"}</Button>
                       <Button size="sm" variant="destructive" onClick={() => reviewGenerated(q, "reject")}>Reject</Button>
                       <Button size="sm" onClick={() => reviewGenerated(q, "approve")}>Approve</Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="review-queue" className="mt-4 space-y-3">
+            <Card className="p-4 space-y-3">
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div>
+                  <Label>Subject</Label>
+                  <select value={queueSubject} onChange={(e) => { setQueueSubject(e.target.value); clearSelection(); }} className="w-full h-10 rounded-md border bg-background px-3 text-sm">
+                    <option value="all">All subjects</option>
+                    {subjects.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <select value={queueStatus} onChange={(e) => { setQueueStatus(e.target.value); clearSelection(); }} className="w-full h-10 rounded-md border bg-background px-3 text-sm">
+                    <option value="pending">Pending approval</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="all">All</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Teacher reviewed</Label>
+                  <select value={queueReviewed} onChange={(e) => { setQueueReviewed(e.target.value); clearSelection(); }} className="w-full h-10 rounded-md border bg-background px-3 text-sm">
+                    <option value="all">Any</option>
+                    <option value="yes">Reviewed</option>
+                    <option value="no">Not reviewed</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t">
+                <div className="text-sm text-muted-foreground">
+                  {selectedIds.size} of {queueList.length} selected
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Button size="sm" variant="outline" onClick={selectAllQueue}>Select all</Button>
+                  <Button size="sm" variant="outline" onClick={clearSelection} disabled={selectedIds.size === 0}>Clear</Button>
+                  <Button size="sm" variant="outline" onClick={() => bulkAction("mark_reviewed")} disabled={selectedIds.size === 0}>Mark reviewed</Button>
+                  <Button size="sm" variant="outline" onClick={() => bulkAction("unmark_reviewed")} disabled={selectedIds.size === 0}>Unmark reviewed</Button>
+                  <Button size="sm" variant="destructive" onClick={() => bulkAction("reject")} disabled={selectedIds.size === 0}>Bulk reject</Button>
+                  <Button size="sm" onClick={() => bulkAction("approve")} disabled={selectedIds.size === 0}>Bulk approve</Button>
+                </div>
+              </div>
+            </Card>
+
+            {queueList.length === 0 && <Card className="p-4 text-sm text-muted-foreground">No questions match these filters.</Card>}
+            {queueList.map((q) => (
+              <Card key={q.id} className="p-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4"
+                    checked={selectedIds.has(q.id)}
+                    onChange={() => toggleSelect(q.id)}
+                    aria-label="Select question"
+                  />
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">{q.chapters?.subjects?.name} · {q.chapters?.name} · {q.difficulty} · {q.question_type}</div>
+                    <p className="font-medium mt-1">{q.question_text}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Answer: {q.correct_answer}</p>
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      <Badge variant={q.status === "approved" ? "default" : q.status === "rejected" ? "destructive" : "secondary"}>{q.status}</Badge>
+                      {q.is_teacher_reviewed && <Badge className="bg-primary text-primary-foreground"><CheckCircle2 className="h-3 w-3 mr-1" />Reviewed</Badge>}
+                      {q.quality_score && <Badge variant="outline"><Star className="h-3 w-3 mr-1" />{q.quality_score}/5</Badge>}
                     </div>
                   </div>
                 </div>

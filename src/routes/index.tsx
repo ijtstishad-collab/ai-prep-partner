@@ -79,9 +79,9 @@ function HomePage() {
 
       <section className="container mx-auto px-4 py-16">
         <Card className="p-10 bg-gradient-hero text-primary-foreground text-center shadow-elegant">
-          <h2 className="text-3xl font-bold mb-2">Ready to ace HSC?</h2>
+          <h2 className="text-3xl font-bold mb-2">Ready to prepare smarter for HSC?</h2>
           <p className="opacity-90 mb-6">আজই শুরু করুন — ফ্রি একাউন্ট খুলে practice শুরু করুন।</p>
-          <Button asChild size="lg" variant="secondary"><Link to="/auth">Create Free Account</Link></Button>
+          <Button asChild size="lg" variant="secondary"><Link to="/auth">Create free account</Link></Button>
         </Card>
       </section>
     </AppShell>

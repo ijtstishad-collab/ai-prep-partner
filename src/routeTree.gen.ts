@@ -9,32 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WeaknessRouteImport } from './routes/weakness'
 import { Route as SubjectsRouteImport } from './routes/subjects'
-import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as MockTestRouteImport } from './routes/mock-test'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ChaptersRouteImport } from './routes/chapters'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsSlugRouteImport } from './routes/subjects.$slug'
 import { Route as ResultAttemptIdRouteImport } from './routes/result.$attemptId'
 import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapterId'
+import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question-review'
 
-const WeaknessRoute = WeaknessRouteImport.update({
-  id: '/weakness',
-  path: '/weakness',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
   path: '/subjects',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeRoute = PracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -42,9 +46,14 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GenerateRoute = GenerateRouteImport.update({
-  id: '/generate',
-  path: '/generate',
+const MockTestRoute = MockTestRouteImport.update({
+  id: '/mock-test',
+  path: '/mock-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -52,9 +61,19 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChaptersRoute = ChaptersRouteImport.update({
+  id: '/chapters',
+  path: '/chapters',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -78,35 +97,48 @@ const ResultAttemptIdRoute = ResultAttemptIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const PracticeChapterIdRoute = PracticeChapterIdRouteImport.update({
-  id: '/practice/$chapterId',
-  path: '/practice/$chapterId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$chapterId',
+  path: '/$chapterId',
+  getParentRoute: () => PracticeRoute,
+} as any)
+const AdminQuestionReviewRoute = AdminQuestionReviewRouteImport.update({
+  id: '/question-review',
+  path: '/question-review',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/chapters': typeof ChaptersRoute
   '/dashboard': typeof DashboardRoute
-  '/generate': typeof GenerateRoute
+  '/history': typeof HistoryRoute
+  '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
-  '/pricing': typeof PricingRoute
+  '/practice': typeof PracticeRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/subjects': typeof SubjectsRouteWithChildren
-  '/weakness': typeof WeaknessRoute
+  '/admin/question-review': typeof AdminQuestionReviewRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/chapters': typeof ChaptersRoute
   '/dashboard': typeof DashboardRoute
-  '/generate': typeof GenerateRoute
+  '/history': typeof HistoryRoute
+  '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
-  '/pricing': typeof PricingRoute
+  '/practice': typeof PracticeRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/subjects': typeof SubjectsRouteWithChildren
-  '/weakness': typeof WeaknessRoute
+  '/admin/question-review': typeof AdminQuestionReviewRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -114,14 +146,18 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/chapters': typeof ChaptersRoute
   '/dashboard': typeof DashboardRoute
-  '/generate': typeof GenerateRoute
+  '/history': typeof HistoryRoute
+  '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
-  '/pricing': typeof PricingRoute
+  '/practice': typeof PracticeRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/subjects': typeof SubjectsRouteWithChildren
-  '/weakness': typeof WeaknessRoute
+  '/admin/question-review': typeof AdminQuestionReviewRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -131,13 +167,17 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/analytics'
     | '/auth'
+    | '/chapters'
     | '/dashboard'
-    | '/generate'
+    | '/history'
+    | '/mock-test'
     | '/onboarding'
-    | '/pricing'
+    | '/practice'
+    | '/profile'
     | '/subjects'
-    | '/weakness'
+    | '/admin/question-review'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -145,13 +185,17 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/analytics'
     | '/auth'
+    | '/chapters'
     | '/dashboard'
-    | '/generate'
+    | '/history'
+    | '/mock-test'
     | '/onboarding'
-    | '/pricing'
+    | '/practice'
+    | '/profile'
     | '/subjects'
-    | '/weakness'
+    | '/admin/question-review'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -159,13 +203,17 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/analytics'
     | '/auth'
+    | '/chapters'
     | '/dashboard'
-    | '/generate'
+    | '/history'
+    | '/mock-test'
     | '/onboarding'
-    | '/pricing'
+    | '/practice'
+    | '/profile'
     | '/subjects'
-    | '/weakness'
+    | '/admin/question-review'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -173,27 +221,22 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
+  ChaptersRoute: typeof ChaptersRoute
   DashboardRoute: typeof DashboardRoute
-  GenerateRoute: typeof GenerateRoute
+  HistoryRoute: typeof HistoryRoute
+  MockTestRoute: typeof MockTestRoute
   OnboardingRoute: typeof OnboardingRoute
-  PricingRoute: typeof PricingRoute
+  PracticeRoute: typeof PracticeRouteWithChildren
+  ProfileRoute: typeof ProfileRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
-  WeaknessRoute: typeof WeaknessRoute
-  PracticeChapterIdRoute: typeof PracticeChapterIdRoute
   ResultAttemptIdRoute: typeof ResultAttemptIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/weakness': {
-      id: '/weakness'
-      path: '/weakness'
-      fullPath: '/weakness'
-      preLoaderRoute: typeof WeaknessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/subjects': {
       id: '/subjects'
       path: '/subjects'
@@ -201,11 +244,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice': {
+      id: '/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof PracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -215,11 +265,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/generate': {
-      id: '/generate'
-      path: '/generate'
-      fullPath: '/generate'
-      preLoaderRoute: typeof GenerateRouteImport
+    '/mock-test': {
+      id: '/mock-test'
+      path: '/mock-test'
+      fullPath: '/mock-test'
+      preLoaderRoute: typeof MockTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -229,11 +286,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chapters': {
+      id: '/chapters'
+      path: '/chapters'
+      fullPath: '/chapters'
+      preLoaderRoute: typeof ChaptersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -266,13 +337,42 @@ declare module '@tanstack/react-router' {
     }
     '/practice/$chapterId': {
       id: '/practice/$chapterId'
-      path: '/practice/$chapterId'
+      path: '/$chapterId'
       fullPath: '/practice/$chapterId'
       preLoaderRoute: typeof PracticeChapterIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PracticeRoute
+    }
+    '/admin/question-review': {
+      id: '/admin/question-review'
+      path: '/question-review'
+      fullPath: '/admin/question-review'
+      preLoaderRoute: typeof AdminQuestionReviewRouteImport
+      parentRoute: typeof AdminRoute
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminQuestionReviewRoute: typeof AdminQuestionReviewRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminQuestionReviewRoute: AdminQuestionReviewRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface PracticeRouteChildren {
+  PracticeChapterIdRoute: typeof PracticeChapterIdRoute
+}
+
+const PracticeRouteChildren: PracticeRouteChildren = {
+  PracticeChapterIdRoute: PracticeChapterIdRoute,
+}
+
+const PracticeRouteWithChildren = PracticeRoute._addFileChildren(
+  PracticeRouteChildren,
+)
 
 interface SubjectsRouteChildren {
   SubjectsSlugRoute: typeof SubjectsSlugRoute
@@ -288,17 +388,29 @@ const SubjectsRouteWithChildren = SubjectsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
+  ChaptersRoute: ChaptersRoute,
   DashboardRoute: DashboardRoute,
-  GenerateRoute: GenerateRoute,
+  HistoryRoute: HistoryRoute,
+  MockTestRoute: MockTestRoute,
   OnboardingRoute: OnboardingRoute,
-  PricingRoute: PricingRoute,
+  PracticeRoute: PracticeRouteWithChildren,
+  ProfileRoute: ProfileRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
-  WeaknessRoute: WeaknessRoute,
-  PracticeChapterIdRoute: PracticeChapterIdRoute,
   ResultAttemptIdRoute: ResultAttemptIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

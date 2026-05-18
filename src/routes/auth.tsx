@@ -50,15 +50,17 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("একাউন্ট তৈরি হয়েছে!");
+    toast.success("Account created!");
   };
 
   return (
     <AppShell>
       <div className="container mx-auto px-4 py-16 max-w-md">
         <Card className="p-6 shadow-elegant">
-          <h1 className="text-2xl font-bold text-center mb-1">Welcome to Porikkha AI</h1>
-          <p className="text-sm text-muted-foreground text-center mb-6">HSC Science prep, made smart.</p>
+          <h1 className="text-2xl font-bold text-center mb-1">Welcome to AI Prep Partner</h1>
+          <p className="text-sm text-muted-foreground text-center mb-6">
+            HSC exam preparation for Bangladeshi students.
+          </p>
           <Tabs defaultValue="login">
             <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="login">Login</TabsTrigger>
@@ -66,17 +68,36 @@ function AuthPage() {
             </TabsList>
             <TabsContent value="login" className="mt-4">
               <form onSubmit={handleLogin} className="space-y-3">
-                <div><Label>Email</Label><Input name="email" type="email" required /></div>
-                <div><Label>Password</Label><Input name="password" type="password" required /></div>
-                <Button className="w-full" disabled={busy}>{busy ? "..." : "Login"}</Button>
+                <div>
+                  <Label>Email</Label>
+                  <Input name="email" type="email" required />
+                </div>
+                <div>
+                  <Label>Password</Label>
+                  <Input name="password" type="password" required />
+                </div>
+                <Button className="w-full" disabled={busy}>
+                  {busy ? "..." : "Login"}
+                </Button>
               </form>
             </TabsContent>
             <TabsContent value="signup" className="mt-4">
               <form onSubmit={handleSignup} className="space-y-3">
-                <div><Label>Full Name</Label><Input name="name" required /></div>
-                <div><Label>Email</Label><Input name="email" type="email" required /></div>
-                <div><Label>Password</Label><Input name="password" type="password" minLength={8} required /></div>
-                <Button className="w-full" disabled={busy}>{busy ? "..." : "Create Account"}</Button>
+                <div>
+                  <Label>Full Name</Label>
+                  <Input name="name" required />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input name="email" type="email" required />
+                </div>
+                <div>
+                  <Label>Password</Label>
+                  <Input name="password" type="password" minLength={8} required />
+                </div>
+                <Button className="w-full" disabled={busy}>
+                  {busy ? "..." : "Create Account"}
+                </Button>
               </form>
             </TabsContent>
           </Tabs>

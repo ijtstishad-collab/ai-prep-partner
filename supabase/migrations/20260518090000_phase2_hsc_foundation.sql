@@ -1,11 +1,55 @@
 -- Phase 2: Supabase-first HSC exam preparation foundation.
 -- This migration keeps the UI untouched and focuses on safe database/RLS shape.
 
--- Roles: keep the existing enum for compatibility and add reviewer for content review.
+-- Base enums. The live Supabase dashboard may not have the older Lovable
+-- migrations applied, so create missing enum types before extending them.
 DO $$
 BEGIN
-  ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'reviewer';
-END $$;
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_type t
+    JOIN pg_namespace n ON n.oid = t.typnamespace
+    WHERE n.nspname = 'public'
+      AND t.typname = 'app_role'
+  ) THEN
+    EXECUTE 'CREATE TYPE public.app_role AS ENUM (''admin'', ''student'', ''reviewer'')';
+  END IF;
+END;
+$$;
+
+DO $$
+BEGIN
+  EXECUTE 'ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS ''reviewer''';
+END;
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_type t
+    JOIN pg_namespace n ON n.oid = t.typnamespace
+    WHERE n.nspname = 'public'
+      AND t.typname = 'question_type'
+  ) THEN
+    EXECUTE 'CREATE TYPE public.question_type AS ENUM (''mcq'', ''short'', ''written'')';
+  END IF;
+END;
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_type t
+    JOIN pg_namespace n ON n.oid = t.typnamespace
+    WHERE n.nspname = 'public'
+      AND t.typname = 'difficulty_level'
+  ) THEN
+    EXECUTE 'CREATE TYPE public.difficulty_level AS ENUM (''easy'', ''medium'', ''hard'')';
+  END IF;
+END;
+$$;
 
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS trigger
@@ -17,6 +61,119 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- Compatibility base tables. These mirror the earlier app foundation enough
+-- for this migration to run on a dashboard database that has not applied the
+-- old migrations yet.
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name text,
+  class text,
+  student_group text DEFAULT 'Science',
+  target_exam_year integer,
+  subscription_tier text NOT NULL DEFAULT 'free',
+  onboarded boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.user_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role public.app_role NOT NULL DEFAULT 'student',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, role)
+);
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.subjects (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  name_bn text,
+  slug text NOT NULL UNIQUE,
+  icon text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.subjects ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.chapters (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  subject_id uuid NOT NULL REFERENCES public.subjects(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  name_bn text,
+  order_index integer NOT NULL DEFAULT 0,
+  is_active boolean NOT NULL DEFAULT true,
+  readiness_status text NOT NULL DEFAULT 'not_started',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.chapters ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.questions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  chapter_id uuid NOT NULL REFERENCES public.chapters(id) ON DELETE CASCADE,
+  question_type public.question_type NOT NULL DEFAULT 'mcq',
+  difficulty public.difficulty_level NOT NULL DEFAULT 'medium',
+  question_text text NOT NULL,
+  options jsonb,
+  correct_answer text NOT NULL DEFAULT '',
+  explanation_bn text,
+  is_approved boolean NOT NULL DEFAULT false,
+  teacher_reviewed boolean NOT NULL DEFAULT false,
+  source text DEFAULT 'ai',
+  created_by uuid REFERENCES auth.users(id),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.past_questions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  subject_id uuid REFERENCES public.subjects(id) ON DELETE CASCADE,
+  chapter_id uuid REFERENCES public.chapters(id) ON DELETE CASCADE,
+  year integer,
+  board text,
+  question_type public.question_type NOT NULL DEFAULT 'mcq',
+  difficulty public.difficulty_level NOT NULL DEFAULT 'medium',
+  question_text text NOT NULL,
+  answer text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.past_questions ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.demo_questions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  chapter_id uuid REFERENCES public.chapters(id) ON DELETE CASCADE,
+  subject_id uuid REFERENCES public.subjects(id) ON DELETE CASCADE,
+  question_type public.question_type NOT NULL DEFAULT 'mcq',
+  difficulty public.difficulty_level NOT NULL DEFAULT 'easy',
+  question_text text NOT NULL,
+  options jsonb,
+  correct_answer text NOT NULL DEFAULT '',
+  explanation_bn text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.demo_questions ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.generated_questions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  subject_id uuid REFERENCES public.subjects(id) ON DELETE CASCADE,
+  chapter_id uuid REFERENCES public.chapters(id) ON DELETE CASCADE,
+  question_type public.question_type NOT NULL DEFAULT 'mcq',
+  difficulty public.difficulty_level NOT NULL DEFAULT 'medium',
+  question_text text NOT NULL,
+  options jsonb,
+  correct_answer text NOT NULL DEFAULT '',
+  explanation_bn text,
+  status text NOT NULL DEFAULT 'pending',
+  is_teacher_reviewed boolean NOT NULL DEFAULT false,
+  quality_score integer CHECK (quality_score BETWEEN 1 AND 5),
+  source_context jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.generated_questions ENABLE ROW LEVEL SECURITY;
 
 -- app_roles is the Phase 2 role assignment table. user_roles remains for
 -- compatibility with the existing auth context.
@@ -138,7 +295,8 @@ BEGIN
     ADD CONSTRAINT questions_phase2_status_check
     CHECK (status IN ('draft', 'pending_review', 'approved', 'rejected', 'archived'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS public.question_options (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -200,7 +358,8 @@ BEGIN
     ADD CONSTRAINT question_drafts_status_check
     CHECK (status IN ('draft', 'pending_review', 'approved', 'rejected', 'archived'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS public.admin_reviews (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -221,7 +380,8 @@ BEGIN
     ADD CONSTRAINT admin_reviews_action_check
     CHECK (action IN ('create', 'edit', 'submit', 'approve', 'reject', 'archive'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS public.mock_exams (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -248,7 +408,8 @@ BEGIN
     ADD CONSTRAINT mock_exams_status_check
     CHECK (status IN ('draft', 'published', 'archived'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS public.mock_exam_questions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -291,7 +452,8 @@ BEGIN
     ADD CONSTRAINT attempts_type_check
     CHECK (attempt_type IN ('practice', 'chapter_practice', 'mock_exam'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END;
+$$;
 
 DO $$
 BEGIN
@@ -299,7 +461,8 @@ BEGIN
     ADD CONSTRAINT attempts_status_check
     CHECK (status IN ('in_progress', 'submitted', 'abandoned', 'expired'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS public.mock_exam_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -322,7 +485,8 @@ BEGIN
     ADD CONSTRAINT mock_exam_sessions_status_check
     CHECK (status IN ('in_progress', 'submitted', 'abandoned', 'expired'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS public.student_answers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -361,6 +525,8 @@ CREATE TABLE IF NOT EXISTS public.chapter_analytics (
 ALTER TABLE public.chapter_analytics ENABLE ROW LEVEL SECURITY;
 
 -- Helper functions used only by RLS policies.
+CREATE SCHEMA IF NOT EXISTS private;
+
 CREATE OR REPLACE FUNCTION private.has_any_role(_user_id uuid, _roles text[])
 RETURNS boolean
 LANGUAGE sql

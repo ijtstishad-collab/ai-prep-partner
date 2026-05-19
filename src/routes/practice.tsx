@@ -26,10 +26,10 @@ import {
 
 type PracticeMode = "chapter" | "board" | "ai" | "mixed";
 const MODE_META: Record<PracticeMode, { label: string; bn: string }> = {
-  chapter: { label: "Chapter Practice", bn: "অধ্যায়ভিত্তিক" },
-  board: { label: "Past Board Questions", bn: "বোর্ড প্রশ্ন" },
-  ai: { label: "AI Generated", bn: "এআই প্রশ্ন" },
-  mixed: { label: "Mixed Exam Prep", bn: "মিশ্র প্রস্তুতি" },
+  chapter: { label: "অধ্যায়ভিত্তিক", bn: "Chapter Practice" },
+  board: { label: "বোর্ড প্রশ্ন", bn: "Past Board Questions" },
+  ai: { label: "এআই প্রশ্ন", bn: "AI Generated" },
+  mixed: { label: "মিশ্র প্রস্তুতি", bn: "Mixed Exam Prep" },
 };
 
 export const Route = createFileRoute("/practice")({

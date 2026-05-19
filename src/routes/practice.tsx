@@ -333,9 +333,9 @@ function PracticePage() {
       <div className="container mx-auto max-w-5xl px-4 py-8">
         {/* Breadcrumb */}
         <nav className="mb-3 text-xs text-muted-foreground">
-          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <Link to="/dashboard" className="hover:text-foreground">ড্যাশবোর্ড</Link>
           <span className="mx-2">/</span>
-          <Link to="/subjects" className="hover:text-foreground">Subjects</Link>
+          <Link to="/subjects" className="hover:text-foreground">বিষয়সমূহ</Link>
           <span className="mx-2">/</span>
           {subject ? (
             <a
@@ -345,49 +345,49 @@ function PracticePage() {
               {subject.name}
             </a>
           ) : (
-            <span>Chapters</span>
+            <span>অধ্যায়সমূহ</span>
           )}
           <span className="mx-2">/</span>
-          <span className="text-foreground">Practice</span>
+          <span className="text-foreground">অনুশীলন</span>
         </nav>
 
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session…
+            সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">লগইন প্রয়োজন</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Sign in to load approved questions and save your answer history.
+              যাচাইকৃত প্রশ্ন দেখতে ও ইতিহাস সংরক্ষণ করতে লগইন করুন।
             </p>
             <Button asChild className="mt-6">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : !chapterId ? (
           <Card className="paper-sheet p-8 text-center">
             <BookOpenText className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Choose a chapter first</h2>
+            <h2 className="exam-heading text-xl font-semibold">আগে একটি অধ্যায় বেছে নিন</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Practice starts from a chapter. Pick a subject, then a chapter, then a mode.
+              অনুশীলন শুরু হয় অধ্যায় থেকে। বিষয় → অধ্যায় → মোড — এই ক্রমে এগিয়ে যান।
             </p>
             <Button asChild className="mt-6">
-              <Link to="/subjects">Choose Subject</Link>
+              <Link to="/subjects">বিষয় বেছে নিন</Link>
             </Button>
           </Card>
         ) : loading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading questions…
+            প্রশ্ন লোড হচ্ছে…
           </Card>
         ) : error && questions.length === 0 ? (
           <Card className="paper-sheet p-6">
             <h2 className="flex items-center gap-2 font-semibold text-destructive">
               <AlertCircle className="h-5 w-5" />
-              Could not load practice
+              অনুশীলন লোড করা যায়নি
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
@@ -396,23 +396,23 @@ function PracticePage() {
             <FileQuestion className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <h2 className="exam-heading text-xl font-semibold">
               {mode === "board"
-                ? "No board questions stored yet"
-                : "No approved MCQs yet"}
+                ? "এখনো কোনো বোর্ড প্রশ্ন নেই"
+                : "এখনো কোনো যাচাইকৃত এমসিকিউ নেই"}
             </h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Generate instant AI MCQs for this chapter, or return to chapters.
+              এই অধ্যায়ের জন্য এআই এমসিকিউ তৈরি করুন, বা অধ্যায় তালিকায় ফিরে যান।
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button onClick={generateAiQuestions} disabled={generating}>
                 {generating ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating</>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> তৈরি হচ্ছে</>
                 ) : (
-                  <><Sparkles className="mr-1 h-4 w-4" /> Generate AI MCQs</>
+                  <><Sparkles className="mr-1 h-4 w-4" /> এআই এমসিকিউ তৈরি করুন</>
                 )}
               </Button>
               <Button asChild variant="outline">
                 <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
-                  Back to Chapters
+                  অধ্যায়ে ফিরে যান
                 </a>
               </Button>
             </div>

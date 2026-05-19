@@ -173,7 +173,7 @@ function SubjectsPage() {
                     </div>
                     <Button asChild className="mt-5 w-full" variant="outline">
                       <a href={`/chapters?subjectId=${subject.id}`}>
-                        View Chapters · অধ্যায় দেখুন <ChevronRight className="ml-1 h-4 w-4" />
+                        অধ্যায় দেখুন <ChevronRight className="ml-1 h-4 w-4" />
                       </a>
                     </Button>
                   </Card>

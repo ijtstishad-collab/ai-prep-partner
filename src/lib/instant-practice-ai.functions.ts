@@ -256,9 +256,14 @@ Return JSON exactly like:
       if (insertError) throw new Error(insertError.message);
       if (!insertedQuestion) throw new Error("AI question could not be saved.");
 
+      const insertedRecord = insertedQuestion as Record<string, unknown>;
       const questionRow = {
-        ...(insertedQuestion as Record<string, unknown>),
-        marks: (insertedQuestion as Record<string, unknown>).marks ?? 1,
+        id: String(insertedRecord.id ?? ""),
+        chapter_id: String(insertedRecord.chapter_id ?? chapter.id),
+        question_type: String(insertedRecord.question_type ?? "mcq"),
+        difficulty: String(insertedRecord.difficulty ?? data.difficulty),
+        question_text: String(insertedRecord.question_text ?? question.question_text),
+        marks: Number(insertedRecord.marks ?? 1),
       };
       insertedQuestions.push(questionRow);
 
@@ -274,7 +279,16 @@ Return JSON exactly like:
         .select("id, question_id, option_key, option_text, display_order");
 
       if (optionsError) throw new Error(optionsError.message);
-      insertedOptions.push(...((options as Record<string, unknown>[] | null) ?? []));
+      const optionsList = (options as Array<Record<string, unknown>> | null) ?? [];
+      for (const opt of optionsList) {
+        insertedOptions.push({
+          id: String(opt.id ?? ""),
+          question_id: String(opt.question_id ?? ""),
+          option_key: String(opt.option_key ?? ""),
+          option_text: String(opt.option_text ?? ""),
+          display_order: Number(opt.display_order ?? 0),
+        });
+      }
     }
 
     return {

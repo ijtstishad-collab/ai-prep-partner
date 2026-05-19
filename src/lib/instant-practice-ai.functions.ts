@@ -10,11 +10,31 @@ const GenerateInstantPracticeSchema = z.object({
 });
 
 type DbTable = ReturnType<typeof supabaseAdmin.from>;
+type Difficulty = "easy" | "medium" | "hard";
+type QuestionType = "mcq";
+
 type GeneratedMcq = {
   question_text: string;
   options: string[];
   correct_answer: string;
-  explanation_bn?: string | null;
+  explanation_bn: string | null;
+};
+
+export type InsertedQuestion = {
+  id: string;
+  chapter_id: string;
+  question_type: QuestionType;
+  difficulty: Difficulty;
+  question_text: string;
+  marks: number;
+};
+
+export type InsertedOption = {
+  id: string;
+  question_id: string;
+  option_key: string;
+  option_text: string;
+  display_order: number;
 };
 
 const table = (name: string) =>
@@ -22,6 +42,50 @@ const table = (name: string) =>
 
 const schemaMismatchPattern = /(column .* does not exist|schema cache)/i;
 const MAX_AI_QUESTIONS_PER_HOUR = 25;
+
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : value == null ? fallback : String(value);
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function asDifficulty(value: unknown, fallback: Difficulty): Difficulty {
+  return value === "easy" || value === "medium" || value === "hard" ? value : fallback;
+}
+
+function asQuestionType(value: unknown): QuestionType {
+  return value === "mcq" ? "mcq" : "mcq";
+}
+
+function mapInsertedQuestion(
+  row: unknown,
+  defaults: { chapter_id: string; difficulty: Difficulty; question_text: string },
+): InsertedQuestion {
+  const r = (row ?? {}) as Record<string, unknown>;
+  return {
+    id: asString(r.id),
+    chapter_id: asString(r.chapter_id, defaults.chapter_id),
+    question_type: asQuestionType(r.question_type),
+    difficulty: asDifficulty(r.difficulty, defaults.difficulty),
+    question_text: asString(r.question_text, defaults.question_text),
+    marks: asNumber(r.marks, 1),
+  };
+}
+
+function mapInsertedOption(row: unknown): InsertedOption {
+  const r = (row ?? {}) as Record<string, unknown>;
+  return {
+    id: asString(r.id),
+    question_id: asString(r.question_id),
+    option_key: asString(r.option_key),
+    option_text: asString(r.option_text),
+    display_order: asNumber(r.display_order),
+  };
+}
 
 function parseAiJson(content: string): GeneratedMcq[] {
   let parsed: unknown;

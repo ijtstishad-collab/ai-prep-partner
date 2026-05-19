@@ -45,7 +45,7 @@ function Onboarding() {
     setBusy(false);
     if (error) return toast.error(error.message);
     await refresh();
-    toast.success("Profile saved!");
+    toast.success("প্রোফাইল সংরক্ষণ হয়েছে!");
     nav({ to: "/dashboard" });
   };
 

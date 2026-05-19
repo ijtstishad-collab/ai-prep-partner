@@ -10,11 +10,31 @@ const GenerateInstantPracticeSchema = z.object({
 });
 
 type DbTable = ReturnType<typeof supabaseAdmin.from>;
+type Difficulty = "easy" | "medium" | "hard";
+type QuestionType = "mcq";
+
 type GeneratedMcq = {
   question_text: string;
   options: string[];
   correct_answer: string;
-  explanation_bn?: string | null;
+  explanation_bn: string | null;
+};
+
+export type InsertedQuestion = {
+  id: string;
+  chapter_id: string;
+  question_type: QuestionType;
+  difficulty: Difficulty;
+  question_text: string;
+  marks: number;
+};
+
+export type InsertedOption = {
+  id: string;
+  question_id: string;
+  option_key: string;
+  option_text: string;
+  display_order: number;
 };
 
 const table = (name: string) =>
@@ -22,6 +42,50 @@ const table = (name: string) =>
 
 const schemaMismatchPattern = /(column .* does not exist|schema cache)/i;
 const MAX_AI_QUESTIONS_PER_HOUR = 25;
+
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : value == null ? fallback : String(value);
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function asDifficulty(value: unknown, fallback: Difficulty): Difficulty {
+  return value === "easy" || value === "medium" || value === "hard" ? value : fallback;
+}
+
+function asQuestionType(value: unknown): QuestionType {
+  return value === "mcq" ? "mcq" : "mcq";
+}
+
+function mapInsertedQuestion(
+  row: unknown,
+  defaults: { chapter_id: string; difficulty: Difficulty; question_text: string },
+): InsertedQuestion {
+  const r = (row ?? {}) as Record<string, unknown>;
+  return {
+    id: asString(r.id),
+    chapter_id: asString(r.chapter_id, defaults.chapter_id),
+    question_type: asQuestionType(r.question_type),
+    difficulty: asDifficulty(r.difficulty, defaults.difficulty),
+    question_text: asString(r.question_text, defaults.question_text),
+    marks: asNumber(r.marks, 1),
+  };
+}
+
+function mapInsertedOption(row: unknown): InsertedOption {
+  const r = (row ?? {}) as Record<string, unknown>;
+  return {
+    id: asString(r.id),
+    question_id: asString(r.question_id),
+    option_key: asString(r.option_key),
+    option_text: asString(r.option_text),
+    display_order: asNumber(r.display_order),
+  };
+}
 
 function parseAiJson(content: string): GeneratedMcq[] {
   let parsed: unknown;
@@ -189,8 +253,8 @@ Return JSON exactly like:
       throw new Error("AI did not return usable MCQs. Try again.");
     }
 
-    const insertedQuestions = [];
-    const insertedOptions = [];
+    const insertedQuestions: InsertedQuestion[] = [];
+    const insertedOptions: InsertedOption[] = [];
     const now = new Date().toISOString();
 
     for (const question of generated) {
@@ -256,15 +320,11 @@ Return JSON exactly like:
       if (insertError) throw new Error(insertError.message);
       if (!insertedQuestion) throw new Error("AI question could not be saved.");
 
-      const insertedRecord = insertedQuestion as Record<string, unknown>;
-      const questionRow = {
-        id: String(insertedRecord.id ?? ""),
-        chapter_id: String(insertedRecord.chapter_id ?? chapter.id),
-        question_type: String(insertedRecord.question_type ?? "mcq"),
-        difficulty: String(insertedRecord.difficulty ?? data.difficulty),
-        question_text: String(insertedRecord.question_text ?? question.question_text),
-        marks: Number(insertedRecord.marks ?? 1),
-      };
+      const questionRow = mapInsertedQuestion(insertedQuestion, {
+        chapter_id: String(chapter.id),
+        difficulty: data.difficulty,
+        question_text: question.question_text,
+      });
       insertedQuestions.push(questionRow);
 
       const optionRows = optionTexts.map((option, index) => ({
@@ -274,25 +334,20 @@ Return JSON exactly like:
         display_order: index + 1,
       }));
 
-      const { data: options, error: optionsError } = await table("question_options")
+      const { data: optionsData, error: optionsError } = await table("question_options")
         .insert(optionRows)
         .select("id, question_id, option_key, option_text, display_order");
 
       if (optionsError) throw new Error(optionsError.message);
-      const optionsList = (options as Array<Record<string, unknown>> | null) ?? [];
-      for (const opt of optionsList) {
-        insertedOptions.push({
-          id: String(opt.id ?? ""),
-          question_id: String(opt.question_id ?? ""),
-          option_key: String(opt.option_key ?? ""),
-          option_text: String(opt.option_text ?? ""),
-          display_order: Number(opt.display_order ?? 0),
-        });
+      const rawOptions = Array.isArray(optionsData) ? (optionsData as unknown[]) : [];
+      for (const opt of rawOptions) {
+        insertedOptions.push(mapInsertedOption(opt));
       }
     }
 
-    return {
+    const result: { questions: InsertedQuestion[]; options: InsertedOption[] } = {
       questions: insertedQuestions,
       options: insertedOptions,
     };
+    return result;
   });

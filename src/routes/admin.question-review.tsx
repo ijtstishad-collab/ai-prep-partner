@@ -377,7 +377,7 @@ function AdminQuestionReviewPage() {
               )}
 
               <Button asChild variant="outline">
-                <Link to="/admin">Back to Admin Console</Link>
+                <Link to="/admin">← অ্যাডমিন কনসোলে ফিরে যান</Link>
               </Button>
             </div>
           </div>

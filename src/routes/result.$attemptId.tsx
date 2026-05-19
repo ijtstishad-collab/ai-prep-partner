@@ -199,37 +199,37 @@ function ResultPage() {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Checking session…
+            <Loader2 className="h-5 w-5 animate-spin" /> সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h1 className="exam-heading text-2xl font-bold">Login required</h1>
+            <h1 className="exam-heading text-2xl font-bold">লগইন প্রয়োজন</h1>
             <Button asChild className="mt-6">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : loading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Loading result…
+            <Loader2 className="h-5 w-5 animate-spin" /> ফলাফল লোড হচ্ছে…
           </Card>
         ) : error ? (
           <Card className="paper-sheet p-6">
-            <h1 className="font-semibold text-destructive">Could not load result</h1>
+            <h1 className="font-semibold text-destructive">ফলাফল লোড করা যায়নি</h1>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : !attempt ? (
           <Card className="paper-sheet p-8 text-center">
             <BarChart3 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h1 className="exam-heading text-2xl font-bold">Result not found</h1>
+            <h1 className="exam-heading text-2xl font-bold">ফলাফল পাওয়া যায়নি</h1>
             <Button asChild className="mt-6" variant="outline">
-              <Link to="/history">Open History</Link>
+              <Link to="/history">ইতিহাস দেখুন</Link>
             </Button>
           </Card>
         ) : attempt.status !== "submitted" ? (
           <Card className="paper-sheet p-8 text-center">
             <BarChart3 className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h1 className="exam-heading text-2xl font-bold">Submit to see your result</h1>
+            <h1 className="exam-heading text-2xl font-bold">ফলাফল দেখতে জমা দিন</h1>
           </Card>
         ) : (
           <div className="space-y-5">
@@ -237,10 +237,10 @@ function ResultPage() {
             <Card className="paper-sheet overflow-hidden">
               <div className="paper-divider border-b-2 px-6 pt-6 pb-4 text-center">
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  AI Prep Partner · Result Sheet
+                  এআই প্রেপ পার্টনার · ফলাফল
                 </p>
                 <h1 className="exam-heading mt-1 text-2xl font-bold">
-                  {chapter?.name ?? "Practice Result"}
+                  {chapter?.name ?? "অনুশীলনের ফলাফল"}
                 </h1>
                 {chapter?.name_bn ? (
                   <p className="text-sm text-muted-foreground">{chapter.name_bn}</p>

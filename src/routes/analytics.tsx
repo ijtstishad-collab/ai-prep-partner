@@ -129,72 +129,71 @@ function AnalyticsPage() {
     <AppShell>
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <nav className="mb-3 text-xs text-muted-foreground">
-          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <Link to="/dashboard" className="hover:text-foreground">ড্যাশবোর্ড</Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Analytics</span>
+          <span className="text-foreground">বিশ্লেষণ</span>
         </nav>
 
         <div className="mb-6 max-w-2xl">
-          <p className="text-sm font-medium text-primary">Result Analytics · বিশ্লেষণ</p>
-          <h1 className="exam-heading mt-1 text-3xl font-bold">Your readiness at a glance</h1>
+          <p className="text-sm font-medium text-primary">ফলাফল বিশ্লেষণ</p>
+          <h1 className="exam-heading mt-1 text-3xl font-bold">আপনার প্রস্তুতির অবস্থা</h1>
           <p className="mt-2 text-muted-foreground">
-            Accuracy, weak chapters, and overall readiness are computed from your
-            submitted attempts.
+            জমা দেওয়া সব অনুশীলন থেকে নির্ভুলতা, দুর্বল অধ্যায় ও সামগ্রিক প্রস্তুতি হিসাব করা হয়েছে।
           </p>
         </div>
 
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Checking session…
+            <Loader2 className="h-5 w-5 animate-spin" /> সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">লগইন প্রয়োজন</h2>
             <Button asChild className="mt-4">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : loading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Crunching analytics…
+            <Loader2 className="h-5 w-5 animate-spin" /> বিশ্লেষণ তৈরি হচ্ছে…
           </Card>
         ) : error ? (
           <Card className="paper-sheet p-6">
-            <h2 className="font-semibold text-destructive">Could not load analytics</h2>
+            <h2 className="font-semibold text-destructive">বিশ্লেষণ লোড করা যায়নি</h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : (
           <>
             <div className="grid gap-3 sm:grid-cols-3">
               <Metric
-                title="Overall accuracy"
-                bn="নির্ভুলতা"
+                title="সামগ্রিক নির্ভুলতা"
+                bn="Accuracy"
                 value={`${toBnDigits(summary.accuracy)}%`}
                 icon={BarChart3}
               />
               <Metric
-                title="Weak chapters"
-                bn="দুর্বল অধ্যায়"
+                title="দুর্বল অধ্যায়"
+                bn="Weak Chapters"
                 value={toBnDigits(summary.weakCount)}
                 icon={TrendingDown}
               />
               <Metric
-                title="Readiness"
-                bn="প্রস্তুতি"
+                title="প্রস্তুতি"
+                bn="Readiness"
                 value={`${toBnDigits(summary.readiness)}%`}
                 icon={Target}
               />
             </div>
 
             <Card className="paper-sheet mt-6 p-6">
-              <h2 className="exam-heading font-semibold">Chapter performance</h2>
+              <h2 className="exam-heading font-semibold">অধ্যায়ভিত্তিক পারফরম্যান্স</h2>
               <p className="text-sm text-muted-foreground">
-                Lower accuracy chapters appear first — focus revision there.
+                কম নির্ভুলতার অধ্যায়গুলো প্রথমে দেখানো হচ্ছে — সেখানেই রিভিশনে জোর দিন।
               </p>
               {summary.chapterRows.length === 0 ? (
                 <p className="mt-6 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-                  Practice a few chapters to unlock chapter-wise analytics.
+                  কয়েকটি অধ্যায় অনুশীলন করলে অধ্যায়ভিত্তিক বিশ্লেষণ আনলক হবে।
                 </p>
               ) : (
                 <div className="mt-5 space-y-3">
@@ -220,12 +219,12 @@ function AnalyticsPage() {
               )}
               <div className="mt-6 flex flex-wrap gap-2">
                 <Button asChild variant="outline">
-                  <Link to="/history">Open History</Link>
+                  <Link to="/history">ইতিহাস দেখুন</Link>
                 </Button>
                 <Button asChild>
                   <Link to="/subjects">
                     <TrendingUp className="mr-1 h-4 w-4" />
-                    Practice a weak chapter
+                    দুর্বল অধ্যায় অনুশীলন করুন
                   </Link>
                 </Button>
               </div>

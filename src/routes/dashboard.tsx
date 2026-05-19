@@ -9,11 +9,11 @@ export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 type JourneyStep = { step: string; title: string; bn: string; done?: boolean; current?: boolean };
 
 const journey: JourneyStep[] = [
-  { step: "1", title: "Choose Subject", bn: "বিষয় নির্বাচন", current: true },
-  { step: "2", title: "Choose Chapter", bn: "অধ্যায় নির্বাচন" },
-  { step: "3", title: "Pick Practice Mode", bn: "প্রস্তুতি মোড" },
-  { step: "4", title: "Answer & Submit", bn: "উত্তর ও জমা" },
-  { step: "5", title: "Result & Weak Chapter", bn: "ফলাফল ও দুর্বলতা" },
+  { step: "১", title: "বিষয় বেছে নিন", bn: "Choose Subject", current: true },
+  { step: "২", title: "অধ্যায় বেছে নিন", bn: "Choose Chapter" },
+  { step: "৩", title: "প্রস্তুতি মোড নির্বাচন", bn: "Pick Practice Mode" },
+  { step: "৪", title: "উত্তর দিন ও জমা দিন", bn: "Answer & Submit" },
+  { step: "৫", title: "ফলাফল ও দুর্বল অধ্যায়", bn: "Result & Weak Areas" },
 ];
 
 // Small inline tile primitive — keeps the journal-style hairline tile consistent.

@@ -425,27 +425,27 @@ function PracticePage() {
               <div className="paper-divider border-b-2 px-6 pt-6 pb-4">
                 <div className="text-center">
                   <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    AI Prep Partner · এইচএসসি অনুশীলন
+                    এআই প্রেপ পার্টনার · এইচএসসি অনুশীলন
                   </p>
                   <h1 className="exam-heading mt-1 text-2xl font-bold sm:text-3xl">
-                    {subject?.name ?? "HSC Subject"}
+                    {subject?.name ?? "এইচএসসি বিষয়"}
                   </h1>
                   {subject?.name_bn ? (
                     <p className="text-sm text-muted-foreground">{subject.name_bn}</p>
                   ) : null}
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                  <Field label="Chapter" value={chapter?.name ?? "—"} />
+                  <Field label="অধ্যায়" value={chapter?.name ?? "—"} />
                   <Field
-                    label="Paper · মোড"
-                    value={`${modeMeta.label} · ${modeMeta.bn}`}
+                    label="মোড"
+                    value={`${modeMeta.label}`}
                   />
                   <Field
-                    label="Marks · নম্বর"
+                    label="নম্বর"
                     value={`${toBnDigits(totalMarks)} / ${totalMarks}`}
                   />
                   <Field
-                    label="Time · সময়"
+                    label="সময়"
                     value={formatDuration(elapsed)}
                     icon={<Timer className="h-3.5 w-3.5" />}
                   />
@@ -456,7 +456,7 @@ function PracticePage() {
               <div className="border-b bg-muted/30 px-6 py-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>
-                    Question {toBnDigits(currentIndex + 1)} / {toBnDigits(questions.length)}
+                    প্রশ্ন {toBnDigits(currentIndex + 1)} / {toBnDigits(questions.length)}
                   </span>
                   <span>
                     {currentQuestion?.difficulty ? (

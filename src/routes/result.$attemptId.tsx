@@ -86,10 +86,10 @@ function ResultPage() {
   }, [attempt?.started_at, attempt?.submitted_at]);
 
   const verdict = useMemo(() => {
-    if (scorePercent >= 80) return { label: "চমৎকার · Excellent", tone: "success" as const };
-    if (scorePercent >= 50) return { label: "ভালো · Good", tone: "primary" as const };
-    if (scorePercent >= 30) return { label: "চর্চা দরকার · Needs Practice", tone: "warning" as const };
-    return { label: "দুর্বল · Weak", tone: "destructive" as const };
+    if (scorePercent >= 80) return { label: "চমৎকার", tone: "success" as const };
+    if (scorePercent >= 50) return { label: "ভালো", tone: "primary" as const };
+    if (scorePercent >= 30) return { label: "আরও চর্চা দরকার", tone: "warning" as const };
+    return { label: "দুর্বল — পুনরায় চেষ্টা করুন", tone: "destructive" as const };
   }, [scorePercent]);
 
   const questionById = useMemo(

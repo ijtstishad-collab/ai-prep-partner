@@ -253,8 +253,8 @@ Return JSON exactly like:
       throw new Error("AI did not return usable MCQs. Try again.");
     }
 
-    const insertedQuestions = [];
-    const insertedOptions = [];
+    const insertedQuestions: InsertedQuestion[] = [];
+    const insertedOptions: InsertedOption[] = [];
     const now = new Date().toISOString();
 
     for (const question of generated) {
@@ -320,15 +320,11 @@ Return JSON exactly like:
       if (insertError) throw new Error(insertError.message);
       if (!insertedQuestion) throw new Error("AI question could not be saved.");
 
-      const insertedRecord = insertedQuestion as Record<string, unknown>;
-      const questionRow = {
-        id: String(insertedRecord.id ?? ""),
-        chapter_id: String(insertedRecord.chapter_id ?? chapter.id),
-        question_type: String(insertedRecord.question_type ?? "mcq"),
-        difficulty: String(insertedRecord.difficulty ?? data.difficulty),
-        question_text: String(insertedRecord.question_text ?? question.question_text),
-        marks: Number(insertedRecord.marks ?? 1),
-      };
+      const questionRow = mapInsertedQuestion(insertedQuestion, {
+        chapter_id: String(chapter.id),
+        difficulty: data.difficulty,
+        question_text: question.question_text,
+      });
       insertedQuestions.push(questionRow);
 
       const optionRows = optionTexts.map((option, index) => ({
@@ -338,25 +334,20 @@ Return JSON exactly like:
         display_order: index + 1,
       }));
 
-      const { data: options, error: optionsError } = await table("question_options")
+      const { data: optionsData, error: optionsError } = await table("question_options")
         .insert(optionRows)
         .select("id, question_id, option_key, option_text, display_order");
 
       if (optionsError) throw new Error(optionsError.message);
-      const optionsList = (options as Array<Record<string, unknown>> | null) ?? [];
-      for (const opt of optionsList) {
-        insertedOptions.push({
-          id: String(opt.id ?? ""),
-          question_id: String(opt.question_id ?? ""),
-          option_key: String(opt.option_key ?? ""),
-          option_text: String(opt.option_text ?? ""),
-          display_order: Number(opt.display_order ?? 0),
-        });
+      const rawOptions = Array.isArray(optionsData) ? (optionsData as unknown[]) : [];
+      for (const opt of rawOptions) {
+        insertedOptions.push(mapInsertedOption(opt));
       }
     }
 
-    return {
+    const result: { questions: InsertedQuestion[]; options: InsertedOption[] } = {
       questions: insertedQuestions,
       options: insertedOptions,
     };
+    return result;
   });

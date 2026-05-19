@@ -297,15 +297,15 @@ function ResultPage() {
                 <div className="flex items-start gap-3">
                   <TrendingDown className="mt-0.5 h-5 w-5 text-warning" />
                   <div>
-                    <h3 className="exam-heading font-semibold">Weak focus · দুর্বল দিক</h3>
+                    <h3 className="exam-heading font-semibold">দুর্বল দিক</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {wrongCount === 0
-                        ? "No weak items in this set — keep momentum!"
-                        : `${toBnDigits(wrongCount)} question${wrongCount === 1 ? "" : "s"} were incorrect in ${chapter?.name ?? "this chapter"}. Revise this chapter once more.`}
+                        ? "এই সেটে কোনো দুর্বলতা নেই — গতি ধরে রাখুন!"
+                        : `${chapter?.name ?? "এই অধ্যায়"}-এ ${toBnDigits(wrongCount)} টি প্রশ্ন ভুল হয়েছে। অধ্যায়টি আরেকবার পড়ে দেখুন।`}
                     </p>
                     {attempt.chapter_id ? (
                       <Button asChild size="sm" variant="outline" className="mt-3">
-                        <a href={`/practice?chapterId=${attempt.chapter_id}`}>Practice again</a>
+                        <a href={`/practice?chapterId=${attempt.chapter_id}`}>আবার অনুশীলন করুন</a>
                       </Button>
                     ) : null}
                   </div>
@@ -316,7 +316,7 @@ function ResultPage() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
-                    <h3 className="exam-heading font-semibold">Next chapter · পরবর্তী অধ্যায়</h3>
+                    <h3 className="exam-heading font-semibold">পরবর্তী অধ্যায়</h3>
                     {nextChapter ? (
                       <>
                         <p className="mt-1 text-sm text-muted-foreground">
@@ -325,13 +325,13 @@ function ResultPage() {
                         </p>
                         <Button asChild size="sm" className="mt-3">
                           <a href={`/practice?chapterId=${nextChapter.id}`}>
-                            Start next chapter
+                            পরবর্তী অধ্যায় শুরু করুন
                           </a>
                         </Button>
                       </>
                     ) : (
                       <p className="mt-1 text-sm text-muted-foreground">
-                        You're at the end of this subject's chapter list — try a mock test next.
+                        এই বিষয়ের অধ্যায় শেষ — এবার একটি মক টেস্ট দিন।
                       </p>
                     )}
                   </div>
@@ -342,7 +342,7 @@ function ResultPage() {
             {/* Per-question review */}
             <div className="space-y-2">
               <h2 className="exam-heading px-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Question review · উত্তর পর্যালোচনা
+                উত্তর পর্যালোচনা
               </h2>
               {answers.map((answer, index) => {
                 const question = questionById.get(answer.question_id);
@@ -362,19 +362,18 @@ function ResultPage() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">
-                          {question?.question_text ?? "Question text unavailable"}
+                          {question?.question_text ?? "প্রশ্নের লেখা পাওয়া যায়নি"}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                          <span>Your answer: {answer.answer_text ?? "—"}</span>
+                          <span>আপনার উত্তর: {answer.answer_text ?? "—"}</span>
                           <span>
-                            {toBnDigits(Number(answer.points_awarded ?? 0))} point
-                            {Number(answer.points_awarded ?? 0) === 1 ? "" : "s"}
+                            {toBnDigits(Number(answer.points_awarded ?? 0))} নম্বর
                           </span>
                           <Badge
                             variant={answer.is_correct ? "default" : "destructive"}
                             className="text-[10px]"
                           >
-                            {answer.is_correct ? "Correct" : "Wrong"}
+                            {answer.is_correct ? "সঠিক" : "ভুল"}
                           </Badge>
                         </div>
                       </div>
@@ -386,10 +385,10 @@ function ResultPage() {
 
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="outline">
-                <Link to="/history">Open History</Link>
+                <Link to="/history">ইতিহাস দেখুন</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/analytics">View Analytics</Link>
+                <Link to="/analytics">বিশ্লেষণ দেখুন</Link>
               </Button>
             </div>
           </div>

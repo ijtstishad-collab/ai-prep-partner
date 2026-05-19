@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, ChevronRight, GraduationCap, Loader2 } from "lucide-react";
 import { toBnDigits } from "@/lib/bn";
+import { QuickPractice } from "@/components/QuickPractice";
 
 export const Route = createFileRoute("/subjects")({ component: SubjectsPage });
 

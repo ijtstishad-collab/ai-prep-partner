@@ -487,7 +487,7 @@ function DraftCard({
             value={note}
             onChange={(event) => onNoteChange(event.target.value)}
             className="min-h-20 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            placeholder="Review note for approval or rejection..."
+            placeholder="অনুমোদন বা প্রত্যাখ্যানের জন্য পর্যালোচনা নোট লিখুন..."
           />
           <div className="flex flex-wrap gap-2">
             <Button onClick={onApprove} disabled={reviewing}>
@@ -496,7 +496,7 @@ function DraftCard({
               ) : (
                 <CheckCircle2 className="h-4 w-4" />
               )}
-              Approve and Publish
+              অনুমোদন ও প্রকাশ · Approve & Publish
             </Button>
             <Button onClick={onReject} disabled={reviewing} variant="destructive">
               {reviewing ? (
@@ -504,7 +504,7 @@ function DraftCard({
               ) : (
                 <XCircle className="h-4 w-4" />
               )}
-              Reject
+              প্রত্যাখ্যান · Reject
             </Button>
           </div>
         </div>
@@ -514,8 +514,9 @@ function DraftCard({
 }
 
 function StatusBadge({ status }: { status: QuestionDraft["status"] }) {
-  if (status === "approved") return <Badge>Approved</Badge>;
-  if (status === "rejected") return <Badge variant="destructive">Rejected</Badge>;
-  if (status === "pending_review") return <Badge variant="secondary">Pending Review</Badge>;
+  if (status === "approved") return <Badge>অনুমোদিত · Approved</Badge>;
+  if (status === "rejected") return <Badge variant="destructive">প্রত্যাখ্যাত · Rejected</Badge>;
+  if (status === "pending_review") return <Badge variant="secondary">পর্যালোচনাধীন · Pending</Badge>;
+  if (status === "draft") return <Badge variant="outline">খসড়া · Draft</Badge>;
   return <Badge variant="outline">{status}</Badge>;
 }

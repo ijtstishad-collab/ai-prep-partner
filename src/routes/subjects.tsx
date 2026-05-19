@@ -93,39 +93,39 @@ function SubjectsPage() {
         {/* Breadcrumb */}
         <nav className="mb-3 text-xs text-muted-foreground">
           <Link to="/dashboard" className="hover:text-foreground">
-            Dashboard
+            ড্যাশবোর্ড
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">HSC Subjects</span>
+          <span className="text-foreground">এইচএসসি বিষয়সমূহ</span>
         </nav>
 
         <div className="mb-6 max-w-2xl">
-          <p className="text-sm font-medium text-primary">Step 1 · বিষয় নির্বাচন</p>
-          <h1 className="exam-heading mt-1 text-3xl font-bold">Choose your HSC subject</h1>
+          <p className="text-sm font-medium text-primary">ধাপ ১ · বিষয় নির্বাচন</p>
+          <h1 className="exam-heading mt-1 text-3xl font-bold">আপনার বিষয় বেছে নিন</h1>
           <p className="mt-2 text-muted-foreground">
-            Subjects are grouped Science / Business / Humanities for quick scanning.
+            বিজ্ঞান · ব্যবসায় শিক্ষা · মানবিক — বিভাগ অনুসারে সাজানো, দ্রুত খুঁজে পাওয়া যায়।
           </p>
         </div>
 
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session…
+            সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">লগইন প্রয়োজন</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Sign in as a student to load HSC subjects.
+              বিষয় দেখতে শিক্ষার্থী হিসেবে লগইন করুন।
             </p>
             <Button asChild className="mt-6">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : error ? (
           <Card className="paper-sheet p-6">
-            <h2 className="font-semibold text-destructive">Could not load subjects</h2>
+            <h2 className="font-semibold text-destructive">বিষয় লোড করা যায়নি</h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : loading ? (
@@ -137,15 +137,15 @@ function SubjectsPage() {
         ) : subjects.length === 0 ? (
           <Card className="paper-sheet p-8 text-center">
             <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h2 className="exam-heading text-xl font-semibold">No active subjects yet</h2>
+            <h2 className="exam-heading text-xl font-semibold">এখনো কোনো বিষয় সক্রিয় নয়</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Subjects will appear here once they are activated.
+              বিষয় সক্রিয় হলে এখানে দেখা যাবে।
             </p>
           </Card>
         ) : (
           <>
             <p className="mb-3 text-sm text-muted-foreground">
-              {toBnDigits(subjects.length)} টি বিষয় পাওয়া গেছে · {subjects.length} subjects
+              {toBnDigits(subjects.length)} টি বিষয় পাওয়া গেছে
             </p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {subjects.map((subject, idx) => {
@@ -173,7 +173,7 @@ function SubjectsPage() {
                     </div>
                     <Button asChild className="mt-5 w-full" variant="outline">
                       <a href={`/chapters?subjectId=${subject.id}`}>
-                        View Chapters · অধ্যায় দেখুন <ChevronRight className="ml-1 h-4 w-4" />
+                        অধ্যায় দেখুন <ChevronRight className="ml-1 h-4 w-4" />
                       </a>
                     </Button>
                   </Card>

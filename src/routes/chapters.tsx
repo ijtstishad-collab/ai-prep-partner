@@ -55,30 +55,30 @@ const sortSubjects = (items: Subject[]) =>
 const practiceModes = [
   {
     key: "chapter",
-    title: "Chapter Practice",
-    bn: "অধ্যায়ভিত্তিক প্র্যাকটিস",
-    desc: "Approved MCQs from this chapter.",
+    title: "অধ্যায়ভিত্তিক অনুশীলন",
+    bn: "Chapter Practice",
+    desc: "এই অধ্যায়ের যাচাইকৃত এমসিকিউ।",
     icon: FileText,
   },
   {
     key: "board",
-    title: "Past Board Questions",
-    bn: "বোর্ড প্রশ্ন",
-    desc: "Previously asked board MCQs (when available).",
+    title: "বোর্ড প্রশ্নাবলী",
+    bn: "Past Board Questions",
+    desc: "পূর্ববর্তী বোর্ড পরীক্ষার এমসিকিউ (থাকলে)।",
     icon: Library,
   },
   {
     key: "ai",
-    title: "AI Generated",
-    bn: "এআই প্রশ্ন",
-    desc: "Fresh questions generated for this chapter.",
+    title: "এআই প্রশ্ন",
+    bn: "AI Generated",
+    desc: "এই অধ্যায়ের জন্য তাজা প্রশ্ন তৈরি।",
     icon: Sparkles,
   },
   {
     key: "mixed",
-    title: "Mixed Exam Prep",
-    bn: "মিশ্র প্রস্তুতি",
-    desc: "A mix of board + chapter + AI items.",
+    title: "মিশ্র প্রস্তুতি",
+    bn: "Mixed Exam Prep",
+    desc: "বোর্ড + অধ্যায় + এআই — সব মিলিয়ে।",
     icon: Shuffle,
   },
 ] as const;
@@ -175,25 +175,25 @@ function ChaptersPage() {
       <div className="container mx-auto max-w-6xl px-4 py-8">
         {/* Breadcrumb */}
         <nav className="mb-3 text-xs text-muted-foreground">
-          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <Link to="/dashboard" className="hover:text-foreground">ড্যাশবোর্ড</Link>
           <span className="mx-2">/</span>
-          <Link to="/subjects" className="hover:text-foreground">Subjects</Link>
+          <Link to="/subjects" className="hover:text-foreground">বিষয়সমূহ</Link>
           <span className="mx-2">/</span>
           <span className="text-foreground">
-            {selectedSubject?.name ?? "Chapters"}
+            {selectedSubject?.name ?? "অধ্যায়সমূহ"}
           </span>
         </nav>
 
         <div className="mb-6 max-w-2xl">
-          <p className="text-sm font-medium text-primary">Step 2 · অধ্যায় নির্বাচন</p>
+          <p className="text-sm font-medium text-primary">ধাপ ২ · অধ্যায় নির্বাচন</p>
           <h1 className="exam-heading mt-1 text-3xl font-bold">
-            {selectedSubject ? selectedSubject.name : "Choose a subject"}
+            {selectedSubject ? selectedSubject.name : "একটি বিষয় বেছে নিন"}
           </h1>
           {selectedSubject?.name_bn ? (
             <p className="mt-1 text-muted-foreground">{selectedSubject.name_bn}</p>
           ) : (
             <p className="mt-2 text-muted-foreground">
-              Pick a subject from the list, then choose a chapter and a practice mode.
+              তালিকা থেকে বিষয় বেছে নিন, তারপর অধ্যায় ও প্রস্তুতি মোড নির্বাচন করুন।
             </p>
           )}
         </div>
@@ -201,19 +201,19 @@ function ChaptersPage() {
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session…
+            সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">লগইন প্রয়োজন</h2>
             <Button asChild className="mt-4">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : error ? (
           <Card className="paper-sheet p-6">
-            <h2 className="font-semibold text-destructive">Could not load chapters</h2>
+            <h2 className="font-semibold text-destructive">অধ্যায় লোড করা যায়নি</h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : !subjectId ? (
@@ -226,7 +226,7 @@ function ChaptersPage() {
           ) : subjects.length === 0 ? (
             <Card className="paper-sheet p-8 text-center">
               <BookOpenText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h2 className="exam-heading text-xl font-semibold">No active subjects yet</h2>
+              <h2 className="exam-heading text-xl font-semibold">এখনো কোনো বিষয় সক্রিয় নয়</h2>
             </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -238,7 +238,7 @@ function ChaptersPage() {
                   ) : null}
                   <Button asChild className="mt-5 w-full" variant="outline">
                     <a href={`/chapters?subjectId=${subject.id}`}>
-                      Show Chapters <ChevronRight className="ml-1 h-4 w-4" />
+                      অধ্যায় দেখান <ChevronRight className="ml-1 h-4 w-4" />
                     </a>
                   </Button>
                 </Card>
@@ -254,21 +254,21 @@ function ChaptersPage() {
         ) : (
           <>
             <div className="mb-4 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">{selectedSubject?.name ?? "Selected subject"}</Badge>
+              <Badge variant="secondary">{selectedSubject?.name ?? "নির্বাচিত বিষয়"}</Badge>
               <Badge variant="outline">
-                {toBnDigits(chapters.length)} অধ্যায় · {chapters.length} chapters
+                {toBnDigits(chapters.length)} টি অধ্যায়
               </Badge>
               <Button asChild variant="ghost" size="sm" className="ml-auto">
-                <Link to="/subjects">Change Subject</Link>
+                <Link to="/subjects">বিষয় পরিবর্তন</Link>
               </Button>
             </div>
 
             {chapters.length === 0 ? (
               <Card className="paper-sheet p-8 text-center">
                 <BookOpenText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h2 className="exam-heading text-xl font-semibold">No active chapters yet</h2>
+                <h2 className="exam-heading text-xl font-semibold">এখনো কোনো অধ্যায় সক্রিয় নয়</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Chapters for this subject will appear here once activated.
+                  এই বিষয়ের অধ্যায় সক্রিয় হলে এখানে দেখা যাবে।
                 </p>
               </Card>
             ) : (
@@ -306,7 +306,7 @@ function ChaptersPage() {
                           variant={isActive ? "default" : "outline"}
                           onClick={() => setActiveChapter(isActive ? null : chapter)}
                         >
-                          {isActive ? "Selected" : "Select"}
+                          {isActive ? "নির্বাচিত" : "নির্বাচন করুন"}
                         </Button>
                       </div>
                     </Card>
@@ -322,14 +322,14 @@ function ChaptersPage() {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Step 3 · প্রস্তুতি মোড
+                        ধাপ ৩ · প্রস্তুতি মোড
                       </p>
                       <h2 className="exam-heading text-lg font-semibold">
-                        Pick a practice mode for: {activeChapter.name}
+                        মোড বেছে নিন: {activeChapter.name}
                       </h2>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => setActiveChapter(null)}>
-                      Change chapter
+                      অধ্যায় পরিবর্তন
                     </Button>
                   </div>
                 </div>

@@ -45,7 +45,7 @@ function Onboarding() {
     setBusy(false);
     if (error) return toast.error(error.message);
     await refresh();
-    toast.success("Profile saved!");
+    toast.success("প্রোফাইল সংরক্ষণ হয়েছে!");
     nav({ to: "/dashboard" });
   };
 
@@ -53,33 +53,37 @@ function Onboarding() {
     <AppShell>
       <div className="container mx-auto px-4 py-12 max-w-lg">
         <Card className="p-6 shadow-soft">
-          <h1 className="text-2xl font-bold mb-1">Set up your HSC profile</h1>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            শুরু করুন · Get Started
+          </p>
+          <h1 className="exam-heading mt-1 text-2xl font-bold">আপনার এইচএসসি প্রোফাইল তৈরি করুন</h1>
           <p className="text-sm text-muted-foreground mb-6">
-            This existing onboarding flow is kept unchanged functionally for Phase 1.
+            আপনার শ্রেণি, বিভাগ ও লক্ষ্য বছর জানালে অনুশীলন আরও সঠিকভাবে সাজানো যাবে।
           </p>
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <Label>Full Name</Label>
+              <Label>পূর্ণ নাম · Full Name</Label>
               <Input
                 value={form.full_name}
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                placeholder="যেমন: রায়হান আহমেদ"
                 required
               />
             </div>
             <div>
-              <Label>Class</Label>
+              <Label>শ্রেণি · Class</Label>
               <Select value={form.class} onValueChange={(v) => setForm({ ...form, class: v })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="HSC 1st Year">HSC 1st Year</SelectItem>
-                  <SelectItem value="HSC 2nd Year">HSC 2nd Year</SelectItem>
+                  <SelectItem value="HSC 1st Year">এইচএসসি ১ম বর্ষ</SelectItem>
+                  <SelectItem value="HSC 2nd Year">এইচএসসি ২য় বর্ষ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Group</Label>
+              <Label>বিভাগ · Group</Label>
               <Select
                 value={form.student_group}
                 onValueChange={(v) => setForm({ ...form, student_group: v })}
@@ -88,12 +92,12 @@ function Onboarding() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Science">Science</SelectItem>
+                  <SelectItem value="Science">বিজ্ঞান · Science</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Target Exam Year</Label>
+              <Label>লক্ষ্য পরীক্ষার বছর · Target Exam Year</Label>
               <Input
                 type="number"
                 min={2024}
@@ -104,7 +108,7 @@ function Onboarding() {
               />
             </div>
             <Button className="w-full" disabled={busy}>
-              {busy ? "Saving..." : "Continue to Dashboard"}
+              {busy ? "সংরক্ষণ হচ্ছে..." : "ড্যাশবোর্ডে চলুন · Continue"}
             </Button>
           </form>
         </Card>

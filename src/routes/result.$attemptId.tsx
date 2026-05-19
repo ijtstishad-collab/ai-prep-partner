@@ -86,10 +86,10 @@ function ResultPage() {
   }, [attempt?.started_at, attempt?.submitted_at]);
 
   const verdict = useMemo(() => {
-    if (scorePercent >= 80) return { label: "চমৎকার · Excellent", tone: "success" as const };
-    if (scorePercent >= 50) return { label: "ভালো · Good", tone: "primary" as const };
-    if (scorePercent >= 30) return { label: "চর্চা দরকার · Needs Practice", tone: "warning" as const };
-    return { label: "দুর্বল · Weak", tone: "destructive" as const };
+    if (scorePercent >= 80) return { label: "চমৎকার", tone: "success" as const };
+    if (scorePercent >= 50) return { label: "ভালো", tone: "primary" as const };
+    if (scorePercent >= 30) return { label: "আরও চর্চা দরকার", tone: "warning" as const };
+    return { label: "দুর্বল — পুনরায় চেষ্টা করুন", tone: "destructive" as const };
   }, [scorePercent]);
 
   const questionById = useMemo(
@@ -199,37 +199,37 @@ function ResultPage() {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Checking session…
+            <Loader2 className="h-5 w-5 animate-spin" /> সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h1 className="exam-heading text-2xl font-bold">Login required</h1>
+            <h1 className="exam-heading text-2xl font-bold">লগইন প্রয়োজন</h1>
             <Button asChild className="mt-6">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : loading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Loading result…
+            <Loader2 className="h-5 w-5 animate-spin" /> ফলাফল লোড হচ্ছে…
           </Card>
         ) : error ? (
           <Card className="paper-sheet p-6">
-            <h1 className="font-semibold text-destructive">Could not load result</h1>
+            <h1 className="font-semibold text-destructive">ফলাফল লোড করা যায়নি</h1>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : !attempt ? (
           <Card className="paper-sheet p-8 text-center">
             <BarChart3 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h1 className="exam-heading text-2xl font-bold">Result not found</h1>
+            <h1 className="exam-heading text-2xl font-bold">ফলাফল পাওয়া যায়নি</h1>
             <Button asChild className="mt-6" variant="outline">
-              <Link to="/history">Open History</Link>
+              <Link to="/history">ইতিহাস দেখুন</Link>
             </Button>
           </Card>
         ) : attempt.status !== "submitted" ? (
           <Card className="paper-sheet p-8 text-center">
             <BarChart3 className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h1 className="exam-heading text-2xl font-bold">Submit to see your result</h1>
+            <h1 className="exam-heading text-2xl font-bold">ফলাফল দেখতে জমা দিন</h1>
           </Card>
         ) : (
           <div className="space-y-5">
@@ -237,10 +237,10 @@ function ResultPage() {
             <Card className="paper-sheet overflow-hidden">
               <div className="paper-divider border-b-2 px-6 pt-6 pb-4 text-center">
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  AI Prep Partner · Result Sheet
+                  এআই প্রেপ পার্টনার · ফলাফল
                 </p>
                 <h1 className="exam-heading mt-1 text-2xl font-bold">
-                  {chapter?.name ?? "Practice Result"}
+                  {chapter?.name ?? "অনুশীলনের ফলাফল"}
                 </h1>
                 {chapter?.name_bn ? (
                   <p className="text-sm text-muted-foreground">{chapter.name_bn}</p>
@@ -249,25 +249,25 @@ function ResultPage() {
 
               <div className="grid gap-4 px-6 py-6 sm:grid-cols-4">
                 <Stat
-                  label="Score · নম্বর"
+                  label="নম্বর"
                   value={`${toBnDigits(score)} / ${toBnDigits(maxScore)}`}
                   hint={`${scorePercent}%`}
                   icon={<Trophy className="h-4 w-4" />}
                 />
                 <Stat
-                  label="Correct · সঠিক"
+                  label="সঠিক"
                   value={toBnDigits(correctCount)}
-                  hint={`of ${toBnDigits(totalQuestions)}`}
+                  hint={`মোট ${toBnDigits(totalQuestions)}`}
                   icon={<CheckCircle2 className="h-4 w-4 text-success" />}
                 />
                 <Stat
-                  label="Wrong · ভুল"
+                  label="ভুল"
                   value={toBnDigits(wrongCount)}
-                  hint={`of ${toBnDigits(totalQuestions)}`}
+                  hint={`মোট ${toBnDigits(totalQuestions)}`}
                   icon={<XCircle className="h-4 w-4 text-destructive" />}
                 />
                 <Stat
-                  label="Time · সময়"
+                  label="ব্যয়িত সময়"
                   value={elapsedSeconds > 0 ? formatDuration(elapsedSeconds) : "—"}
                   hint="elapsed"
                 />
@@ -297,15 +297,15 @@ function ResultPage() {
                 <div className="flex items-start gap-3">
                   <TrendingDown className="mt-0.5 h-5 w-5 text-warning" />
                   <div>
-                    <h3 className="exam-heading font-semibold">Weak focus · দুর্বল দিক</h3>
+                    <h3 className="exam-heading font-semibold">দুর্বল দিক</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {wrongCount === 0
-                        ? "No weak items in this set — keep momentum!"
-                        : `${toBnDigits(wrongCount)} question${wrongCount === 1 ? "" : "s"} were incorrect in ${chapter?.name ?? "this chapter"}. Revise this chapter once more.`}
+                        ? "এই সেটে কোনো দুর্বলতা নেই — গতি ধরে রাখুন!"
+                        : `${chapter?.name ?? "এই অধ্যায়"}-এ ${toBnDigits(wrongCount)} টি প্রশ্ন ভুল হয়েছে। অধ্যায়টি আরেকবার পড়ে দেখুন।`}
                     </p>
                     {attempt.chapter_id ? (
                       <Button asChild size="sm" variant="outline" className="mt-3">
-                        <a href={`/practice?chapterId=${attempt.chapter_id}`}>Practice again</a>
+                        <a href={`/practice?chapterId=${attempt.chapter_id}`}>আবার অনুশীলন করুন</a>
                       </Button>
                     ) : null}
                   </div>
@@ -316,7 +316,7 @@ function ResultPage() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
-                    <h3 className="exam-heading font-semibold">Next chapter · পরবর্তী অধ্যায়</h3>
+                    <h3 className="exam-heading font-semibold">পরবর্তী অধ্যায়</h3>
                     {nextChapter ? (
                       <>
                         <p className="mt-1 text-sm text-muted-foreground">
@@ -325,13 +325,13 @@ function ResultPage() {
                         </p>
                         <Button asChild size="sm" className="mt-3">
                           <a href={`/practice?chapterId=${nextChapter.id}`}>
-                            Start next chapter
+                            পরবর্তী অধ্যায় শুরু করুন
                           </a>
                         </Button>
                       </>
                     ) : (
                       <p className="mt-1 text-sm text-muted-foreground">
-                        You're at the end of this subject's chapter list — try a mock test next.
+                        এই বিষয়ের অধ্যায় শেষ — এবার একটি মক টেস্ট দিন।
                       </p>
                     )}
                   </div>
@@ -342,7 +342,7 @@ function ResultPage() {
             {/* Per-question review */}
             <div className="space-y-2">
               <h2 className="exam-heading px-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Question review · উত্তর পর্যালোচনা
+                উত্তর পর্যালোচনা
               </h2>
               {answers.map((answer, index) => {
                 const question = questionById.get(answer.question_id);
@@ -362,19 +362,18 @@ function ResultPage() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">
-                          {question?.question_text ?? "Question text unavailable"}
+                          {question?.question_text ?? "প্রশ্নের লেখা পাওয়া যায়নি"}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                          <span>Your answer: {answer.answer_text ?? "—"}</span>
+                          <span>আপনার উত্তর: {answer.answer_text ?? "—"}</span>
                           <span>
-                            {toBnDigits(Number(answer.points_awarded ?? 0))} point
-                            {Number(answer.points_awarded ?? 0) === 1 ? "" : "s"}
+                            {toBnDigits(Number(answer.points_awarded ?? 0))} নম্বর
                           </span>
                           <Badge
                             variant={answer.is_correct ? "default" : "destructive"}
                             className="text-[10px]"
                           >
-                            {answer.is_correct ? "Correct" : "Wrong"}
+                            {answer.is_correct ? "সঠিক" : "ভুল"}
                           </Badge>
                         </div>
                       </div>
@@ -386,10 +385,10 @@ function ResultPage() {
 
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="outline">
-                <Link to="/history">Open History</Link>
+                <Link to="/history">ইতিহাস দেখুন</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/analytics">View Analytics</Link>
+                <Link to="/analytics">বিশ্লেষণ দেখুন</Link>
               </Button>
             </div>
           </div>

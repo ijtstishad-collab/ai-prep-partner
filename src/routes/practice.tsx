@@ -26,10 +26,10 @@ import {
 
 type PracticeMode = "chapter" | "board" | "ai" | "mixed";
 const MODE_META: Record<PracticeMode, { label: string; bn: string }> = {
-  chapter: { label: "Chapter Practice", bn: "অধ্যায়ভিত্তিক" },
-  board: { label: "Past Board Questions", bn: "বোর্ড প্রশ্ন" },
-  ai: { label: "AI Generated", bn: "এআই প্রশ্ন" },
-  mixed: { label: "Mixed Exam Prep", bn: "মিশ্র প্রস্তুতি" },
+  chapter: { label: "অধ্যায়ভিত্তিক", bn: "Chapter Practice" },
+  board: { label: "বোর্ড প্রশ্ন", bn: "Past Board Questions" },
+  ai: { label: "এআই প্রশ্ন", bn: "AI Generated" },
+  mixed: { label: "মিশ্র প্রস্তুতি", bn: "Mixed Exam Prep" },
 };
 
 export const Route = createFileRoute("/practice")({
@@ -333,9 +333,9 @@ function PracticePage() {
       <div className="container mx-auto max-w-5xl px-4 py-8">
         {/* Breadcrumb */}
         <nav className="mb-3 text-xs text-muted-foreground">
-          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <Link to="/dashboard" className="hover:text-foreground">ড্যাশবোর্ড</Link>
           <span className="mx-2">/</span>
-          <Link to="/subjects" className="hover:text-foreground">Subjects</Link>
+          <Link to="/subjects" className="hover:text-foreground">বিষয়সমূহ</Link>
           <span className="mx-2">/</span>
           {subject ? (
             <a
@@ -345,49 +345,49 @@ function PracticePage() {
               {subject.name}
             </a>
           ) : (
-            <span>Chapters</span>
+            <span>অধ্যায়সমূহ</span>
           )}
           <span className="mx-2">/</span>
-          <span className="text-foreground">Practice</span>
+          <span className="text-foreground">অনুশীলন</span>
         </nav>
 
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session…
+            সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">লগইন প্রয়োজন</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Sign in to load approved questions and save your answer history.
+              যাচাইকৃত প্রশ্ন দেখতে ও ইতিহাস সংরক্ষণ করতে লগইন করুন।
             </p>
             <Button asChild className="mt-6">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : !chapterId ? (
           <Card className="paper-sheet p-8 text-center">
             <BookOpenText className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Choose a chapter first</h2>
+            <h2 className="exam-heading text-xl font-semibold">আগে একটি অধ্যায় বেছে নিন</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Practice starts from a chapter. Pick a subject, then a chapter, then a mode.
+              অনুশীলন শুরু হয় অধ্যায় থেকে। বিষয় → অধ্যায় → মোড — এই ক্রমে এগিয়ে যান।
             </p>
             <Button asChild className="mt-6">
-              <Link to="/subjects">Choose Subject</Link>
+              <Link to="/subjects">বিষয় বেছে নিন</Link>
             </Button>
           </Card>
         ) : loading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading questions…
+            প্রশ্ন লোড হচ্ছে…
           </Card>
         ) : error && questions.length === 0 ? (
           <Card className="paper-sheet p-6">
             <h2 className="flex items-center gap-2 font-semibold text-destructive">
               <AlertCircle className="h-5 w-5" />
-              Could not load practice
+              অনুশীলন লোড করা যায়নি
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
@@ -396,23 +396,23 @@ function PracticePage() {
             <FileQuestion className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <h2 className="exam-heading text-xl font-semibold">
               {mode === "board"
-                ? "No board questions stored yet"
-                : "No approved MCQs yet"}
+                ? "এখনো কোনো বোর্ড প্রশ্ন নেই"
+                : "এখনো কোনো যাচাইকৃত এমসিকিউ নেই"}
             </h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Generate instant AI MCQs for this chapter, or return to chapters.
+              এই অধ্যায়ের জন্য এআই এমসিকিউ তৈরি করুন, বা অধ্যায় তালিকায় ফিরে যান।
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button onClick={generateAiQuestions} disabled={generating}>
                 {generating ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating</>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> তৈরি হচ্ছে</>
                 ) : (
-                  <><Sparkles className="mr-1 h-4 w-4" /> Generate AI MCQs</>
+                  <><Sparkles className="mr-1 h-4 w-4" /> এআই এমসিকিউ তৈরি করুন</>
                 )}
               </Button>
               <Button asChild variant="outline">
                 <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
-                  Back to Chapters
+                  অধ্যায়ে ফিরে যান
                 </a>
               </Button>
             </div>
@@ -425,27 +425,27 @@ function PracticePage() {
               <div className="paper-divider border-b-2 px-6 pt-6 pb-4">
                 <div className="text-center">
                   <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    AI Prep Partner · এইচএসসি অনুশীলন
+                    এআই প্রেপ পার্টনার · এইচএসসি অনুশীলন
                   </p>
                   <h1 className="exam-heading mt-1 text-2xl font-bold sm:text-3xl">
-                    {subject?.name ?? "HSC Subject"}
+                    {subject?.name ?? "এইচএসসি বিষয়"}
                   </h1>
                   {subject?.name_bn ? (
                     <p className="text-sm text-muted-foreground">{subject.name_bn}</p>
                   ) : null}
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                  <Field label="Chapter" value={chapter?.name ?? "—"} />
+                  <Field label="অধ্যায়" value={chapter?.name ?? "—"} />
                   <Field
-                    label="Paper · মোড"
-                    value={`${modeMeta.label} · ${modeMeta.bn}`}
+                    label="মোড"
+                    value={`${modeMeta.label}`}
                   />
                   <Field
-                    label="Marks · নম্বর"
+                    label="নম্বর"
                     value={`${toBnDigits(totalMarks)} / ${totalMarks}`}
                   />
                   <Field
-                    label="Time · সময়"
+                    label="সময়"
                     value={formatDuration(elapsed)}
                     icon={<Timer className="h-3.5 w-3.5" />}
                   />
@@ -456,7 +456,7 @@ function PracticePage() {
               <div className="border-b bg-muted/30 px-6 py-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>
-                    Question {toBnDigits(currentIndex + 1)} / {toBnDigits(questions.length)}
+                    প্রশ্ন {toBnDigits(currentIndex + 1)} / {toBnDigits(questions.length)}
                   </span>
                   <span>
                     {currentQuestion?.difficulty ? (
@@ -524,7 +524,7 @@ function PracticePage() {
                   })}
                   {currentOptions.length === 0 ? (
                     <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
-                      This approved question does not have public answer options yet.
+                      এই যাচাইকৃত প্রশ্নের জন্য এখনো উত্তরের অপশন যুক্ত হয়নি।
                     </p>
                   ) : null}
                 </div>
@@ -552,11 +552,10 @@ function PracticePage() {
                       )}
                       <div>
                         <h3 className="exam-heading font-semibold">
-                          {result.isCorrect ? "সঠিক · Correct" : "ভুল · Incorrect"}
+                          {result.isCorrect ? "সঠিক উত্তর" : "ভুল উত্তর"}
                         </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          You scored {toBnDigits(result.score)} / {toBnDigits(result.maxScore)} on
-                          this question.
+                          আপনি পেয়েছেন {toBnDigits(result.score)} / {toBnDigits(result.maxScore)} নম্বর।
                         </p>
                       </div>
                     </div>
@@ -567,7 +566,7 @@ function PracticePage() {
               {/* Footer actions */}
               <div className="paper-divider flex flex-wrap items-center justify-between gap-3 border-t bg-muted/30 px-6 py-4">
                 <div className="text-xs text-muted-foreground">
-                  Answers are saved only after you submit. Correct answers stay hidden until then.
+                  জমা দেওয়ার পরেই উত্তর সংরক্ষণ হবে। সঠিক উত্তর জমার আগে দেখানো হবে না।
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {!result ? (
@@ -578,19 +577,19 @@ function PracticePage() {
                       }
                     >
                       {submitting ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Submitting</>
+                        <><Loader2 className="h-4 w-4 animate-spin" /> জমা হচ্ছে</>
                       ) : (
-                        "Submit Answer · জমা দিন"
+                        "উত্তর জমা দিন"
                       )}
                     </Button>
                   ) : (
                     <>
                       <Button asChild variant="outline">
-                        <a href={`/result/${result.attemptId}`}>View Result · ফলাফল</a>
+                        <a href={`/result/${result.attemptId}`}>ফলাফল দেখুন</a>
                       </Button>
                       {currentIndex < questions.length - 1 ? (
                         <Button onClick={goToNextQuestion}>
-                          Next · পরবর্তী <ChevronRight className="h-4 w-4" />
+                          পরবর্তী প্রশ্ন <ChevronRight className="h-4 w-4" />
                         </Button>
                       ) : null}
                     </>
@@ -608,18 +607,18 @@ function PracticePage() {
                 disabled={generating}
               >
                 {generating ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating</>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> তৈরি হচ্ছে</>
                 ) : (
-                  <><Sparkles className="mr-1 h-4 w-4" /> Generate more AI MCQs</>
+                  <><Sparkles className="mr-1 h-4 w-4" /> আরও এআই এমসিকিউ</>
                 )}
               </Button>
               <Button asChild size="sm" variant="outline">
                 <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
-                  Change chapter
+                  অধ্যায় পরিবর্তন
                 </a>
               </Button>
               <Button asChild size="sm" variant="ghost">
-                <Link to="/history">History</Link>
+                <Link to="/history">ইতিহাস</Link>
               </Button>
             </div>
           </>

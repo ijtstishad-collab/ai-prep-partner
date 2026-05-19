@@ -205,18 +205,17 @@ function AdminQuestionReviewPage() {
     <AppShell>
       <div className="container mx-auto px-4 py-10">
         <div className="mb-8 max-w-3xl">
-          <p className="text-sm font-medium text-primary">Admin Question Review</p>
-          <h1 className="mt-1 text-3xl font-bold">Question draft review queue</h1>
+          <p className="text-sm font-medium text-primary">প্রশ্ন পর্যালোচনা · Admin</p>
+          <h1 className="mt-1 text-3xl font-bold">প্রশ্ন খসড়া পর্যালোচনা কিউ</h1>
           <p className="mt-2 text-muted-foreground">
-            Create manual HSC MCQ drafts, review answer keys internally, and publish only approved
-            questions for student practice.
+            ম্যানুয়াল এইচএসসি এমসিকিউ খসড়া তৈরি করুন, উত্তর কী যাচাই করুন এবং শুধু অনুমোদিত প্রশ্নই শিক্ষার্থীদের জন্য প্রকাশ করুন।
           </p>
         </div>
 
         {authLoading || loadingData ? (
           <Card className="flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading admin review workspace...
+            অ্যাডমিন ওয়ার্কস্পেস লোড হচ্ছে...
           </Card>
         ) : (
           <div className="grid gap-5 xl:grid-cols-[0.9fr_1.4fr]">
@@ -226,13 +225,13 @@ function AdminQuestionReviewPage() {
                   <Edit3 className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold">Manual MCQ Draft</h2>
-                  <p className="text-sm text-muted-foreground">For reviewed chapter practice.</p>
+                  <h2 className="text-xl font-semibold">ম্যানুয়াল এমসিকিউ খসড়া</h2>
+                  <p className="text-sm text-muted-foreground">অধ্যায়ভিত্তিক অনুশীলনের জন্য।</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <Field label="Subject">
+                <Field label="বিষয়">
                   <select
                     value={selectedSubjectId}
                     onChange={(event) => setSelectedSubjectId(event.target.value)}
@@ -246,7 +245,7 @@ function AdminQuestionReviewPage() {
                   </select>
                 </Field>
 
-                <Field label="Chapter">
+                <Field label="অধ্যায়">
                   <select
                     value={selectedChapterId}
                     onChange={(event) => setSelectedChapterId(event.target.value)}
@@ -261,7 +260,7 @@ function AdminQuestionReviewPage() {
                   </select>
                 </Field>
 
-                <Field label="Difficulty">
+                <Field label="কঠিনতা">
                   <select
                     value={difficulty}
                     onChange={(event) =>
@@ -269,23 +268,23 @@ function AdminQuestionReviewPage() {
                     }
                     className="h-10 w-full rounded-md border bg-background px-3 text-sm"
                   >
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
+                    <option value="easy">সহজ</option>
+                    <option value="medium">মধ্যম</option>
+                    <option value="hard">কঠিন</option>
                   </select>
                 </Field>
 
-                <Field label="Question">
+                <Field label="প্রশ্ন">
                   <textarea
                     value={questionText}
                     onChange={(event) => setQuestionText(event.target.value)}
                     className="min-h-28 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                    placeholder="Write the MCQ stem..."
+                    placeholder="এমসিকিউ প্রশ্ন লিখুন..."
                   />
                 </Field>
 
                 <div className="space-y-3">
-                  <div className="text-sm font-medium">Options and correct answer</div>
+                  <div className="text-sm font-medium">অপশন ও সঠিক উত্তর</div>
                   {options.map((option) => (
                     <div key={option.key} className="flex items-center gap-2">
                       <label className="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-semibold">
@@ -295,7 +294,7 @@ function AdminQuestionReviewPage() {
                         value={option.text}
                         onChange={(event) => setOptionText(option.key, event.target.value)}
                         className="h-10 flex-1 rounded-md border bg-background px-3 text-sm"
-                        placeholder={`Option ${option.key}`}
+                        placeholder={`অপশন ${option.key}`}
                       />
                       <label className="flex h-10 items-center gap-2 rounded-md border px-3 text-sm">
                         <input
@@ -303,18 +302,18 @@ function AdminQuestionReviewPage() {
                           checked={option.isCorrect}
                           onChange={() => setCorrectOption(option.key)}
                         />
-                        Correct
+                        সঠিক
                       </label>
                     </div>
                   ))}
                 </div>
 
-                <Field label="Explanation / review note">
+                <Field label="ব্যাখ্যা / রিভিউ নোট">
                   <textarea
                     value={explanation}
                     onChange={(event) => setExplanation(event.target.value)}
                     className="min-h-20 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                    placeholder="Optional explanation for reviewers..."
+                    placeholder="ঐচ্ছিক ব্যাখ্যা..."
                   />
                 </Field>
 
@@ -322,10 +321,10 @@ function AdminQuestionReviewPage() {
                   {creating ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Creating Draft
+                      খসড়া তৈরি হচ্ছে
                     </>
                   ) : (
-                    "Create Draft"
+                    "খসড়া তৈরি করুন"
                   )}
                 </Button>
               </div>
@@ -334,17 +333,17 @@ function AdminQuestionReviewPage() {
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-3">
                 <Metric
-                  label="Pending"
+                  label="অপেক্ষমাণ"
                   value={drafts.filter((draft) => draft.status === "pending_review").length}
                   icon={FileQuestion}
                 />
                 <Metric
-                  label="Approved"
+                  label="অনুমোদিত"
                   value={drafts.filter((draft) => draft.status === "approved").length}
                   icon={ShieldCheck}
                 />
                 <Metric
-                  label="Rejected"
+                  label="বাতিল"
                   value={drafts.filter((draft) => draft.status === "rejected").length}
                   icon={XCircle}
                 />
@@ -353,9 +352,9 @@ function AdminQuestionReviewPage() {
               {drafts.length === 0 ? (
                 <Card className="p-8 text-center">
                   <FileQuestion className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <h2 className="text-xl font-semibold">No drafts yet</h2>
+                  <h2 className="text-xl font-semibold">এখনো কোনো খসড়া নেই</h2>
                   <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                    Create a manual MCQ draft to begin the review workflow.
+                    রিভিউ ফ্লো শুরু করতে একটি ম্যানুয়াল এমসিকিউ খসড়া তৈরি করুন।
                   </p>
                 </Card>
               ) : (
@@ -378,7 +377,7 @@ function AdminQuestionReviewPage() {
               )}
 
               <Button asChild variant="outline">
-                <Link to="/admin">Back to Admin Console</Link>
+                <Link to="/admin">← অ্যাডমিন কনসোলে ফিরে যান</Link>
               </Button>
             </div>
           </div>

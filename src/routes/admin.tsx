@@ -20,30 +20,30 @@ const adminAreas: Array<{
   icon: typeof ShieldCheck;
 }> = [
   {
-    title: "Question Review",
-    desc: "Review AI-generated drafts before they go live for students.",
-    status: "Phase 1 placeholder",
+    title: "প্রশ্ন পর্যালোচনা",
+    desc: "শিক্ষার্থীদের জন্য প্রকাশের আগে এআই-জেনারেটেড খসড়া যাচাই করুন।",
+    status: "চালু",
     to: "/admin/question-review",
     icon: ShieldCheck,
   },
   {
-    title: "Subject and Chapter Setup",
-    desc: "Future workspace for managing HSC subjects, chapters, and content coverage.",
-    status: "Planned",
+    title: "বিষয় ও অধ্যায় সেটআপ",
+    desc: "এইচএসসি বিষয়, অধ্যায় ও কভারেজ ব্যবস্থাপনার জন্য ভবিষ্যৎ ওয়ার্কস্পেস।",
+    status: "পরিকল্পিত",
     to: "/chapters",
     icon: BookOpen,
   },
   {
-    title: "Board Question Bank",
-    desc: "Future import flow for board, year, subject, and chapter metadata.",
-    status: "Planned",
+    title: "বোর্ড প্রশ্নব্যাংক",
+    desc: "বোর্ড, বছর, বিষয় ও অধ্যায়সহ প্রশ্ন ইম্পোর্টের ভবিষ্যৎ ফ্লো।",
+    status: "পরিকল্পিত",
     to: "/subjects",
     icon: FileQuestion,
   },
   {
-    title: "AI Generation Jobs",
-    desc: "Future queue for textbook-based question generation and review handoff.",
-    status: "Planned",
+    title: "এআই জেনারেশন জব",
+    desc: "পাঠ্যবইভিত্তিক প্রশ্ন তৈরি ও পর্যালোচনার ভবিষ্যৎ কিউ।",
+    status: "পরিকল্পিত",
     to: "/admin/question-review",
     icon: Sparkles,
   },
@@ -56,7 +56,7 @@ function AdminPage() {
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
     if (!loading && user && !isAdmin) {
-      toast.error("Admin access required");
+      toast.error("অ্যাডমিন অ্যাক্সেস প্রয়োজন");
       nav({ to: "/dashboard" });
     }
   }, [loading, user, isAdmin, nav]);
@@ -65,11 +65,10 @@ function AdminPage() {
     <AppShell>
       <div className="container mx-auto px-4 py-10">
         <div className="mb-8 max-w-3xl">
-          <p className="text-sm font-medium text-primary">Admin Structure</p>
-          <h1 className="mt-1 text-3xl font-bold">AI Prep Partner admin console</h1>
+          <p className="text-sm font-medium text-primary">অ্যাডমিন কনসোল</p>
+          <h1 className="mt-1 text-3xl font-bold">এআই প্রেপ পার্টনার · অ্যাডমিন</h1>
           <p className="mt-2 text-muted-foreground">
-            Phase 1 keeps the admin area as a safe placeholder. No Supabase tables,
-            policies, or authentication rules are changed here.
+            এই ধাপে অ্যাডমিন এরিয়া নিরাপদ প্লেসহোল্ডার হিসেবে রাখা হয়েছে। কোনো ব্যাকএন্ড টেবিল, পলিসি বা অথেনটিকেশন রুল এখানে পরিবর্তন হয়নি।
           </p>
         </div>
 
@@ -77,11 +76,9 @@ function AdminPage() {
           <div className="flex gap-3">
             <Database className="mt-0.5 h-5 w-5 text-primary" />
             <div>
-              <h2 className="font-semibold">Database work intentionally deferred</h2>
+              <h2 className="font-semibold">ডেটাবেস কাজ পরিকল্পিতভাবে স্থগিত</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                The previous live admin database forms are hidden for this phase.
-                They should return only after the new Supabase-first schema and RLS
-                policies are approved.
+                পুরোনো লাইভ অ্যাডমিন ফর্মগুলো এই ধাপে লুকানো আছে। নতুন স্কিমা ও RLS পলিসি অনুমোদনের পরেই সেগুলো ফিরবে।
               </p>
             </div>
           </div>
@@ -99,7 +96,7 @@ function AdminPage() {
               <h2 className="text-xl font-semibold">{title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
               <Button asChild className="mt-5" variant="outline">
-                <Link to={to}>Open</Link>
+                <Link to={to}>খুলুন</Link>
               </Button>
             </Card>
           ))}

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateInstantPracticeQuestions } from "@/lib/instant-practice-ai.functions";
 import { submitPracticeAnswer } from "@/lib/practice.functions";
 import { cn } from "@/lib/utils";
+import { toBnDigits, toBnOptionLabel, formatDuration } from "@/lib/bn";
 import {
   AlertCircle,
   BookOpenText,
@@ -18,12 +19,25 @@ import {
   FileQuestion,
   GraduationCap,
   Loader2,
+  Sparkles,
+  Timer,
   XCircle,
 } from "lucide-react";
+
+type PracticeMode = "chapter" | "board" | "ai" | "mixed";
+const MODE_META: Record<PracticeMode, { label: string; bn: string }> = {
+  chapter: { label: "Chapter Practice", bn: "অধ্যায়ভিত্তিক" },
+  board: { label: "Past Board Questions", bn: "বোর্ড প্রশ্ন" },
+  ai: { label: "AI Generated", bn: "এআই প্রশ্ন" },
+  mixed: { label: "Mixed Exam Prep", bn: "মিশ্র প্রস্তুতি" },
+};
 
 export const Route = createFileRoute("/practice")({
   validateSearch: (search: Record<string, unknown>) => ({
     chapterId: typeof search.chapterId === "string" ? search.chapterId : undefined,
+    mode: (["chapter", "board", "ai", "mixed"] as const).includes(search.mode as PracticeMode)
+      ? (search.mode as PracticeMode)
+      : ("chapter" as PracticeMode),
   }),
   component: PracticePage,
 });
@@ -33,11 +47,13 @@ type Chapter = {
   subject_id: string;
   name: string;
   name_bn: string | null;
+  order_index?: number | null;
 };
 
 type Subject = {
   id: string;
   name: string;
+  name_bn?: string | null;
 };
 
 type PracticeQuestion = {
@@ -47,6 +63,8 @@ type PracticeQuestion = {
   difficulty: string | null;
   question_text: string;
   marks: number | string | null;
+  board?: string | null;
+  year?: number | string | null;
 };
 
 type QuestionOption = {
@@ -119,7 +137,6 @@ async function fetchApprovedQuestions(chapterId: string) {
           legacy.error && !ignorableLegacyPattern.test(legacy.error.message) ? legacy.error : null,
       };
     }
-
     return { rows: [] as PracticeQuestion[], error };
   }
 
@@ -137,7 +154,7 @@ async function fetchApprovedQuestions(chapterId: string) {
 }
 
 function PracticePage() {
-  const { chapterId } = Route.useSearch();
+  const { chapterId, mode } = Route.useSearch();
   const { user, loading: authLoading } = useAuth();
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [subject, setSubject] = useState<Subject | null>(null);
@@ -150,11 +167,27 @@ function PracticePage() {
   const [generating, setGenerating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+
+  // Stopwatch — UI only
+  const startedAtRef = useRef<number>(Date.now());
+  useEffect(() => {
+    startedAtRef.current = Date.now();
+    setElapsed(0);
+    const id = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [chapterId, mode]);
 
   const currentQuestion = questions[currentIndex] ?? null;
   const currentOptions = useMemo(
     () => options.filter((option) => option.question_id === currentQuestion?.id),
     [currentQuestion?.id, options],
+  );
+  const totalMarks = useMemo(
+    () => questions.reduce((sum, q) => sum + Number(q.marks ?? 1), 0),
+    [questions],
   );
   const progressValue =
     questions.length > 0 ? Math.round(((currentIndex + 1) / questions.length) * 100) : 0;
@@ -178,7 +211,7 @@ function PracticePage() {
       setCurrentIndex(0);
 
       const { data: chapterRow, error: chapterError } = await fromTable("chapters")
-        .select("id, subject_id, name, name_bn")
+        .select("id, subject_id, name, name_bn, order_index")
         .eq("id", chapterId)
         .eq("is_active", true)
         .maybeSingle();
@@ -197,11 +230,11 @@ function PracticePage() {
 
       const [{ data: subjectRow }, questionResult] = await Promise.all([
         fromTable("subjects")
-          .select("id, name")
+          .select("id, name, name_bn")
           .eq("id", chapterRow.subject_id)
           .eq("is_active", true)
           .maybeSingle(),
-        fetchApprovedQuestions(chapterId),
+        fetchApprovedQuestions(chapterId!),
       ]);
 
       if (!alive) return;
@@ -212,7 +245,7 @@ function PracticePage() {
       }
 
       const safeQuestions = questionResult.rows;
-      const questionIds = safeQuestions.map((question) => question.id);
+      const questionIds = safeQuestions.map((q) => q.id);
       let optionRows: QuestionOption[] = [];
 
       if (questionIds.length > 0) {
@@ -246,10 +279,8 @@ function PracticePage() {
 
   const submitAnswer = async () => {
     if (!chapterId || !currentQuestion || !selectedOptionId || result) return;
-
     setSubmitting(true);
     setError(null);
-
     try {
       const submission = await submitPracticeAnswer({
         data: {
@@ -268,20 +299,15 @@ function PracticePage() {
 
   const generateAiQuestions = async () => {
     if (!chapterId || generating) return;
-
     setGenerating(true);
     setError(null);
     setResult(null);
     setSelectedOptionId(null);
 
     try {
-      const generated = await generateInstantPracticeQuestions({
-        data: {
-          chapter_id: chapterId,
-          count: 5,
-          difficulty: "easy",
-        },
-      });
+      const generated = (await generateInstantPracticeQuestions({
+        data: { chapter_id: chapterId, count: 5, difficulty: "easy" },
+      })) as { questions?: PracticeQuestion[]; options?: QuestionOption[] };
 
       setQuestions((generated.questions ?? []) as PracticeQuestion[]);
       setOptions((generated.options ?? []) as QuestionOption[]);
@@ -300,27 +326,40 @@ function PracticePage() {
     setError(null);
   };
 
+  const modeMeta = MODE_META[mode];
+
   return (
     <AppShell>
-      <div className="container mx-auto px-4 py-10">
-        <div className="mb-8 max-w-2xl">
-          <p className="text-sm font-medium text-primary">Practice</p>
-          <h1 className="mt-1 text-3xl font-bold">Chapter-wise MCQ practice</h1>
-          <p className="mt-2 text-muted-foreground">
-            Approved questions load from Supabase. If a chapter is empty, AI can create instant
-            practice MCQs for the student.
-          </p>
-        </div>
+      <div className="container mx-auto max-w-5xl px-4 py-8">
+        {/* Breadcrumb */}
+        <nav className="mb-3 text-xs text-muted-foreground">
+          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <span className="mx-2">/</span>
+          <Link to="/subjects" className="hover:text-foreground">Subjects</Link>
+          <span className="mx-2">/</span>
+          {subject ? (
+            <a
+              href={`/chapters?subjectId=${subject.id}`}
+              className="hover:text-foreground"
+            >
+              {subject.name}
+            </a>
+          ) : (
+            <span>Chapters</span>
+          )}
+          <span className="mx-2">/</span>
+          <span className="text-foreground">Practice</span>
+        </nav>
 
         {authLoading ? (
-          <Card className="flex items-center gap-3 p-6 text-muted-foreground">
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session...
+            Checking your student session…
           </Card>
         ) : !user ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               Sign in to load approved questions and save your answer history.
             </p>
@@ -329,23 +368,23 @@ function PracticePage() {
             </Button>
           </Card>
         ) : !chapterId ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <BookOpenText className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="text-xl font-semibold">Choose a chapter first</h2>
+            <h2 className="exam-heading text-xl font-semibold">Choose a chapter first</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Practice starts from a chapter so the platform can save chapter-level analytics later.
+              Practice starts from a chapter. Pick a subject, then a chapter, then a mode.
             </p>
             <Button asChild className="mt-6">
-              <Link to="/chapters">Open Chapters</Link>
+              <Link to="/subjects">Choose Subject</Link>
             </Button>
           </Card>
         ) : loading ? (
-          <Card className="flex items-center gap-3 p-6 text-muted-foreground">
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading approved questions...
+            Loading questions…
           </Card>
-        ) : error && !currentQuestion ? (
-          <Card className="p-6">
+        ) : error && questions.length === 0 ? (
+          <Card className="paper-sheet p-6">
             <h2 className="flex items-center gap-2 font-semibold text-destructive">
               <AlertCircle className="h-5 w-5" />
               Could not load practice
@@ -353,59 +392,103 @@ function PracticePage() {
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : questions.length === 0 ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <FileQuestion className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h2 className="text-xl font-semibold">No approved MCQs yet</h2>
+            <h2 className="exam-heading text-xl font-semibold">
+              {mode === "board"
+                ? "No board questions stored yet"
+                : "No approved MCQs yet"}
+            </h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Generate instant AI MCQs for this student session, or return to chapters.
+              Generate instant AI MCQs for this chapter, or return to chapters.
             </p>
-            {error ? (
-              <p className="mx-auto mt-4 max-w-md rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {error}
-              </p>
-            ) : null}
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button onClick={generateAiQuestions} disabled={generating}>
                 {generating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Generating
-                  </>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating</>
                 ) : (
-                  "Generate AI MCQs"
+                  <><Sparkles className="mr-1 h-4 w-4" /> Generate AI MCQs</>
                 )}
               </Button>
               <Button asChild variant="outline">
-                <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>Back to Chapters</a>
+                <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
+                  Back to Chapters
+                </a>
               </Button>
             </div>
           </Card>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-[1.4fr_0.75fr]">
-            <Card className="p-6">
-              <div className="mb-5 flex flex-wrap items-center gap-2">
-                {subject ? <Badge>{subject.name}</Badge> : null}
-                {chapter ? <Badge variant="secondary">{chapter.name}</Badge> : null}
-                {currentQuestion?.difficulty ? (
-                  <Badge variant="outline">{currentQuestion.difficulty}</Badge>
-                ) : null}
-              </div>
-
-              <div className="mb-5">
-                <div className="mb-2 flex justify-between text-sm text-muted-foreground">
-                  <span>
-                    Question {currentIndex + 1} of {questions.length}
-                  </span>
-                  <span>{Number(currentQuestion?.marks ?? 1)} mark</span>
+          <>
+            {/* Exam-paper sheet */}
+            <Card className="paper-sheet overflow-hidden">
+              {/* Paper header — exam style */}
+              <div className="paper-divider border-b-2 px-6 pt-6 pb-4">
+                <div className="text-center">
+                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    AI Prep Partner · এইচএসসি অনুশীলন
+                  </p>
+                  <h1 className="exam-heading mt-1 text-2xl font-bold sm:text-3xl">
+                    {subject?.name ?? "HSC Subject"}
+                  </h1>
+                  {subject?.name_bn ? (
+                    <p className="text-sm text-muted-foreground">{subject.name_bn}</p>
+                  ) : null}
                 </div>
-                <Progress value={progressValue} />
+                <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                  <Field label="Chapter" value={chapter?.name ?? "—"} />
+                  <Field
+                    label="Paper · মোড"
+                    value={`${modeMeta.label} · ${modeMeta.bn}`}
+                  />
+                  <Field
+                    label="Marks · নম্বর"
+                    value={`${toBnDigits(totalMarks)} / ${totalMarks}`}
+                  />
+                  <Field
+                    label="Time · সময়"
+                    value={formatDuration(elapsed)}
+                    icon={<Timer className="h-3.5 w-3.5" />}
+                  />
+                </div>
               </div>
 
-              <div className="rounded-xl border p-5">
-                <h2 className="text-lg font-semibold leading-7">{currentQuestion.question_text}</h2>
-                <div className="mt-5 grid gap-3">
-                  {currentOptions.map((option) => {
+              {/* Progress strip */}
+              <div className="border-b bg-muted/30 px-6 py-3">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    Question {toBnDigits(currentIndex + 1)} / {toBnDigits(questions.length)}
+                  </span>
+                  <span>
+                    {currentQuestion?.difficulty ? (
+                      <Badge variant="outline" className="text-xs">
+                        {currentQuestion.difficulty}
+                      </Badge>
+                    ) : null}
+                  </span>
+                </div>
+                <Progress value={progressValue} className="mt-2 h-1.5" />
+              </div>
+
+              {/* Question body */}
+              <div className="px-6 py-6">
+                <div className="flex items-baseline gap-3">
+                  <span className="exam-heading text-lg font-bold">
+                    {toBnDigits(currentIndex + 1)}.
+                  </span>
+                  <h2 className="exam-heading text-lg font-semibold leading-7">
+                    {currentQuestion!.question_text}
+                  </h2>
+                </div>
+
+                {/* OMR-style option grid */}
+                <div className="mt-5 space-y-2">
+                  {currentOptions.map((option, idx) => {
                     const selected = selectedOptionId === option.id;
+                    const showResult = !!result;
+                    const isThisCorrect =
+                      showResult && result!.isCorrect && selected;
+                    const isThisWrong =
+                      showResult && !result!.isCorrect && selected;
                     return (
                       <button
                         key={option.id}
@@ -413,118 +496,157 @@ function PracticePage() {
                         disabled={!!result || submitting}
                         onClick={() => setSelectedOptionId(option.id)}
                         className={cn(
-                          "flex items-start gap-3 rounded-lg border px-4 py-3 text-left text-sm transition",
+                          "flex w-full items-center gap-4 rounded-lg border bg-white px-4 py-3 text-left transition",
                           selected
-                            ? "border-primary bg-primary/10 text-foreground"
-                            : "hover:border-primary/50 hover:bg-muted",
-                          result && selected ? "border-foreground" : "",
+                            ? "border-foreground shadow-sm"
+                            : "border-input hover:border-foreground/40 hover:bg-muted/40",
+                          showResult && "opacity-90",
                         )}
                       >
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                        <span
+                          className={cn(
+                            "omr-bubble",
+                            selected && !showResult && "omr-bubble--selected",
+                            isThisCorrect && "omr-bubble--correct",
+                            isThisWrong && "omr-bubble--wrong",
+                          )}
+                        >
+                          {toBnOptionLabel(option.option_key, idx)}
+                        </span>
+                        <span className="flex-1 text-sm sm:text-base">
+                          {option.option_text}
+                        </span>
+                        <span className="hidden text-xs uppercase tracking-wider text-muted-foreground sm:inline">
                           {option.option_key}
                         </span>
-                        <span>{option.option_text}</span>
                       </button>
                     );
                   })}
                   {currentOptions.length === 0 ? (
                     <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
-                      This approved question does not have public answer options yet. Ask an admin
-                      to publish options before students can submit it.
+                      This approved question does not have public answer options yet.
                     </p>
                   ) : null}
                 </div>
-              </div>
 
-              {error ? (
-                <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                  {error}
-                </p>
-              ) : null}
+                {error ? (
+                  <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    {error}
+                  </p>
+                ) : null}
 
-              {result ? (
-                <Card className="mt-5 border-primary/20 bg-primary/5 p-5">
-                  <div className="flex items-start gap-3">
-                    {result.isCorrect ? (
-                      <CheckCircle2 className="mt-0.5 h-6 w-6 text-success" />
-                    ) : (
-                      <XCircle className="mt-0.5 h-6 w-6 text-destructive" />
+                {result ? (
+                  <div
+                    className={cn(
+                      "mt-5 rounded-lg border p-4",
+                      result.isCorrect
+                        ? "border-success/40 bg-success/10"
+                        : "border-destructive/40 bg-destructive/10",
                     )}
-                    <div>
-                      <h3 className="font-semibold">
-                        {result.isCorrect ? "Correct answer" : "Answer submitted"}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        You scored {result.score} out of {result.maxScore}. Your selected answer was
-                        saved to your attempt history.
-                      </p>
+                  >
+                    <div className="flex items-start gap-3">
+                      {result.isCorrect ? (
+                        <CheckCircle2 className="mt-0.5 h-6 w-6 text-success" />
+                      ) : (
+                        <XCircle className="mt-0.5 h-6 w-6 text-destructive" />
+                      )}
+                      <div>
+                        <h3 className="exam-heading font-semibold">
+                          {result.isCorrect ? "সঠিক · Correct" : "ভুল · Incorrect"}
+                        </h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          You scored {toBnDigits(result.score)} / {toBnDigits(result.maxScore)} on
+                          this question.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </Card>
-              ) : null}
-
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Button
-                  onClick={submitAnswer}
-                  disabled={
-                    !selectedOptionId || submitting || !!result || currentOptions.length === 0
-                  }
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Submitting
-                    </>
-                  ) : (
-                    "Submit Answer"
-                  )}
-                </Button>
-                {result ? (
-                  <>
-                    <Button asChild variant="outline">
-                      <a href={`/result/${result.attemptId}`}>View Result</a>
-                    </Button>
-                    {currentIndex < questions.length - 1 ? (
-                      <Button variant="ghost" onClick={goToNextQuestion}>
-                        Next Question <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    ) : null}
-                  </>
                 ) : null}
+              </div>
+
+              {/* Footer actions */}
+              <div className="paper-divider flex flex-wrap items-center justify-between gap-3 border-t bg-muted/30 px-6 py-4">
+                <div className="text-xs text-muted-foreground">
+                  Answers are saved only after you submit. Correct answers stay hidden until then.
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {!result ? (
+                    <Button
+                      onClick={submitAnswer}
+                      disabled={
+                        !selectedOptionId || submitting || currentOptions.length === 0
+                      }
+                    >
+                      {submitting ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Submitting</>
+                      ) : (
+                        "Submit Answer · জমা দিন"
+                      )}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button asChild variant="outline">
+                        <a href={`/result/${result.attemptId}`}>View Result · ফলাফল</a>
+                      </Button>
+                      {currentIndex < questions.length - 1 ? (
+                        <Button onClick={goToNextQuestion}>
+                          Next · পরবর্তী <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      ) : null}
+                    </>
+                  )}
+                </div>
               </div>
             </Card>
 
-            <Card className="p-6">
-              <h2 className="font-semibold">Practice guardrails</h2>
-              <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-                <p>Approved MCQs load first; empty chapters can generate instant AI practice.</p>
-                <p>Options are read from a separate table that has no correctness flag.</p>
-                <p>Scoring happens only after submission through a protected server function.</p>
-              </div>
+            {/* Side helpers */}
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <Button
-                className="mt-6 w-full"
-                variant="secondary"
+                variant="outline"
+                size="sm"
                 onClick={generateAiQuestions}
                 disabled={generating}
               >
                 {generating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Generating
-                  </>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating</>
                 ) : (
-                  "Generate More AI MCQs"
+                  <><Sparkles className="mr-1 h-4 w-4" /> Generate more AI MCQs</>
                 )}
               </Button>
-              <Button asChild className="mt-6 w-full" variant="outline">
+              <Button asChild size="sm" variant="outline">
                 <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
-                  Choose Another Chapter
+                  Change chapter
                 </a>
               </Button>
-            </Card>
-          </div>
+              <Button asChild size="sm" variant="ghost">
+                <Link to="/history">History</Link>
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </AppShell>
+  );
+}
+
+function Field({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded border bg-white/60 px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-0.5 flex items-center gap-1 truncate text-sm font-semibold">
+        {icon}
+        <span className="truncate">{value}</span>
+      </div>
+    </div>
   );
 }

@@ -7,7 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, CheckCircle2, GraduationCap, Loader2, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toBnDigits, toBnOptionLabel, formatDuration } from "@/lib/bn";
+import {
+  BarChart3,
+  CheckCircle2,
+  GraduationCap,
+  Loader2,
+  Sparkles,
+  TrendingDown,
+  Trophy,
+  XCircle,
+} from "lucide-react";
 
 export const Route = createFileRoute("/result/$attemptId")({ component: ResultPage });
 
@@ -19,6 +30,7 @@ type Attempt = {
   total_questions: number | null;
   correct_count: number | null;
   submitted_at: string | null;
+  started_at?: string | null;
   chapter_id: string | null;
   subject_id: string | null;
 };
@@ -37,6 +49,14 @@ type Question = {
   question_text: string;
 };
 
+type Chapter = {
+  id: string;
+  name: string;
+  name_bn: string | null;
+  subject_id: string;
+  order_index: number | null;
+};
+
 const fromTable = (tableName: string) =>
   (supabase.from as unknown as (name: string) => any)(tableName);
 
@@ -46,14 +66,34 @@ function ResultPage() {
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [answers, setAnswers] = useState<StudentAnswer[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [chapter, setChapter] = useState<Chapter | null>(null);
+  const [nextChapter, setNextChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const score = Number(attempt?.score ?? 0);
   const maxScore = Number(attempt?.max_score ?? 0);
   const scorePercent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+  const correctCount = attempt?.correct_count ?? answers.filter((a) => a.is_correct).length;
+  const totalQuestions = attempt?.total_questions ?? answers.length;
+  const wrongCount = Math.max(0, totalQuestions - correctCount);
+
+  const elapsedSeconds = useMemo(() => {
+    if (!attempt?.started_at || !attempt?.submitted_at) return 0;
+    const s = new Date(attempt.started_at).getTime();
+    const e = new Date(attempt.submitted_at).getTime();
+    return Math.max(0, Math.floor((e - s) / 1000));
+  }, [attempt?.started_at, attempt?.submitted_at]);
+
+  const verdict = useMemo(() => {
+    if (scorePercent >= 80) return { label: "চমৎকার · Excellent", tone: "success" as const };
+    if (scorePercent >= 50) return { label: "ভালো · Good", tone: "primary" as const };
+    if (scorePercent >= 30) return { label: "চর্চা দরকার · Needs Practice", tone: "warning" as const };
+    return { label: "দুর্বল · Weak", tone: "destructive" as const };
+  }, [scorePercent]);
+
   const questionById = useMemo(
-    () => new Map(questions.map((question) => [question.id, question])),
+    () => new Map(questions.map((q) => [q.id, q])),
     [questions],
   );
 
@@ -68,7 +108,7 @@ function ResultPage() {
 
       const { data: attemptRow, error: attemptError } = await fromTable("attempts")
         .select(
-          "id, status, score, max_score, total_questions, correct_count, submitted_at, chapter_id, subject_id",
+          "id, status, score, max_score, total_questions, correct_count, submitted_at, started_at, chapter_id, subject_id",
         )
         .eq("id", attemptId)
         .maybeSingle();
@@ -100,33 +140,55 @@ function ResultPage() {
       }
 
       const safeAnswers = (answerRows ?? []) as StudentAnswer[];
-      const questionIds = safeAnswers.map((answer) => answer.question_id);
+      const questionIds = safeAnswers.map((a) => a.question_id);
       let questionRows: Question[] = [];
 
       if (questionIds.length > 0) {
-        const { data, error: questionError } = await fromTable("questions")
+        const { data, error: qErr } = await fromTable("questions")
           .select("id, question_text")
           .in("id", questionIds)
           .eq("status", "approved")
           .eq("is_active", true);
-
         if (!alive) return;
-        if (questionError) {
-          setError(questionError.message);
+        if (qErr) {
+          setError(qErr.message);
           setLoading(false);
           return;
         }
         questionRows = (data ?? []) as Question[];
       }
 
+      // Load chapter + next chapter for "recommended next" hint
+      let chapterRow: Chapter | null = null;
+      let nextChapterRow: Chapter | null = null;
+      if (attemptRow.chapter_id) {
+        const { data: ch } = await fromTable("chapters")
+          .select("id, name, name_bn, subject_id, order_index")
+          .eq("id", attemptRow.chapter_id)
+          .maybeSingle();
+        chapterRow = (ch as Chapter | null) ?? null;
+        if (chapterRow) {
+          const { data: nextRows } = await fromTable("chapters")
+            .select("id, name, name_bn, subject_id, order_index")
+            .eq("subject_id", chapterRow.subject_id)
+            .eq("is_active", true)
+            .gt("order_index", chapterRow.order_index ?? 0)
+            .order("order_index", { ascending: true })
+            .limit(1);
+          nextChapterRow = ((nextRows ?? [])[0] as Chapter | undefined) ?? null;
+        }
+      }
+
+      if (!alive) return;
       setAttempt(attemptRow as Attempt);
       setAnswers(safeAnswers);
       setQuestions(questionRows);
+      setChapter(chapterRow);
+      setNextChapter(nextChapterRow);
       setLoading(false);
     }
 
     loadResult();
-
     return () => {
       alive = false;
     };
@@ -134,101 +196,187 @@ function ResultPage() {
 
   return (
     <AppShell>
-      <div className="container mx-auto max-w-4xl px-4 py-10">
+      <div className="container mx-auto max-w-4xl px-4 py-8">
         {authLoading ? (
-          <Card className="flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session...
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" /> Checking session…
           </Card>
         ) : !user ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h1 className="text-2xl font-bold">Login required</h1>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Sign in to view your own submitted practice result.
-            </p>
+            <h1 className="exam-heading text-2xl font-bold">Login required</h1>
             <Button asChild className="mt-6">
               <Link to="/auth">Login / Sign up</Link>
             </Button>
           </Card>
         ) : loading ? (
-          <Card className="flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Loading result...
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" /> Loading result…
           </Card>
         ) : error ? (
-          <Card className="p-6">
+          <Card className="paper-sheet p-6">
             <h1 className="font-semibold text-destructive">Could not load result</h1>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : !attempt ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <BarChart3 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h1 className="text-2xl font-bold">Result not found</h1>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              This result is unavailable or does not belong to your account.
-            </p>
+            <h1 className="exam-heading text-2xl font-bold">Result not found</h1>
             <Button asChild className="mt-6" variant="outline">
               <Link to="/history">Open History</Link>
             </Button>
           </Card>
         ) : attempt.status !== "submitted" ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <BarChart3 className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h1 className="text-2xl font-bold">Result available after submission</h1>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              This attempt has not been submitted yet, so the score is still hidden.
-            </p>
+            <h1 className="exam-heading text-2xl font-bold">Submit to see your result</h1>
           </Card>
         ) : (
           <div className="space-y-5">
-            <Card className="p-8">
-              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-primary">Practice Result</p>
-                  <h1 className="mt-1 text-3xl font-bold">
-                    {score} / {maxScore}
-                  </h1>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {attempt.correct_count ?? 0} correct out of{" "}
-                    {attempt.total_questions ?? answers.length} question
-                    {attempt.total_questions === 1 ? "" : "s"}
-                  </p>
-                </div>
-                <Badge variant={scorePercent >= 50 ? "default" : "secondary"}>
-                  {scorePercent}% score
-                </Badge>
+            {/* Score sheet */}
+            <Card className="paper-sheet overflow-hidden">
+              <div className="paper-divider border-b-2 px-6 pt-6 pb-4 text-center">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  AI Prep Partner · Result Sheet
+                </p>
+                <h1 className="exam-heading mt-1 text-2xl font-bold">
+                  {chapter?.name ?? "Practice Result"}
+                </h1>
+                {chapter?.name_bn ? (
+                  <p className="text-sm text-muted-foreground">{chapter.name_bn}</p>
+                ) : null}
               </div>
-              <div className="mt-6">
+
+              <div className="grid gap-4 px-6 py-6 sm:grid-cols-4">
+                <Stat
+                  label="Score · নম্বর"
+                  value={`${toBnDigits(score)} / ${toBnDigits(maxScore)}`}
+                  hint={`${scorePercent}%`}
+                  icon={<Trophy className="h-4 w-4" />}
+                />
+                <Stat
+                  label="Correct · সঠিক"
+                  value={toBnDigits(correctCount)}
+                  hint={`of ${toBnDigits(totalQuestions)}`}
+                  icon={<CheckCircle2 className="h-4 w-4 text-success" />}
+                />
+                <Stat
+                  label="Wrong · ভুল"
+                  value={toBnDigits(wrongCount)}
+                  hint={`of ${toBnDigits(totalQuestions)}`}
+                  icon={<XCircle className="h-4 w-4 text-destructive" />}
+                />
+                <Stat
+                  label="Time · সময়"
+                  value={elapsedSeconds > 0 ? formatDuration(elapsedSeconds) : "—"}
+                  hint="elapsed"
+                />
+              </div>
+
+              <div className="px-6 pb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <Badge
+                    className={cn(
+                      verdict.tone === "success" && "bg-success text-success-foreground",
+                      verdict.tone === "warning" && "bg-warning text-warning-foreground",
+                      verdict.tone === "destructive" &&
+                        "bg-destructive text-destructive-foreground",
+                    )}
+                  >
+                    {verdict.label}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">{scorePercent}%</span>
+                </div>
                 <Progress value={scorePercent} />
               </div>
             </Card>
 
-            <div className="space-y-3">
+            {/* Weak topic + next */}
+            <div className="grid gap-3 md:grid-cols-2">
+              <Card className="paper-sheet p-5">
+                <div className="flex items-start gap-3">
+                  <TrendingDown className="mt-0.5 h-5 w-5 text-warning" />
+                  <div>
+                    <h3 className="exam-heading font-semibold">Weak focus · দুর্বল দিক</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {wrongCount === 0
+                        ? "No weak items in this set — keep momentum!"
+                        : `${toBnDigits(wrongCount)} question${wrongCount === 1 ? "" : "s"} were incorrect in ${chapter?.name ?? "this chapter"}. Revise this chapter once more.`}
+                    </p>
+                    {attempt.chapter_id ? (
+                      <Button asChild size="sm" variant="outline" className="mt-3">
+                        <a href={`/practice?chapterId=${attempt.chapter_id}`}>Practice again</a>
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="paper-sheet p-5">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="mt-0.5 h-5 w-5 text-primary" />
+                  <div>
+                    <h3 className="exam-heading font-semibold">Next chapter · পরবর্তী অধ্যায়</h3>
+                    {nextChapter ? (
+                      <>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {nextChapter.name}
+                          {nextChapter.name_bn ? ` · ${nextChapter.name_bn}` : ""}
+                        </p>
+                        <Button asChild size="sm" className="mt-3">
+                          <a href={`/practice?chapterId=${nextChapter.id}`}>
+                            Start next chapter
+                          </a>
+                        </Button>
+                      </>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        You're at the end of this subject's chapter list — try a mock test next.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Per-question review */}
+            <div className="space-y-2">
+              <h2 className="exam-heading px-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Question review · উত্তর পর্যালোচনা
+              </h2>
               {answers.map((answer, index) => {
                 const question = questionById.get(answer.question_id);
                 return (
-                  <Card key={answer.id} className="p-5">
+                  <Card key={answer.id} className="paper-sheet p-4">
                     <div className="flex items-start gap-3">
-                      {answer.is_correct ? (
-                        <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-success" />
-                      ) : (
-                        <XCircle className="mt-1 h-5 w-5 shrink-0 text-destructive" />
-                      )}
+                      <span
+                        className={cn(
+                          "omr-bubble shrink-0",
+                          answer.is_correct
+                            ? "omr-bubble--correct"
+                            : "omr-bubble--wrong",
+                        )}
+                        style={{ width: "1.75rem", height: "1.75rem" }}
+                      >
+                        {toBnDigits(index + 1)}
+                      </span>
                       <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <Badge variant="secondary">Question {index + 1}</Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {Number(answer.points_awarded ?? 0)} point
+                        <p className="text-sm font-medium">
+                          {question?.question_text ?? "Question text unavailable"}
+                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                          <span>Your answer: {answer.answer_text ?? "—"}</span>
+                          <span>
+                            {toBnDigits(Number(answer.points_awarded ?? 0))} point
                             {Number(answer.points_awarded ?? 0) === 1 ? "" : "s"}
                           </span>
+                          <Badge
+                            variant={answer.is_correct ? "default" : "destructive"}
+                            className="text-[10px]"
+                          >
+                            {answer.is_correct ? "Correct" : "Wrong"}
+                          </Badge>
                         </div>
-                        <h2 className="font-semibold">
-                          {question?.question_text ?? "Question text unavailable"}
-                        </h2>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          Your answer: {answer.answer_text ?? "No answer recorded"}
-                        </p>
                       </div>
                     </div>
                   </Card>
@@ -237,18 +385,39 @@ function ResultPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              {attempt.chapter_id ? (
-                <Button asChild>
-                  <a href={`/practice?chapterId=${attempt.chapter_id}`}>Practice Again</a>
-                </Button>
-              ) : null}
               <Button asChild variant="outline">
                 <Link to="/history">Open History</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/analytics">View Analytics</Link>
               </Button>
             </div>
           </div>
         )}
       </div>
     </AppShell>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  hint,
+  icon,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border bg-white/60 p-3">
+      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      <div className="exam-heading mt-1 text-xl font-bold">{value}</div>
+      {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
+    </div>
   );
 }

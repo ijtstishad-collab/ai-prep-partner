@@ -1,48 +1,237 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, Target, TrendingDown } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { toBnDigits } from "@/lib/bn";
+import {
+  BarChart3,
+  GraduationCap,
+  Loader2,
+  Target,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 
 export const Route = createFileRoute("/analytics")({ component: AnalyticsPage });
 
+type Attempt = {
+  id: string;
+  status: string;
+  score: number | string | null;
+  max_score: number | string | null;
+  total_questions: number | null;
+  correct_count: number | null;
+  chapter_id: string | null;
+};
+
+type Chapter = { id: string; name: string; name_bn: string | null };
+
+const fromTable = (tableName: string) =>
+  (supabase.from as unknown as (name: string) => any)(tableName);
+
 function AnalyticsPage() {
+  const { user, loading: authLoading } = useAuth();
+  const [attempts, setAttempts] = useState<Attempt[]>([]);
+  const [chapters, setChapters] = useState<Record<string, Chapter>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      const { data, error: qErr } = await fromTable("attempts")
+        .select("id, status, score, max_score, total_questions, correct_count, chapter_id")
+        .eq("status", "submitted")
+        .limit(500);
+
+      if (!alive) return;
+      if (qErr) {
+        setError(qErr.message);
+        setLoading(false);
+        return;
+      }
+      const rows = (data ?? []) as Attempt[];
+      setAttempts(rows);
+
+      const ids = Array.from(
+        new Set(rows.map((r) => r.chapter_id).filter((id): id is string => !!id)),
+      );
+      if (ids.length > 0) {
+        const { data: chRows } = await fromTable("chapters")
+          .select("id, name, name_bn")
+          .in("id", ids);
+        if (!alive) return;
+        const map: Record<string, Chapter> = {};
+        for (const c of (chRows ?? []) as Chapter[]) map[c.id] = c;
+        setChapters(map);
+      }
+      setLoading(false);
+    }
+
+    load();
+    return () => {
+      alive = false;
+    };
+  }, [user]);
+
+  const summary = useMemo(() => {
+    const total = attempts.reduce(
+      (acc, a) => {
+        acc.score += Number(a.score ?? 0);
+        acc.max += Number(a.max_score ?? 0);
+        acc.correct += a.correct_count ?? 0;
+        acc.questions += a.total_questions ?? 0;
+        return acc;
+      },
+      { score: 0, max: 0, correct: 0, questions: 0 },
+    );
+    const accuracy =
+      total.questions > 0 ? Math.round((total.correct / total.questions) * 100) : 0;
+    const readiness = total.max > 0 ? Math.round((total.score / total.max) * 100) : 0;
+
+    // Per-chapter accuracy
+    const byChapter = new Map<string, { correct: number; total: number; score: number; max: number }>();
+    for (const a of attempts) {
+      if (!a.chapter_id) continue;
+      const cur =
+        byChapter.get(a.chapter_id) ?? { correct: 0, total: 0, score: 0, max: 0 };
+      cur.correct += a.correct_count ?? 0;
+      cur.total += a.total_questions ?? 0;
+      cur.score += Number(a.score ?? 0);
+      cur.max += Number(a.max_score ?? 0);
+      byChapter.set(a.chapter_id, cur);
+    }
+    const chapterRows = Array.from(byChapter.entries())
+      .map(([id, v]) => ({
+        id,
+        name: chapters[id]?.name ?? "Unknown chapter",
+        name_bn: chapters[id]?.name_bn ?? null,
+        accuracy: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0,
+        attempts: v.total,
+      }))
+      .filter((r) => r.attempts > 0)
+      .sort((a, b) => a.accuracy - b.accuracy);
+    const weak = chapterRows.filter((r) => r.accuracy < 50);
+
+    return { accuracy, readiness, weakCount: weak.length, chapterRows };
+  }, [attempts, chapters]);
+
   return (
     <AppShell>
-      <div className="container mx-auto px-4 py-10">
-        <div className="mb-8 max-w-2xl">
-          <p className="text-sm font-medium text-primary">Result Analytics</p>
-          <h1 className="mt-1 text-3xl font-bold">Weak chapter detection placeholder</h1>
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <nav className="mb-3 text-xs text-muted-foreground">
+          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <span className="mx-2">/</span>
+          <span className="text-foreground">Analytics</span>
+        </nav>
+
+        <div className="mb-6 max-w-2xl">
+          <p className="text-sm font-medium text-primary">Result Analytics · বিশ্লেষণ</p>
+          <h1 className="exam-heading mt-1 text-3xl font-bold">Your readiness at a glance</h1>
           <p className="mt-2 text-muted-foreground">
-            Analytics will be calculated from practice attempts and mock-test
-            sessions after the Supabase schema is finalized.
+            Accuracy, weak chapters, and overall readiness are computed from your
+            submitted attempts.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Metric title="Overall accuracy" value="--" icon={BarChart3} />
-          <Metric title="Weak chapters" value="--" icon={TrendingDown} />
-          <Metric title="Readiness score" value="--" icon={Target} />
-        </div>
+        {authLoading ? (
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" /> Checking session…
+          </Card>
+        ) : !user ? (
+          <Card className="paper-sheet p-8 text-center">
+            <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
+            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <Button asChild className="mt-4">
+              <Link to="/auth">Login / Sign up</Link>
+            </Button>
+          </Card>
+        ) : loading ? (
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" /> Crunching analytics…
+          </Card>
+        ) : error ? (
+          <Card className="paper-sheet p-6">
+            <h2 className="font-semibold text-destructive">Could not load analytics</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{error}</p>
+          </Card>
+        ) : (
+          <>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Metric
+                title="Overall accuracy"
+                bn="নির্ভুলতা"
+                value={`${toBnDigits(summary.accuracy)}%`}
+                icon={BarChart3}
+              />
+              <Metric
+                title="Weak chapters"
+                bn="দুর্বল অধ্যায়"
+                value={toBnDigits(summary.weakCount)}
+                icon={TrendingDown}
+              />
+              <Metric
+                title="Readiness"
+                bn="প্রস্তুতি"
+                value={`${toBnDigits(summary.readiness)}%`}
+                icon={Target}
+              />
+            </div>
 
-        <Card className="mt-8 p-6">
-          <h2 className="font-semibold">Chapter performance preview</h2>
-          <div className="mt-5 space-y-4">
-            {["Physics - Vector", "Chemistry - Bonding", "Biology - Cell"].map((label) => (
-              <div key={label} className="flex items-center gap-4">
-                <div className="w-48 text-sm font-medium">{label}</div>
-                <div className="flex-1">
-                  <Progress value={0} />
+            <Card className="paper-sheet mt-6 p-6">
+              <h2 className="exam-heading font-semibold">Chapter performance</h2>
+              <p className="text-sm text-muted-foreground">
+                Lower accuracy chapters appear first — focus revision there.
+              </p>
+              {summary.chapterRows.length === 0 ? (
+                <p className="mt-6 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                  Practice a few chapters to unlock chapter-wise analytics.
+                </p>
+              ) : (
+                <div className="mt-5 space-y-3">
+                  {summary.chapterRows.slice(0, 8).map((row) => (
+                    <div key={row.id} className="flex items-center gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">{row.name}</div>
+                        {row.name_bn ? (
+                          <div className="truncate text-xs text-muted-foreground">
+                            {row.name_bn}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="w-40">
+                        <Progress value={row.accuracy} />
+                      </div>
+                      <div className="w-20 text-right text-sm font-semibold">
+                        {toBnDigits(row.accuracy)}%
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="w-16 text-right text-sm text-muted-foreground">No data</div>
+              )}
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Button asChild variant="outline">
+                  <Link to="/history">Open History</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/subjects">
+                    <TrendingUp className="mr-1 h-4 w-4" />
+                    Practice a weak chapter
+                  </Link>
+                </Button>
               </div>
-            ))}
-          </div>
-          <Button asChild className="mt-6" variant="outline">
-            <Link to="/history">Open History</Link>
-          </Button>
-        </Card>
+            </Card>
+          </>
+        )}
       </div>
     </AppShell>
   );
@@ -50,24 +239,31 @@ function AnalyticsPage() {
 
 function Metric({
   title,
+  bn,
   value,
   icon: Icon,
 }: {
   title: string;
+  bn: string;
   value: string;
   icon: typeof BarChart3;
 }) {
   return (
-    <Card className="p-5">
+    <Card className="paper-sheet p-5">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-foreground">
           <Icon className="h-5 w-5" />
         </div>
-        <div>
-          <div className="text-sm text-muted-foreground">{title}</div>
-          <div className="text-2xl font-bold">{value}</div>
+        <div className="min-w-0">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            {title} <span className="lowercase">· {bn}</span>
+          </div>
+          <div className="exam-heading mt-0.5 text-2xl font-bold">{value}</div>
         </div>
       </div>
     </Card>
   );
 }
+
+// Used by Card import—keep usage consistent.
+type _PreserveBadge = typeof Badge;

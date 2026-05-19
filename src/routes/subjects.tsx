@@ -179,11 +179,24 @@ function SubjectsPage() {
                       </div>
                       <Badge variant="outline">HSC</Badge>
                     </div>
-                    <Button asChild className="mt-5 w-full" variant="outline">
-                      <a href={`/chapters?subjectId=${subject.id}`}>
-                        অধ্যায় দেখুন <ChevronRight className="ml-1 h-4 w-4" />
-                      </a>
+                    <Button className="mt-5 w-full" onClick={() => openQuick(subject.id)}>
+                      অনুশীলন শুরু করুন <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
+                  </Card>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+      <QuickPractice
+        open={quickOpen}
+        onOpenChange={setQuickOpen}
+        initialSubjectId={presetSubject}
+      />
+    </AppShell>
+  );
+}
                   </Card>
                 );
               })}

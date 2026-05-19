@@ -524,7 +524,7 @@ function PracticePage() {
                   })}
                   {currentOptions.length === 0 ? (
                     <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
-                      This approved question does not have public answer options yet.
+                      এই যাচাইকৃত প্রশ্নের জন্য এখনো উত্তরের অপশন যুক্ত হয়নি।
                     </p>
                   ) : null}
                 </div>
@@ -552,11 +552,10 @@ function PracticePage() {
                       )}
                       <div>
                         <h3 className="exam-heading font-semibold">
-                          {result.isCorrect ? "সঠিক · Correct" : "ভুল · Incorrect"}
+                          {result.isCorrect ? "সঠিক উত্তর" : "ভুল উত্তর"}
                         </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          You scored {toBnDigits(result.score)} / {toBnDigits(result.maxScore)} on
-                          this question.
+                          আপনি পেয়েছেন {toBnDigits(result.score)} / {toBnDigits(result.maxScore)} নম্বর।
                         </p>
                       </div>
                     </div>
@@ -567,7 +566,7 @@ function PracticePage() {
               {/* Footer actions */}
               <div className="paper-divider flex flex-wrap items-center justify-between gap-3 border-t bg-muted/30 px-6 py-4">
                 <div className="text-xs text-muted-foreground">
-                  Answers are saved only after you submit. Correct answers stay hidden until then.
+                  জমা দেওয়ার পরেই উত্তর সংরক্ষণ হবে। সঠিক উত্তর জমার আগে দেখানো হবে না।
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {!result ? (
@@ -578,19 +577,19 @@ function PracticePage() {
                       }
                     >
                       {submitting ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Submitting</>
+                        <><Loader2 className="h-4 w-4 animate-spin" /> জমা হচ্ছে</>
                       ) : (
-                        "Submit Answer · জমা দিন"
+                        "উত্তর জমা দিন"
                       )}
                     </Button>
                   ) : (
                     <>
                       <Button asChild variant="outline">
-                        <a href={`/result/${result.attemptId}`}>View Result · ফলাফল</a>
+                        <a href={`/result/${result.attemptId}`}>ফলাফল দেখুন</a>
                       </Button>
                       {currentIndex < questions.length - 1 ? (
                         <Button onClick={goToNextQuestion}>
-                          Next · পরবর্তী <ChevronRight className="h-4 w-4" />
+                          পরবর্তী প্রশ্ন <ChevronRight className="h-4 w-4" />
                         </Button>
                       ) : null}
                     </>
@@ -608,18 +607,18 @@ function PracticePage() {
                 disabled={generating}
               >
                 {generating ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating</>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> তৈরি হচ্ছে</>
                 ) : (
-                  <><Sparkles className="mr-1 h-4 w-4" /> Generate more AI MCQs</>
+                  <><Sparkles className="mr-1 h-4 w-4" /> আরও এআই এমসিকিউ</>
                 )}
               </Button>
               <Button asChild size="sm" variant="outline">
                 <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
-                  Change chapter
+                  অধ্যায় পরিবর্তন
                 </a>
               </Button>
               <Button asChild size="sm" variant="ghost">
-                <Link to="/history">History</Link>
+                <Link to="/history">ইতিহাস</Link>
               </Button>
             </div>
           </>

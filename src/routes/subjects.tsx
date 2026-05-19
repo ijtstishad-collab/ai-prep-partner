@@ -48,6 +48,13 @@ function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [presetSubject, setPresetSubject] = useState<string | null>(null);
+
+  const openQuick = (subjectId: string) => {
+    setPresetSubject(subjectId);
+    setQuickOpen(true);
+  };
 
   useEffect(() => {
     if (!user) return;

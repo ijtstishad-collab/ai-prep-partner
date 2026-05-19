@@ -306,7 +306,7 @@ function ChaptersPage() {
                           variant={isActive ? "default" : "outline"}
                           onClick={() => setActiveChapter(isActive ? null : chapter)}
                         >
-                          {isActive ? "Selected" : "Select"}
+                          {isActive ? "নির্বাচিত" : "নির্বাচন করুন"}
                         </Button>
                       </div>
                     </Card>
@@ -322,14 +322,14 @@ function ChaptersPage() {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Step 3 · প্রস্তুতি মোড
+                        ধাপ ৩ · প্রস্তুতি মোড
                       </p>
                       <h2 className="exam-heading text-lg font-semibold">
-                        Pick a practice mode for: {activeChapter.name}
+                        মোড বেছে নিন: {activeChapter.name}
                       </h2>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => setActiveChapter(null)}>
-                      Change chapter
+                      অধ্যায় পরিবর্তন
                     </Button>
                   </div>
                 </div>

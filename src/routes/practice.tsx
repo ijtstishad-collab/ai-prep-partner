@@ -326,7 +326,7 @@ function PracticePage() {
     setError(null);
   };
 
-  const modeMeta = MODE_META[mode];
+  const modeMeta = MODE_META[(mode as PracticeMode) ?? "chapter"];
 
   return (
     <AppShell>

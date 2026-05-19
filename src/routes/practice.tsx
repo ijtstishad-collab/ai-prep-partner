@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { generateInstantPracticeQuestions } from "@/lib/instant-practice-ai.functions";
 import { submitPracticeAnswer } from "@/lib/practice.functions";
 import { cn } from "@/lib/utils";
 import {
@@ -41,7 +42,6 @@ type Subject = {
 
 type PracticeQuestion = {
   id: string;
-  subject_id: string | null;
   chapter_id: string;
   question_type: string;
   difficulty: string | null;
@@ -68,6 +68,74 @@ type SubmissionResult = {
 const fromTable = (tableName: string) =>
   (supabase.from as unknown as (name: string) => any)(tableName);
 
+const schemaMismatchPattern =
+  /(column .* does not exist|schema cache|status|is_active|marks|is_approved)/i;
+const ignorableLegacyPattern =
+  /(permission denied|column .* does not exist|schema cache|is_approved)/i;
+
+const uniqueById = (rows: PracticeQuestion[]) => {
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    if (seen.has(row.id)) return false;
+    seen.add(row.id);
+    return true;
+  });
+};
+
+async function fetchLegacyApprovedQuestions(chapterId: string) {
+  const { data, error } = await fromTable("questions")
+    .select("id, chapter_id, question_type, difficulty, question_text")
+    .eq("chapter_id", chapterId)
+    .eq("is_approved", true)
+    .eq("question_type", "mcq")
+    .order("created_at", { ascending: true })
+    .limit(25);
+
+  return {
+    rows: ((data ?? []) as PracticeQuestion[]).map((row) => ({
+      ...row,
+      marks: row.marks ?? 1,
+    })),
+    error,
+  };
+}
+
+async function fetchApprovedQuestions(chapterId: string) {
+  const { data, error } = await fromTable("questions")
+    .select("id, chapter_id, question_type, difficulty, question_text, marks")
+    .eq("chapter_id", chapterId)
+    .eq("status", "approved")
+    .eq("is_active", true)
+    .eq("question_type", "mcq")
+    .order("created_at", { ascending: true })
+    .limit(25);
+
+  if (error) {
+    if (schemaMismatchPattern.test(error.message)) {
+      const legacy = await fetchLegacyApprovedQuestions(chapterId);
+      return {
+        rows: legacy.rows,
+        error:
+          legacy.error && !ignorableLegacyPattern.test(legacy.error.message) ? legacy.error : null,
+      };
+    }
+
+    return { rows: [] as PracticeQuestion[], error };
+  }
+
+  const phase2Rows = (data ?? []) as PracticeQuestion[];
+  if (phase2Rows.length > 0) {
+    return { rows: phase2Rows, error: null };
+  }
+
+  const legacy = await fetchLegacyApprovedQuestions(chapterId);
+  if (legacy.error && !ignorableLegacyPattern.test(legacy.error.message)) {
+    return { rows: [] as PracticeQuestion[], error: legacy.error };
+  }
+
+  return { rows: uniqueById([...phase2Rows, ...legacy.rows]), error: null };
+}
+
 function PracticePage() {
   const { chapterId } = Route.useSearch();
   const { user, loading: authLoading } = useAuth();
@@ -79,6 +147,7 @@ function PracticePage() {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [result, setResult] = useState<SubmissionResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,31 +195,23 @@ function PracticePage() {
         return;
       }
 
-      const [{ data: subjectRow }, { data: questionRows, error: questionError }] =
-        await Promise.all([
-          fromTable("subjects")
-            .select("id, name")
-            .eq("id", chapterRow.subject_id)
-            .eq("is_active", true)
-            .maybeSingle(),
-          fromTable("questions")
-            .select("id, subject_id, chapter_id, question_type, difficulty, question_text, marks")
-            .eq("chapter_id", chapterId)
-            .eq("status", "approved")
-            .eq("is_active", true)
-            .eq("question_type", "mcq")
-            .order("created_at", { ascending: true })
-            .limit(25),
-        ]);
+      const [{ data: subjectRow }, questionResult] = await Promise.all([
+        fromTable("subjects")
+          .select("id, name")
+          .eq("id", chapterRow.subject_id)
+          .eq("is_active", true)
+          .maybeSingle(),
+        fetchApprovedQuestions(chapterId),
+      ]);
 
       if (!alive) return;
-      if (questionError) {
-        setError(questionError.message);
+      if (questionResult.error) {
+        setError(questionResult.error.message);
         setLoading(false);
         return;
       }
 
-      const safeQuestions = (questionRows ?? []) as PracticeQuestion[];
+      const safeQuestions = questionResult.rows;
       const questionIds = safeQuestions.map((question) => question.id);
       let optionRows: QuestionOption[] = [];
 
@@ -205,6 +266,33 @@ function PracticePage() {
     }
   };
 
+  const generateAiQuestions = async () => {
+    if (!chapterId || generating) return;
+
+    setGenerating(true);
+    setError(null);
+    setResult(null);
+    setSelectedOptionId(null);
+
+    try {
+      const generated = await generateInstantPracticeQuestions({
+        data: {
+          chapter_id: chapterId,
+          count: 5,
+          difficulty: "easy",
+        },
+      });
+
+      setQuestions((generated.questions ?? []) as PracticeQuestion[]);
+      setOptions((generated.options ?? []) as QuestionOption[]);
+      setCurrentIndex(0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not generate AI practice questions.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const goToNextQuestion = () => {
     setCurrentIndex((index) => Math.min(index + 1, questions.length - 1));
     setSelectedOptionId(null);
@@ -219,7 +307,8 @@ function PracticePage() {
           <p className="text-sm font-medium text-primary">Practice</p>
           <h1 className="mt-1 text-3xl font-bold">Chapter-wise MCQ practice</h1>
           <p className="mt-2 text-muted-foreground">
-            Approved questions and visible answer options are loaded from Supabase.
+            Approved questions load from Supabase. If a chapter is empty, AI can create instant
+            practice MCQs for the student.
           </p>
         </div>
 
@@ -268,11 +357,28 @@ function PracticePage() {
             <FileQuestion className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <h2 className="text-xl font-semibold">No approved MCQs yet</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Approved questions for this chapter will appear here after admin review.
+              Generate instant AI MCQs for this student session, or return to chapters.
             </p>
-            <Button asChild className="mt-6" variant="outline">
-              <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>Back to Chapters</a>
-            </Button>
+            {error ? (
+              <p className="mx-auto mt-4 max-w-md rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {error}
+              </p>
+            ) : null}
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button onClick={generateAiQuestions} disabled={generating}>
+                {generating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating
+                  </>
+                ) : (
+                  "Generate AI MCQs"
+                )}
+              </Button>
+              <Button asChild variant="outline">
+                <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>Back to Chapters</a>
+              </Button>
+            </div>
           </Card>
         ) : (
           <div className="grid gap-4 lg:grid-cols-[1.4fr_0.75fr]">
@@ -321,6 +427,12 @@ function PracticePage() {
                       </button>
                     );
                   })}
+                  {currentOptions.length === 0 ? (
+                    <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+                      This approved question does not have public answer options yet. Ask an admin
+                      to publish options before students can submit it.
+                    </p>
+                  ) : null}
                 </div>
               </div>
 
@@ -385,10 +497,25 @@ function PracticePage() {
             <Card className="p-6">
               <h2 className="font-semibold">Practice guardrails</h2>
               <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-                <p>Only approved, active MCQ questions are loaded for students.</p>
+                <p>Approved MCQs load first; empty chapters can generate instant AI practice.</p>
                 <p>Options are read from a separate table that has no correctness flag.</p>
                 <p>Scoring happens only after submission through a protected server function.</p>
               </div>
+              <Button
+                className="mt-6 w-full"
+                variant="secondary"
+                onClick={generateAiQuestions}
+                disabled={generating}
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating
+                  </>
+                ) : (
+                  "Generate More AI MCQs"
+                )}
+              </Button>
               <Button asChild className="mt-6 w-full" variant="outline">
                 <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
                   Choose Another Chapter

@@ -16,11 +16,18 @@ type Subject = {
   name_bn: string | null;
   slug: string;
   icon: string | null;
-  sort_order: number | null;
+  sort_order?: number | null;
 };
 
 const fromTable = (tableName: string) =>
   (supabase.from as unknown as (name: string) => any)(tableName);
+
+const sortSubjects = (items: Subject[]) =>
+  [...items].sort((a, b) => {
+    const aOrder = typeof a.sort_order === "number" ? a.sort_order : Number.MAX_SAFE_INTEGER;
+    const bOrder = typeof b.sort_order === "number" ? b.sort_order : Number.MAX_SAFE_INTEGER;
+    return aOrder - bOrder || a.name.localeCompare(b.name);
+  });
 
 function SubjectsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -32,24 +39,35 @@ function SubjectsPage() {
     if (!user) return;
 
     let alive = true;
-    setLoading(true);
-    setError(null);
 
-    fromTable("subjects")
-      .select("id, name, name_bn, slug, icon, sort_order")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("name", { ascending: true })
-      .then(({ data, error: queryError }: { data: Subject[] | null; error: Error | null }) => {
-        if (!alive) return;
-        if (queryError) {
-          setError(queryError.message);
-          setSubjects([]);
-        } else {
-          setSubjects(data ?? []);
-        }
-        setLoading(false);
-      });
+    async function loadSubjects() {
+      setLoading(true);
+      setError(null);
+
+      let { data, error: queryError } = (await fromTable("subjects")
+        .select("id, name, name_bn, slug, icon, sort_order")
+        .eq("is_active", true)) as { data: Subject[] | null; error: Error | null };
+
+      if (queryError && /sort_order|t_order/i.test(queryError.message)) {
+        const fallback = (await fromTable("subjects")
+          .select("id, name, name_bn, slug, icon")
+          .eq("is_active", true)) as { data: Subject[] | null; error: Error | null };
+        data = fallback.data;
+        queryError = fallback.error;
+      }
+
+      if (!alive) return;
+
+      if (queryError) {
+        setError(queryError.message);
+        setSubjects([]);
+      } else {
+        setSubjects(sortSubjects(data ?? []));
+      }
+      setLoading(false);
+    }
+
+    loadSubjects();
 
     return () => {
       alive = false;

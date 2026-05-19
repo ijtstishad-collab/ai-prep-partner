@@ -205,18 +205,17 @@ function AdminQuestionReviewPage() {
     <AppShell>
       <div className="container mx-auto px-4 py-10">
         <div className="mb-8 max-w-3xl">
-          <p className="text-sm font-medium text-primary">Admin Question Review</p>
-          <h1 className="mt-1 text-3xl font-bold">Question draft review queue</h1>
+          <p className="text-sm font-medium text-primary">প্রশ্ন পর্যালোচনা · Admin</p>
+          <h1 className="mt-1 text-3xl font-bold">প্রশ্ন খসড়া পর্যালোচনা কিউ</h1>
           <p className="mt-2 text-muted-foreground">
-            Create manual HSC MCQ drafts, review answer keys internally, and publish only approved
-            questions for student practice.
+            ম্যানুয়াল এইচএসসি এমসিকিউ খসড়া তৈরি করুন, উত্তর কী যাচাই করুন এবং শুধু অনুমোদিত প্রশ্নই শিক্ষার্থীদের জন্য প্রকাশ করুন।
           </p>
         </div>
 
         {authLoading || loadingData ? (
           <Card className="flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading admin review workspace...
+            অ্যাডমিন ওয়ার্কস্পেস লোড হচ্ছে...
           </Card>
         ) : (
           <div className="grid gap-5 xl:grid-cols-[0.9fr_1.4fr]">
@@ -226,8 +225,8 @@ function AdminQuestionReviewPage() {
                   <Edit3 className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold">Manual MCQ Draft</h2>
-                  <p className="text-sm text-muted-foreground">For reviewed chapter practice.</p>
+                  <h2 className="text-xl font-semibold">ম্যানুয়াল এমসিকিউ খসড়া</h2>
+                  <p className="text-sm text-muted-foreground">অধ্যায়ভিত্তিক অনুশীলনের জন্য।</p>
                 </div>
               </div>
 

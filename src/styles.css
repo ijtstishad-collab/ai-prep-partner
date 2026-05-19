@@ -139,3 +139,55 @@
 .bg-gradient-card { background-image: var(--gradient-card); }
 .shadow-soft { box-shadow: var(--shadow-soft); }
 .shadow-elegant { box-shadow: var(--shadow-elegant); }
+
+/* --- HSC exam-paper inspired surfaces --- */
+.paper-sheet {
+  background-color: #ffffff;
+  border: 1px solid oklch(0.78 0.01 250);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 0 oklch(0.78 0.01 250), 0 8px 24px -16px oklch(0.4 0.05 250 / 0.18);
+  color: oklch(0.18 0.02 250);
+}
+.dark .paper-sheet {
+  background-color: oklch(0.96 0.005 240);
+  color: oklch(0.18 0.02 250);
+  border-color: oklch(0.7 0.01 250);
+}
+.paper-rule { border-bottom: 1px dashed oklch(0.72 0.01 250); }
+.paper-divider { border-top: 1px solid oklch(0.78 0.01 250); }
+.exam-heading {
+  font-family: ui-serif, "Hind Siliguri", Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+/* OMR-style option bubble */
+.omr-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  border: 1.5px solid oklch(0.4 0.02 250);
+  font-weight: 600;
+  background: #ffffff;
+  color: oklch(0.25 0.02 250);
+  transition: all 0.15s ease;
+}
+.omr-bubble--selected {
+  background: oklch(0.25 0.02 250);
+  color: #ffffff;
+  border-color: oklch(0.18 0.02 250);
+  box-shadow: 0 0 0 3px oklch(0.85 0.02 250);
+}
+.omr-bubble--correct {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--success-foreground);
+}
+.omr-bubble--wrong {
+  background: var(--destructive);
+  border-color: var(--destructive);
+  color: var(--destructive-foreground);
+}
+

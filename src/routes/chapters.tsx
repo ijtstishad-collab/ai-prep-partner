@@ -6,7 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpenText, ChevronRight, GraduationCap, Loader2 } from "lucide-react";
+import {
+  BookOpenText,
+  ChevronRight,
+  GraduationCap,
+  Loader2,
+  FileText,
+  Library,
+  Sparkles,
+  Shuffle,
+} from "lucide-react";
+import { toBnDigits } from "@/lib/bn";
 
 export const Route = createFileRoute("/chapters")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -42,6 +52,37 @@ const sortSubjects = (items: Subject[]) =>
     return aOrder - bOrder || a.name.localeCompare(b.name);
   });
 
+const practiceModes = [
+  {
+    key: "chapter",
+    title: "Chapter Practice",
+    bn: "অধ্যায়ভিত্তিক প্র্যাকটিস",
+    desc: "Approved MCQs from this chapter.",
+    icon: FileText,
+  },
+  {
+    key: "board",
+    title: "Past Board Questions",
+    bn: "বোর্ড প্রশ্ন",
+    desc: "Previously asked board MCQs (when available).",
+    icon: Library,
+  },
+  {
+    key: "ai",
+    title: "AI Generated",
+    bn: "এআই প্রশ্ন",
+    desc: "Fresh questions generated for this chapter.",
+    icon: Sparkles,
+  },
+  {
+    key: "mixed",
+    title: "Mixed Exam Prep",
+    bn: "মিশ্র প্রস্তুতি",
+    desc: "A mix of board + chapter + AI items.",
+    icon: Shuffle,
+  },
+] as const;
+
 function ChaptersPage() {
   const { subjectId } = Route.useSearch();
   const { user, loading: authLoading } = useAuth();
@@ -50,6 +91,7 @@ function ChaptersPage() {
   const [subjectsLoading, setSubjectsLoading] = useState(false);
   const [chaptersLoading, setChaptersLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeChapter, setActiveChapter] = useState<Chapter | null>(null);
 
   const selectedSubject = useMemo(
     () => subjects.find((subject) => subject.id === subjectId) ?? null,
@@ -104,6 +146,7 @@ function ChaptersPage() {
     let alive = true;
     setChaptersLoading(true);
     setError(null);
+    setActiveChapter(null);
 
     fromTable("chapters")
       .select("id, subject_id, name, name_bn, order_index, readiness_status")
@@ -129,33 +172,47 @@ function ChaptersPage() {
 
   return (
     <AppShell>
-      <div className="container mx-auto px-4 py-10">
-        <div className="mb-8 max-w-2xl">
-          <p className="text-sm font-medium text-primary">Chapters</p>
-          <h1 className="mt-1 text-3xl font-bold">Choose a chapter for HSC practice</h1>
-          <p className="mt-2 text-muted-foreground">
-            Chapters are loaded from Supabase for the selected subject.
-          </p>
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        {/* Breadcrumb */}
+        <nav className="mb-3 text-xs text-muted-foreground">
+          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <span className="mx-2">/</span>
+          <Link to="/subjects" className="hover:text-foreground">Subjects</Link>
+          <span className="mx-2">/</span>
+          <span className="text-foreground">
+            {selectedSubject?.name ?? "Chapters"}
+          </span>
+        </nav>
+
+        <div className="mb-6 max-w-2xl">
+          <p className="text-sm font-medium text-primary">Step 2 · অধ্যায় নির্বাচন</p>
+          <h1 className="exam-heading mt-1 text-3xl font-bold">
+            {selectedSubject ? selectedSubject.name : "Choose a subject"}
+          </h1>
+          {selectedSubject?.name_bn ? (
+            <p className="mt-1 text-muted-foreground">{selectedSubject.name_bn}</p>
+          ) : (
+            <p className="mt-2 text-muted-foreground">
+              Pick a subject from the list, then choose a chapter and a practice mode.
+            </p>
+          )}
         </div>
 
         {authLoading ? (
-          <Card className="flex items-center gap-3 p-6 text-muted-foreground">
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session...
+            Checking your student session…
           </Card>
         ) : !user ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="text-xl font-semibold">Login required</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Sign in to select a subject and load chapter-wise practice.
-            </p>
-            <Button asChild className="mt-6">
+            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <Button asChild className="mt-4">
               <Link to="/auth">Login / Sign up</Link>
             </Button>
           </Card>
         ) : error ? (
-          <Card className="p-6">
+          <Card className="paper-sheet p-6">
             <h2 className="font-semibold text-destructive">Could not load chapters</h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
@@ -167,27 +224,21 @@ function ChaptersPage() {
               ))}
             </div>
           ) : subjects.length === 0 ? (
-            <Card className="p-8 text-center">
+            <Card className="paper-sheet p-8 text-center">
               <BookOpenText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h2 className="text-xl font-semibold">No active subjects yet</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Add active HSC subjects in Supabase to choose chapters.
-              </p>
+              <h2 className="exam-heading text-xl font-semibold">No active subjects yet</h2>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {subjects.map((subject) => (
-                <Card key={subject.id} className="p-5">
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <BookOpenText className="h-5 w-5" />
-                  </div>
-                  <h2 className="text-lg font-semibold">{subject.name}</h2>
+                <Card key={subject.id} className="paper-sheet p-5">
+                  <h2 className="exam-heading text-lg font-semibold">{subject.name}</h2>
                   {subject.name_bn ? (
                     <p className="mt-1 text-sm text-muted-foreground">{subject.name_bn}</p>
                   ) : null}
                   <Button asChild className="mt-5 w-full" variant="outline">
                     <a href={`/chapters?subjectId=${subject.id}`}>
-                      Show Chapters <ChevronRight className="h-4 w-4" />
+                      Show Chapters <ChevronRight className="ml-1 h-4 w-4" />
                     </a>
                   </Button>
                 </Card>
@@ -202,55 +253,109 @@ function ChaptersPage() {
           </div>
         ) : (
           <>
-            <div className="mb-5 flex flex-wrap items-center gap-3">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{selectedSubject?.name ?? "Selected subject"}</Badge>
-              <Button asChild variant="ghost" size="sm">
+              <Badge variant="outline">
+                {toBnDigits(chapters.length)} অধ্যায় · {chapters.length} chapters
+              </Badge>
+              <Button asChild variant="ghost" size="sm" className="ml-auto">
                 <Link to="/subjects">Change Subject</Link>
               </Button>
             </div>
 
             {chapters.length === 0 ? (
-              <Card className="p-8 text-center">
+              <Card className="paper-sheet p-8 text-center">
                 <BookOpenText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h2 className="text-xl font-semibold">No active chapters yet</h2>
+                <h2 className="exam-heading text-xl font-semibold">No active chapters yet</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Add active chapters for this subject in Supabase to make practice available.
+                  Chapters for this subject will appear here once activated.
                 </p>
               </Card>
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
-                {chapters.map((chapter, index) => (
-                  <Card key={chapter.id} className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                        <BookOpenText className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="secondary">
-                            Chapter {chapter.order_index ?? index + 1}
-                          </Badge>
+                {chapters.map((chapter, index) => {
+                  const isActive = activeChapter?.id === chapter.id;
+                  return (
+                    <Card
+                      key={chapter.id}
+                      className={`paper-sheet p-5 transition ${
+                        isActive ? "ring-2 ring-primary" : ""
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="omr-bubble shrink-0">
+                          {toBnDigits(chapter.order_index ?? index + 1)}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <h2 className="exam-heading font-semibold leading-tight">
+                            {chapter.name}
+                          </h2>
+                          {chapter.name_bn ? (
+                            <p className="mt-0.5 text-sm text-muted-foreground">
+                              {chapter.name_bn}
+                            </p>
+                          ) : null}
                           {chapter.readiness_status ? (
-                            <span className="text-xs text-muted-foreground">
+                            <Badge variant="outline" className="mt-2 text-xs">
                               {chapter.readiness_status}
-                            </span>
+                            </Badge>
                           ) : null}
                         </div>
-                        <h2 className="mt-2 font-semibold">{chapter.name}</h2>
-                        {chapter.name_bn ? (
-                          <p className="mt-1 text-sm text-muted-foreground">{chapter.name_bn}</p>
-                        ) : null}
+                        <Button
+                          size="sm"
+                          variant={isActive ? "default" : "outline"}
+                          onClick={() => setActiveChapter(isActive ? null : chapter)}
+                        >
+                          {isActive ? "Selected" : "Select"}
+                        </Button>
                       </div>
-                      <Button asChild size="sm" variant="outline">
-                        <a href={`/practice?chapterId=${chapter.id}`}>
-                          Practice <ChevronRight className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
             )}
+
+            {/* Practice mode picker — appears once a chapter is selected */}
+            {activeChapter ? (
+              <Card className="paper-sheet mt-6 p-6">
+                <div className="paper-rule -mx-6 -mt-6 mb-5 px-6 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                        Step 3 · প্রস্তুতি মোড
+                      </p>
+                      <h2 className="exam-heading text-lg font-semibold">
+                        Pick a practice mode for: {activeChapter.name}
+                      </h2>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setActiveChapter(null)}>
+                      Change chapter
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {practiceModes.map(({ key, title, bn, desc, icon: Icon }) => (
+                    <a
+                      key={key}
+                      href={`/practice?chapterId=${activeChapter.id}&mode=${key}`}
+                      className="group rounded-lg border bg-white p-4 transition hover:border-primary hover:shadow-sm"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-foreground">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold">{title}</div>
+                          <div className="text-xs text-muted-foreground">{bn}</div>
+                          <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground transition group-hover:text-foreground" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </Card>
+            ) : null}
           </>
         )}
       </div>

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, ChevronRight, GraduationCap, Loader2 } from "lucide-react";
+import { toBnDigits } from "@/lib/bn";
 
 export const Route = createFileRoute("/subjects")({ component: SubjectsPage });
 
@@ -28,6 +29,18 @@ const sortSubjects = (items: Subject[]) =>
     const bOrder = typeof b.sort_order === "number" ? b.sort_order : Number.MAX_SAFE_INTEGER;
     return aOrder - bOrder || a.name.localeCompare(b.name);
   });
+
+// Heuristic group classification from subject name (UI only).
+const groupOf = (name: string): { label: string; bn: string } => {
+  const n = name.toLowerCase();
+  if (/(phys|chem|bio|math|stat|comp|ict|higher math)/.test(n))
+    return { label: "Science", bn: "বিজ্ঞান" };
+  if (/(account|business|finance|management|marketing|production|econ)/.test(n))
+    return { label: "Business Studies", bn: "ব্যবসায় শিক্ষা" };
+  if (/(history|civic|logic|geog|sociology|islam|psych|arts)/.test(n))
+    return { label: "Humanities", bn: "মানবিক" };
+  return { label: "HSC", bn: "এইচএসসি" };
+};
 
 function SubjectsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -76,33 +89,42 @@ function SubjectsPage() {
 
   return (
     <AppShell>
-      <div className="container mx-auto px-4 py-10">
-        <div className="mb-8 max-w-2xl">
-          <p className="text-sm font-medium text-primary">HSC Subjects</p>
-          <h1 className="mt-1 text-3xl font-bold">Choose a subject to begin practice</h1>
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        {/* Breadcrumb */}
+        <nav className="mb-3 text-xs text-muted-foreground">
+          <Link to="/dashboard" className="hover:text-foreground">
+            Dashboard
+          </Link>
+          <span className="mx-2">/</span>
+          <span className="text-foreground">HSC Subjects</span>
+        </nav>
+
+        <div className="mb-6 max-w-2xl">
+          <p className="text-sm font-medium text-primary">Step 1 · বিষয় নির্বাচন</p>
+          <h1 className="exam-heading mt-1 text-3xl font-bold">Choose your HSC subject</h1>
           <p className="mt-2 text-muted-foreground">
-            Subjects are loaded from Supabase and filtered through row-level security.
+            Subjects are grouped Science / Business / Humanities for quick scanning.
           </p>
         </div>
 
         {authLoading ? (
-          <Card className="flex items-center gap-3 p-6 text-muted-foreground">
+          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Checking your student session...
+            Checking your student session…
           </Card>
         ) : !user ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Sign in as a student to load HSC subjects and start chapter-wise practice.
+              Sign in as a student to load HSC subjects.
             </p>
             <Button asChild className="mt-6">
               <Link to="/auth">Login / Sign up</Link>
             </Button>
           </Card>
         ) : error ? (
-          <Card className="p-6">
+          <Card className="paper-sheet p-6">
             <h2 className="font-semibold text-destructive">Could not load subjects</h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
@@ -113,39 +135,52 @@ function SubjectsPage() {
             ))}
           </div>
         ) : subjects.length === 0 ? (
-          <Card className="p-8 text-center">
+          <Card className="paper-sheet p-8 text-center">
             <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h2 className="text-xl font-semibold">No active subjects yet</h2>
+            <h2 className="exam-heading text-xl font-semibold">No active subjects yet</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Add active HSC subjects in Supabase to make them available here.
+              Subjects will appear here once they are activated.
             </p>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {subjects.map((subject) => (
-              <Card key={subject.id} className="p-5">
-                <div className="flex h-full flex-col">
-                  <div className="mb-5 flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <BookOpen className="h-6 w-6" />
+          <>
+            <p className="mb-3 text-sm text-muted-foreground">
+              {toBnDigits(subjects.length)} টি বিষয় পাওয়া গেছে · {subjects.length} subjects
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {subjects.map((subject, idx) => {
+                const group = groupOf(subject.name);
+                return (
+                  <Card key={subject.id} className="paper-sheet p-5">
+                    {/* Paper "header" stripe */}
+                    <div className="paper-rule -mx-5 -mt-5 mb-4 flex items-center justify-between px-5 py-2 text-xs uppercase tracking-wider text-muted-foreground">
+                      <span>{group.label} · {group.bn}</span>
+                      <span>বিষয় {toBnDigits(idx + 1)}</span>
                     </div>
-                    <Badge variant="secondary">HSC</Badge>
-                  </div>
-                  <div className="min-h-[72px]">
-                    <h2 className="text-xl font-semibold">{subject.name}</h2>
-                    {subject.name_bn ? (
-                      <p className="mt-1 text-sm text-muted-foreground">{subject.name_bn}</p>
-                    ) : null}
-                  </div>
-                  <Button asChild className="mt-5 w-full" variant="outline">
-                    <a href={`/chapters?subjectId=${subject.id}`}>
-                      View Chapters <ChevronRight className="h-4 w-4" />
-                    </a>
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-muted text-foreground">
+                        <BookOpen className="h-6 w-6" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h2 className="exam-heading text-lg font-semibold leading-tight">
+                          {subject.name}
+                        </h2>
+                        {subject.name_bn ? (
+                          <p className="mt-0.5 text-sm text-muted-foreground">{subject.name_bn}</p>
+                        ) : null}
+                      </div>
+                      <Badge variant="outline">HSC</Badge>
+                    </div>
+                    <Button asChild className="mt-5 w-full" variant="outline">
+                      <a href={`/chapters?subjectId=${subject.id}`}>
+                        View Chapters · অধ্যায় দেখুন <ChevronRight className="ml-1 h-4 w-4" />
+                      </a>
+                    </Button>
+                  </Card>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </AppShell>

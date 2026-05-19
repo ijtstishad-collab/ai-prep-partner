@@ -1,47 +1,58 @@
-## Plan: Porikkha AI MVP polish + content backbone
+# Simplify Student Journey
 
-### 1. Copy fixes (frontend only)
-Sweep all routes for the exact string replacements, plus a grammar/spelling pass:
-- `index.tsx`: "Everything you need to crack HSC" → "Everything you need to prepare smarter for HSC"; "Ready to ace HSC?" → "Ready to prepare smarter for HSC?"; "Bangla Explanations" feature card → "Simple Bangla explanations"; "Teacher Reviewed" → "Teacher-reviewed question bank".
-- `pricing.tsx`: "3 AI questions / day" → "3 AI-generated questions per day"; "Weak-area analytics" → "Weak area analysis"; "Teacher reviewed Q-bank" → "Teacher-reviewed question bank".
-- General sweep across dashboard, onboarding, weakness, subjects, practice, generate, admin, auth for grammar/spelling slips.
+Current flow is 5 clicks: **Dashboard → Group → Subject → Chapter → Mode → Practice**. Each step is a full page reload that mostly just lists items. Goal: reduce to **2 clicks** (Dashboard → Practice) for the common case, while keeping deep browsing available for new users.
 
-### 2. Database — seed + readiness
-One migration that:
-- Upserts the 3 HSC Science subjects (Physics/Chemistry/Biology 1st Paper) by slug.
-- Upserts all listed chapters under each subject with `order_index`.
-- Adds `chapters.readiness_status text default 'not_started'` with check constraint (`not_started | content_added | ai_ready | teacher_reviewed`).
-- Adds a SQL function `public.compute_chapter_readiness(chapter uuid)` that returns the status based on counts of `syllabus_units`, `textbook_chunks`, `past_questions`, `generation_rules` (by subject), and approved+teacher-reviewed `generated_questions`.
-- Adds a `demo_questions` table (chapter_id, question_text, options jsonb, correct_answer, explanation_bn, question_type, difficulty) with RLS: any authenticated user can read; admins manage. Seed 3–4 demo MCQs per subject's first chapter for fallback.
+## New Flow
 
-### 3. Server / AI logic
-- Update `generateQuestions` server fn: require `syllabus_units > 0 AND textbook_chunks > 0 AND past_questions > 0 AND generation_rules > 0`. If not, throw a tagged error `INSUFFICIENT_CONTENT` so the client can show demo mode.
-- Add a new server fn `getChapterReadiness(chapterId)` returning counts + status badge.
-- Add `getDemoQuestions(chapterId)` returning seeded sample rows.
+```text
+DASHBOARD (one-screen launcher)
+  ├── Quick Start card        → 1 click to last/recommended chapter
+  ├── Continue last attempt   → 1 click resume
+  ├── Subject picker (inline) → opens chapter+mode sheet
+  └── Browse all subjects     → existing /subjects page (fallback)
 
-### 4. Generate page
-- Show readiness badge next to each chapter in the dropdown (AI Ready / Needs Content / Teacher Reviewed).
-- On `INSUFFICIENT_CONTENT`, render the friendly demo banner + 3–5 demo questions.
+CHAPTER+MODE SHEET (single combined screen, replaces /subjects/$slug + /chapters + mode picker)
+  → Pick chapter from list, pick mode chips inline, "Start" button
+  → 1 screen instead of 3
 
-### 5. Admin panel
-Existing `admin.tsx` already has tabs for syllabus, textbook chunks, past questions, generation rules, and AI review. Add:
-- Tab navigation refresh to mirror the 10 admin pages (Dashboard / Subjects / Chapters / Syllabus / Textbook / Past Q CSV / Rules / AI Review with approve/reject/edit/teacher-review toggle).
-- Admin Dashboard tab: counts of subjects, chapters, pending questions, approved questions, reports.
-- Subjects + Chapters CRUD (create/toggle active/rename) using `supabaseAdmin`-free direct supabase calls (admin RLS covers).
-- Chapter list shows readiness badge.
-- AI Review: ensure approve/reject/edit + "Mark Teacher Reviewed" toggle exists.
+PRACTICE  (unchanged route, unchanged backend)
+RESULT    (unchanged)
+```
 
-### 6. Empty states
-Add friendly empty-state cards on:
-- Dashboard (no attempts yet → "Start your first practice")
-- Weakness (no performance data → guidance)
-- Recent tests (no attempts → CTA)
-- Subjects/chapters list (none → admin message)
+## Changes by Page
 
-### Technical notes
-- All UI uses existing semantic tokens from `src/styles.css`.
-- Migration uses idempotent upserts (`ON CONFLICT (slug)` / `(subject_id, name)`).
-- Will add a unique index on `chapters (subject_id, name)` for upsert safety.
-- No new secrets needed; `LOVABLE_API_KEY` already present.
+### `dashboard.tsx` — becomes the launcher
+- **New "Quick Start" hero tile**: shows last practiced chapter + "Resume" button, or recommended weak chapter if none. Single click → `/practice/$chapterId`.
+- **Inline subject row**: horizontal scrollable chips of student's group subjects. Click → opens combined Chapter+Mode bottom sheet (no navigation).
+- Keep existing bento tiles for History, Analytics, Mock Test, AI MCQ but compress into a smaller secondary row.
+- Remove the 5-step "Journey" progress bar — it advertises the complexity we're removing.
 
-Proceeding with migration first, then code.
+### New combined `ChapterModeSheet` component
+- Shown as a Sheet/Dialog over dashboard (no route change).
+- Left: chapter list (searchable, grouped by paper if applicable).
+- Right (or below on mobile): 4 mode chips — অধ্যায়ভিত্তিক / বোর্ড প্রশ্ন / এআই প্রশ্ন / মিশ্র.
+- Single primary "শুরু করুন · Start Practice" button → navigates straight to `/practice/$chapterId?mode=...`.
+- Replaces the need to visit `/subjects/$slug` then `/chapters` then click a mode.
+
+### `subjects.tsx` & `chapters.tsx` — kept as fallback
+- Still reachable via "সব বিষয় দেখুন · Browse all" link for users who want to explore.
+- No structural changes; just ensure they also open the new sheet when a subject is clicked (instead of multi-step navigation).
+
+### `practice.tsx`
+- Add a compact top bar: subject · chapter · mode + back-to-dashboard.
+- Auto-start (skip the "Start" intro screen if currently present) — user already committed when clicking the chapter.
+- Result screen already exists; add a prominent "পরবর্তী দুর্বল অধ্যায় · Next weak chapter" button so the loop continues with 1 click.
+
+## Out of Scope
+- No backend, RLS, schema, or server function changes.
+- Existing routes stay mounted (deep links keep working).
+- Bangla-first copy and Paper & Ink aesthetic preserved.
+
+## Files Touched
+- `src/routes/dashboard.tsx` (restructure)
+- `src/components/ChapterModeSheet.tsx` (new)
+- `src/routes/subjects.tsx`, `src/routes/chapters.tsx` (open sheet on click instead of navigating; keep page accessible)
+- `src/routes/practice.tsx` (compact header, auto-start)
+- `src/routes/result.$attemptId.tsx` (next-chapter CTA prominence)
+
+Approve and I'll implement.

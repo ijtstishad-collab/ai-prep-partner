@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, ChevronRight, GraduationCap, Loader2 } from "lucide-react";
 import { toBnDigits } from "@/lib/bn";
+import { QuickPractice } from "@/components/QuickPractice";
 
 export const Route = createFileRoute("/subjects")({ component: SubjectsPage });
 
@@ -47,6 +48,13 @@ function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [presetSubject, setPresetSubject] = useState<string | null>(null);
+
+  const openQuick = (subjectId: string) => {
+    setPresetSubject(subjectId);
+    setQuickOpen(true);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -171,10 +179,8 @@ function SubjectsPage() {
                       </div>
                       <Badge variant="outline">HSC</Badge>
                     </div>
-                    <Button asChild className="mt-5 w-full" variant="outline">
-                      <a href={`/chapters?subjectId=${subject.id}`}>
-                        অধ্যায় দেখুন <ChevronRight className="ml-1 h-4 w-4" />
-                      </a>
+                    <Button className="mt-5 w-full" onClick={() => openQuick(subject.id)}>
+                      অনুশীলন শুরু করুন <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </Card>
                 );
@@ -183,6 +189,11 @@ function SubjectsPage() {
           </>
         )}
       </div>
+      <QuickPractice
+        open={quickOpen}
+        onOpenChange={setQuickOpen}
+        initialSubjectId={presetSubject}
+      />
     </AppShell>
   );
 }

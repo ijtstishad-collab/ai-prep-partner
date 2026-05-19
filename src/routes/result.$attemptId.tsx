@@ -291,6 +291,38 @@ function ResultPage() {
               </div>
             </Card>
 
+            {/* Big "what next" CTA — keeps the loop tight */}
+            <Card className="paper-sheet flex flex-col gap-3 border-foreground/30 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  পরবর্তী পদক্ষেপ · Next Step
+                </p>
+                <h3 className="exam-heading mt-1 text-lg font-bold leading-tight">
+                  {nextChapter
+                    ? `${nextChapter.name} শুরু করুন`
+                    : wrongCount > 0
+                      ? `${chapter?.name ?? "এই অধ্যায়"} আরেকবার অনুশীলন করুন`
+                      : "একটি মক টেস্ট দিন"}
+                </h3>
+                <p className="bn-label mt-1 text-xs opacity-60">
+                  {nextChapter
+                    ? "Continue with the next chapter in this subject"
+                    : wrongCount > 0
+                      ? "Reinforce your weak areas"
+                      : "Subject complete — try a timed mock"}
+                </p>
+              </div>
+              <Button asChild size="lg" className="exam-heading shrink-0">
+                {nextChapter ? (
+                  <a href={`/practice?chapterId=${nextChapter.id}`}>চলুন · Continue →</a>
+                ) : wrongCount > 0 && attempt.chapter_id ? (
+                  <a href={`/practice?chapterId=${attempt.chapter_id}`}>আবার চেষ্টা · Retry →</a>
+                ) : (
+                  <a href="/mock-test">মক টেস্ট · Mock Test →</a>
+                )}
+              </Button>
+            </Card>
+
             {/* Weak topic + next */}
             <div className="grid gap-3 md:grid-cols-2">
               <Card className="paper-sheet p-5">

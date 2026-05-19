@@ -1,226 +1,242 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/lib/auth";
-import { useEffect } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowUpRight, BookOpen, History, BarChart3, Sparkles, Play, Zap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { QuickPractice } from "@/components/QuickPractice";
+import { Button } from "@/components/ui/button";
+import { toBnDigits } from "@/lib/bn";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
-type JourneyStep = { step: string; title: string; bn: string; done?: boolean; current?: boolean };
+type Subject = { id: string; name: string; name_bn: string | null };
 
-const journey: JourneyStep[] = [
-  { step: "১", title: "বিষয় বেছে নিন", bn: "Choose Subject", current: true },
-  { step: "২", title: "অধ্যায় বেছে নিন", bn: "Choose Chapter" },
-  { step: "৩", title: "প্রস্তুতি মোড নির্বাচন", bn: "Pick Practice Mode" },
-  { step: "৪", title: "উত্তর দিন ও জমা দিন", bn: "Answer & Submit" },
-  { step: "৫", title: "ফলাফল ও দুর্বল অধ্যায়", bn: "Result & Weak Areas" },
-];
+type LastAttempt = {
+  id: string;
+  chapter_id: string | null;
+  subject_id: string | null;
+  score: number;
+  total_questions: number;
+  completed_at: string | null;
+  chapters?: { name: string | null } | null;
+};
 
-// Small inline tile primitive — keeps the journal-style hairline tile consistent.
-function Tile({
-  serial,
-  className = "",
-  children,
-}: {
-  serial?: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={`paper-tile relative p-4 ${className}`}>
-      {serial && <span className="serial-marker hidden sm:block">{serial}</span>}
-      {children}
-    </div>
-  );
-}
-
-function TileTitle({ en, bn }: { en: string; bn: string }) {
-  return (
-    <h2 className="exam-heading text-sm font-bold leading-tight text-foreground">
-      {en}
-      <br />
-      <span className="bn-label block text-[10px] font-normal opacity-70">{bn}</span>
-    </h2>
-  );
-}
+const fromTable = (n: string) => (supabase.from as unknown as (name: string) => any)(n);
 
 function Dashboard() {
   const { user, profile, loading } = useAuth();
   const nav = useNavigate();
+
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [lastAttempt, setLastAttempt] = useState<LastAttempt | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [presetSubject, setPresetSubject] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
     if (!loading && user && profile && !profile.onboarded) nav({ to: "/onboarding" });
   }, [loading, user, profile, nav]);
 
-  const studentName = profile?.full_name || "শিক্ষার্থী";
+  // Subjects strip
+  useEffect(() => {
+    if (!user) return;
+    fromTable("subjects")
+      .select("id, name, name_bn")
+      .eq("is_active", true)
+      .limit(8)
+      .then(({ data }: { data: Subject[] | null }) => setSubjects(data ?? []));
+  }, [user]);
+
+  // Most recent attempt → resume / next chapter
+  useEffect(() => {
+    if (!user) return;
+    fromTable("test_attempts")
+      .select("id, chapter_id, subject_id, score, total_questions, completed_at, chapters(name)")
+      .eq("user_id", user.id)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .then(({ data }: { data: LastAttempt[] | null }) => setLastAttempt(data?.[0] ?? null));
+  }, [user]);
+
+  const studentName = profile?.full_name?.split(" ")[0] || "শিক্ষার্থী";
+
+  const openQuick = (subjectId?: string | null) => {
+    setPresetSubject(subjectId ?? null);
+    setQuickOpen(true);
+  };
+
+  const resumeChapter = lastAttempt?.chapter_id ?? null;
+  const lastChapterName = lastAttempt?.chapters?.name ?? null;
 
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-[440px] px-5 py-8 sm:max-w-2xl sm:px-10 lg:max-w-5xl">
-        {/* Header / Greeting */}
-        <header className="relative mb-10 sm:pl-8">
-          <span className="serial-marker hidden sm:block" style={{ top: 0 }}>
-            ০১.
-          </span>
+      <div className="mx-auto w-full max-w-[480px] px-5 py-8 sm:max-w-3xl sm:px-10 lg:max-w-5xl">
+        {/* Greeting */}
+        <header className="mb-6">
           <h1 className="exam-heading text-2xl font-bold leading-tight text-foreground sm:text-3xl">
             স্বাগতম, {studentName}
-            <br />
-            <span className="bn-label text-lg font-normal opacity-70 sm:text-xl">
-              Welcome back, {profile?.full_name ? profile.full_name.split(" ")[0] : "Student"}
-            </span>
           </h1>
-          <p className="mt-3 max-w-md text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            প্রতিদিন এইচএসসি বোর্ড-মানের প্রশ্নে অনুশীলন করুন — বিষয় বাছাই করুন, অধ্যায় ঠিক করুন,
-            পরীক্ষায় বসুন।
+          <p className="bn-label mt-1 text-sm opacity-60">
+            Welcome back — pick a chapter and start practicing.
           </p>
         </header>
 
-        {/* Bento grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {/* Practice Journey — full width */}
-          <Tile serial="০২." className="col-span-2 sm:col-span-4">
-            <div className="mb-4 flex items-start justify-between">
-              <TileTitle en="আপনার প্রস্তুতি যাত্রা" bn="Your Practice Journey" />
-              <div className="border border-foreground/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
-                ৫ ধাপ · 5 Steps
+        {/* HERO: Quick Start */}
+        <div className="paper-tile relative mb-4 overflow-hidden p-5 sm:p-6">
+          <span className="serial-marker hidden sm:block">০১.</span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                <Zap className="h-3 w-3" />
+                দ্রুত শুরু · Quick Start
               </div>
+              <h2 className="exam-heading text-xl font-bold leading-tight sm:text-2xl">
+                আজ কোন অধ্যায় অনুশীলন করবেন?
+              </h2>
+              <p className="bn-label mt-1 text-xs opacity-60">
+                Subject → Chapter → Start. Two clicks.
+              </p>
             </div>
-            <ol className="space-y-2.5 sm:grid sm:grid-cols-5 sm:gap-3 sm:space-y-0">
-              {journey.map((s) => (
-                <li
-                  key={s.step}
-                  className={`flex items-center gap-3 sm:flex-col sm:items-start sm:gap-2 ${
-                    s.current ? "" : "opacity-50"
-                  }`}
-                >
-                  <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
-                      s.current
-                        ? "border-foreground bg-foreground text-background"
-                        : "border-foreground/30"
-                    }`}
-                  >
-                    {s.step}
-                  </div>
-                  <div className="flex-1 border-b border-foreground/5 pb-1 sm:w-full sm:border-b-0">
-                    <p className="text-[11px] font-bold leading-tight">{s.title}</p>
-                    <p className="bn-label text-[9px] opacity-60">{s.bn}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </Tile>
+            <Button
+              size="lg"
+              className="exam-heading shrink-0"
+              onClick={() => openQuick()}
+            >
+              <Play className="mr-2 h-4 w-4" />
+              অনুশীলন শুরু করুন
+            </Button>
+          </div>
 
-          {/* HSC Subjects */}
-          <Tile serial="০৩." className="col-span-1 aspect-square sm:col-span-2 sm:aspect-auto sm:min-h-[160px]">
-            <Link to="/subjects" className="flex h-full flex-col justify-between">
-              <TileTitle en="এইচএসসি বিষয়সমূহ" bn="HSC Subjects" />
-              <div className="mt-auto flex items-end justify-between">
-                <span className="text-[10px] uppercase tracking-widest opacity-50">দেখুন · Browse</span>
-                <div className="flex h-6 w-6 items-center justify-center rounded-full border border-foreground/15">
-                  <ArrowUpRight className="h-3 w-3" />
-                </div>
+          {/* Resume row */}
+          {resumeChapter && (
+            <div className="mt-4 flex items-center justify-between gap-3 border-t border-foreground/10 pt-3">
+              <div className="min-w-0 text-xs">
+                <span className="opacity-60">সর্বশেষ · Last: </span>
+                <span className="exam-heading font-bold">
+                  {lastChapterName ?? "অনুশীলন"}
+                </span>
+                {lastAttempt && (
+                  <span className="ml-2 opacity-60">
+                    স্কোর {toBnDigits(lastAttempt.score)}/{toBnDigits(lastAttempt.total_questions)}
+                  </span>
+                )}
               </div>
-            </Link>
-          </Tile>
-
-          {/* AI MCQs */}
-          <Tile className="col-span-1 aspect-square sm:col-span-2 sm:aspect-auto sm:min-h-[160px]">
-            <Link to="/practice" className="flex h-full flex-col justify-between">
-              <TileTitle en="এআই এমসিকিউ" bn="AI-Generated MCQs" />
-              <div className="mt-auto">
-                <p className="text-[10px] opacity-60">তাজা প্রশ্ন, সাথে সাথে তৈরি</p>
-                <p className="bn-label mt-0.5 text-[9px] opacity-50">Fresh questions, on demand</p>
-              </div>
-            </Link>
-          </Tile>
-
-          {/* Result Analytics — full width with bar chart */}
-          <Tile serial="০৪." className="col-span-2 sm:col-span-4">
-            <Link to="/analytics" className="block">
-              <div className="mb-6 flex items-center justify-between">
-                <TileTitle en="ফলাফল বিশ্লেষণ" bn="Result Analytics" />
-                <div className="text-right">
-                  <p className="exam-heading text-2xl font-bold leading-none">—</p>
-                  <p className="mt-1 text-[8px] uppercase tracking-tighter opacity-50">
-                    অনুশীলন শুরু করলে এখানে দেখা যাবে
-                  </p>
-                </div>
-              </div>
-              <div className="flex h-12 items-end gap-1 px-1">
-                {[40, 60, 30, 80, 95].map((h, i) => (
-                  <div
-                    key={i}
-                    className={i === 4 ? "flex-1 bg-foreground" : "flex-1 bg-foreground/10"}
-                    style={{ height: `${h}%` }}
-                  />
-                ))}
-              </div>
-            </Link>
-          </Tile>
-
-          {/* Mock Test */}
-          <Tile className="col-span-1 sm:col-span-2">
-            <Link to="/mock-test" className="block">
-              <h3 className="exam-heading text-xs font-bold leading-tight">
-                মক টেস্ট
-                <br />
-                <span className="bn-label text-[9px] font-normal opacity-70">Mock Test</span>
-              </h3>
-              <div className="mt-4 flex gap-1.5">
-                <div className="h-2 w-2 rounded-full border border-foreground/40" />
-                <div className="h-2 w-2 rounded-full border border-foreground/40" />
-                <div className="h-2 w-2 rounded-full border border-foreground/40 bg-foreground" />
-              </div>
-              <p className="mt-2 text-[9px] opacity-50">সময়সহ পূর্ণ প্রশ্নপত্রের অনুশীলন</p>
-            </Link>
-          </Tile>
-
-          {/* Weak Areas */}
-          <Tile className="col-span-1 sm:col-span-2">
-            <Link to="/analytics" className="block">
-              <h3 className="exam-heading text-xs font-bold leading-tight">
-                দুর্বল অধ্যায়
-                <br />
-                <span className="bn-label text-[9px] font-normal opacity-70">Weak Areas</span>
-              </h3>
-              <div className="mt-4">
-                <p className="text-[10px] underline decoration-foreground/20 underline-offset-4">
-                  কোথায় ফোকাস দরকার দেখতে বিশ্লেষণে যান
-                </p>
-              </div>
-            </Link>
-          </Tile>
-
-          {/* Recent History — quiet footer strip */}
-          <div className="col-span-2 mt-2 border-t border-foreground/10 pt-3 sm:col-span-4">
-            <div className="flex items-center justify-between opacity-70">
-              <span className="text-[10px] font-bold uppercase tracking-widest">
-                সাম্প্রতিক ইতিহাস · Recent History
-              </span>
-              <Link to="/history" className="text-[10px] italic underline-offset-2 hover:underline">
-                সব দেখুন →
+              <Link
+                to="/practice"
+                search={{ chapterId: resumeChapter, mode: "chapter" as const }}
+                className="exam-heading shrink-0 text-xs font-bold underline-offset-4 hover:underline"
+              >
+                আবার অনুশীলন →
               </Link>
             </div>
-            <div className="mt-2 space-y-1.5">
-              <div className="flex justify-between text-[11px] opacity-60">
-                <span>এখনো কোনো অনুশীলন হয়নি</span>
-                <span className="font-mono">—/—</span>
-              </div>
-            </div>
+          )}
+        </div>
+
+        {/* Subject quick-pick chips */}
+        <div className="paper-tile relative mb-4 p-5">
+          <span className="serial-marker hidden sm:block">০২.</span>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="exam-heading text-sm font-bold">
+              আপনার বিষয়সমূহ
+              <span className="bn-label ml-2 text-[10px] font-normal opacity-60">
+                Jump into a subject
+              </span>
+            </h3>
+            <Link
+              to="/subjects"
+              className="text-[11px] underline-offset-4 hover:underline opacity-70"
+            >
+              সব দেখুন →
+            </Link>
           </div>
+          {subjects.length === 0 ? (
+            <p className="text-xs opacity-60">কোনো বিষয় পাওয়া যায়নি।</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {subjects.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => openQuick(s.id)}
+                  className="group flex items-center justify-between gap-2 rounded border border-foreground/15 px-3 py-2.5 text-left transition hover:border-foreground/40 hover:bg-foreground/[0.02]"
+                >
+                  <span className="min-w-0">
+                    <span className="exam-heading block truncate text-sm font-semibold leading-tight">
+                      {s.name}
+                    </span>
+                    {s.name_bn && (
+                      <span className="bn-label block truncate text-[10px] opacity-60">
+                        {s.name_bn}
+                      </span>
+                    )}
+                  </span>
+                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-40 transition group-hover:opacity-100" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Secondary tiles row */}
+        <div className="grid grid-cols-3 gap-3">
+          <SmallTile
+            to="/analytics"
+            icon={BarChart3}
+            bn="ফলাফল"
+            en="Analytics"
+          />
+          <SmallTile
+            to="/history"
+            icon={History}
+            bn="ইতিহাস"
+            en="History"
+          />
+          <SmallTile
+            to="/mock-test"
+            icon={Sparkles}
+            bn="মক টেস্ট"
+            en="Mock Test"
+          />
         </div>
 
         {/* Footer notation */}
-        <div className="mt-12 text-center">
-          <div className="notation-rule">
-            <p className="exam-heading text-[10px] italic opacity-50">
-              বোর্ড মানদণ্ড অনুসারে অনুশীলন · Board-Standard Practice Interface
-            </p>
-          </div>
+        <div className="mt-10 text-center">
+          <p className="exam-heading text-[10px] italic opacity-40">
+            বোর্ড মানদণ্ড অনুসারে অনুশীলন · Board-Standard Practice Interface
+          </p>
         </div>
       </div>
+
+      <QuickPractice
+        open={quickOpen}
+        onOpenChange={setQuickOpen}
+        initialSubjectId={presetSubject}
+      />
     </AppShell>
+  );
+}
+
+function SmallTile({
+  to,
+  icon: Icon,
+  bn,
+  en,
+}: {
+  to: string;
+  icon: typeof BookOpen;
+  bn: string;
+  en: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="paper-tile flex flex-col items-start justify-between p-3 transition hover:border-foreground/40"
+    >
+      <Icon className="h-4 w-4 opacity-70" />
+      <div className="mt-3">
+        <p className="exam-heading text-xs font-bold leading-tight">{bn}</p>
+        <p className="bn-label text-[10px] opacity-60">{en}</p>
+      </div>
+    </Link>
   );
 }

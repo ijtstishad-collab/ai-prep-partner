@@ -61,29 +61,29 @@ function Dashboard() {
         {/* Header / Greeting */}
         <header className="relative mb-10 sm:pl-8">
           <span className="serial-marker hidden sm:block" style={{ top: 0 }}>
-            01.
+            ০১.
           </span>
           <h1 className="exam-heading text-2xl font-bold leading-tight text-foreground sm:text-3xl">
-            Welcome, {profile?.full_name ? profile.full_name.split(" ")[0] : "Student"}
+            স্বাগতম, {studentName}
             <br />
-            <span className="bn-label text-xl font-normal opacity-80 sm:text-2xl">
-              স্বাগতম, {studentName}
+            <span className="bn-label text-lg font-normal opacity-70 sm:text-xl">
+              Welcome back, {profile?.full_name ? profile.full_name.split(" ")[0] : "Student"}
             </span>
           </h1>
           <p className="mt-3 max-w-md text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            Track your progress and practice HSC exam-style questions daily — pick a subject,
-            choose a chapter, sit the paper.
+            প্রতিদিন এইচএসসি বোর্ড-মানের প্রশ্নে অনুশীলন করুন — বিষয় বাছাই করুন, অধ্যায় ঠিক করুন,
+            পরীক্ষায় বসুন।
           </p>
         </header>
 
         {/* Bento grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           {/* Practice Journey — full width */}
-          <Tile serial="02." className="col-span-2 sm:col-span-4">
+          <Tile serial="০২." className="col-span-2 sm:col-span-4">
             <div className="mb-4 flex items-start justify-between">
-              <TileTitle en="Practice Journey" bn="আপনার প্রস্তুতি যাত্রা" />
+              <TileTitle en="আপনার প্রস্তুতি যাত্রা" bn="Your Practice Journey" />
               <div className="border border-foreground/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
-                5 Steps · ৫ ধাপ
+                ৫ ধাপ · 5 Steps
               </div>
             </div>
             <ol className="space-y-2.5 sm:grid sm:grid-cols-5 sm:gap-3 sm:space-y-0">
@@ -113,11 +113,11 @@ function Dashboard() {
           </Tile>
 
           {/* HSC Subjects */}
-          <Tile serial="03." className="col-span-1 aspect-square sm:col-span-2 sm:aspect-auto sm:min-h-[160px]">
+          <Tile serial="০৩." className="col-span-1 aspect-square sm:col-span-2 sm:aspect-auto sm:min-h-[160px]">
             <Link to="/subjects" className="flex h-full flex-col justify-between">
-              <TileTitle en="HSC Subjects" bn="এইচএসসি বিষয়সমূহ" />
+              <TileTitle en="এইচএসসি বিষয়সমূহ" bn="HSC Subjects" />
               <div className="mt-auto flex items-end justify-between">
-                <span className="text-[10px] uppercase tracking-widest opacity-50">Browse</span>
+                <span className="text-[10px] uppercase tracking-widest opacity-50">দেখুন · Browse</span>
                 <div className="flex h-6 w-6 items-center justify-center rounded-full border border-foreground/15">
                   <ArrowUpRight className="h-3 w-3" />
                 </div>
@@ -128,23 +128,23 @@ function Dashboard() {
           {/* AI MCQs */}
           <Tile className="col-span-1 aspect-square sm:col-span-2 sm:aspect-auto sm:min-h-[160px]">
             <Link to="/practice" className="flex h-full flex-col justify-between">
-              <TileTitle en="AI MCQs" bn="এআই এমসিকিউ" />
+              <TileTitle en="এআই এমসিকিউ" bn="AI-Generated MCQs" />
               <div className="mt-auto">
-                <p className="text-[10px] opacity-60">Freshly generated</p>
-                <p className="bn-label mt-0.5 text-[9px] opacity-50">তাজা প্রশ্ন</p>
+                <p className="text-[10px] opacity-60">তাজা প্রশ্ন, সাথে সাথে তৈরি</p>
+                <p className="bn-label mt-0.5 text-[9px] opacity-50">Fresh questions, on demand</p>
               </div>
             </Link>
           </Tile>
 
           {/* Result Analytics — full width with bar chart */}
-          <Tile serial="04." className="col-span-2 sm:col-span-4">
+          <Tile serial="০৪." className="col-span-2 sm:col-span-4">
             <Link to="/analytics" className="block">
               <div className="mb-6 flex items-center justify-between">
-                <TileTitle en="Result Analytics" bn="ফলাফল বিশ্লেষণ" />
+                <TileTitle en="ফলাফল বিশ্লেষণ" bn="Result Analytics" />
                 <div className="text-right">
                   <p className="exam-heading text-2xl font-bold leading-none">—</p>
                   <p className="mt-1 text-[8px] uppercase tracking-tighter opacity-50">
-                    Run a practice to populate
+                    অনুশীলন শুরু করলে এখানে দেখা যাবে
                   </p>
                 </div>
               </div>
@@ -164,16 +164,16 @@ function Dashboard() {
           <Tile className="col-span-1 sm:col-span-2">
             <Link to="/mock-test" className="block">
               <h3 className="exam-heading text-xs font-bold leading-tight">
-                Mock Test
+                মক টেস্ট
                 <br />
-                <span className="bn-label text-[9px] font-normal opacity-70">মক টেস্ট</span>
+                <span className="bn-label text-[9px] font-normal opacity-70">Mock Test</span>
               </h3>
               <div className="mt-4 flex gap-1.5">
                 <div className="h-2 w-2 rounded-full border border-foreground/40" />
                 <div className="h-2 w-2 rounded-full border border-foreground/40" />
                 <div className="h-2 w-2 rounded-full border border-foreground/40 bg-foreground" />
               </div>
-              <p className="mt-2 text-[9px] opacity-50">Full-paper timed simulation</p>
+              <p className="mt-2 text-[9px] opacity-50">সময়সহ পূর্ণ প্রশ্নপত্রের অনুশীলন</p>
             </Link>
           </Tile>
 
@@ -181,13 +181,13 @@ function Dashboard() {
           <Tile className="col-span-1 sm:col-span-2">
             <Link to="/analytics" className="block">
               <h3 className="exam-heading text-xs font-bold leading-tight">
-                Weak Areas
+                দুর্বল অধ্যায়
                 <br />
-                <span className="bn-label text-[9px] font-normal opacity-70">দুর্বল অধ্যায়</span>
+                <span className="bn-label text-[9px] font-normal opacity-70">Weak Areas</span>
               </h3>
               <div className="mt-4">
                 <p className="text-[10px] underline decoration-foreground/20 underline-offset-4">
-                  Open analytics to see focus areas
+                  কোথায় ফোকাস দরকার দেখতে বিশ্লেষণে যান
                 </p>
               </div>
             </Link>
@@ -197,15 +197,15 @@ function Dashboard() {
           <div className="col-span-2 mt-2 border-t border-foreground/10 pt-3 sm:col-span-4">
             <div className="flex items-center justify-between opacity-70">
               <span className="text-[10px] font-bold uppercase tracking-widest">
-                Recent History / ইতিহাস
+                সাম্প্রতিক ইতিহাস · Recent History
               </span>
               <Link to="/history" className="text-[10px] italic underline-offset-2 hover:underline">
-                View All →
+                সব দেখুন →
               </Link>
             </div>
             <div className="mt-2 space-y-1.5">
               <div className="flex justify-between text-[11px] opacity-60">
-                <span>No attempts yet</span>
+                <span>এখনো কোনো অনুশীলন হয়নি</span>
                 <span className="font-mono">—/—</span>
               </div>
             </div>
@@ -216,7 +216,7 @@ function Dashboard() {
         <div className="mt-12 text-center">
           <div className="notation-rule">
             <p className="exam-heading text-[10px] italic opacity-50">
-              Examination Practice Interface · Board Standard · বোর্ড মানদণ্ড
+              বোর্ড মানদণ্ড অনুসারে অনুশীলন · Board-Standard Practice Interface
             </p>
           </div>
         </div>

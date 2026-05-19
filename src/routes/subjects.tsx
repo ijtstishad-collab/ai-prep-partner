@@ -197,13 +197,3 @@ function SubjectsPage() {
     </AppShell>
   );
 }
-                  </Card>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </div>
-    </AppShell>
-  );
-}

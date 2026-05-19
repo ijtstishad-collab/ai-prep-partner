@@ -92,55 +92,55 @@ function HistoryPage() {
     <AppShell>
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <nav className="mb-3 text-xs text-muted-foreground">
-          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
+          <Link to="/dashboard" className="hover:text-foreground">ড্যাশবোর্ড</Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">History</span>
+          <span className="text-foreground">ইতিহাস</span>
         </nav>
 
         <div className="mb-6 max-w-2xl">
-          <p className="text-sm font-medium text-primary">History · ইতিহাস</p>
-          <h1 className="exam-heading mt-1 text-3xl font-bold">Your practice attempts</h1>
+          <p className="text-sm font-medium text-primary">ইতিহাস · History</p>
+          <h1 className="exam-heading mt-1 text-3xl font-bold">আপনার অনুশীলনের ইতিহাস</h1>
           <p className="mt-2 text-muted-foreground">
-            Review what you've practiced, with scores and chapter coverage.
+            কোন অধ্যায়ে কেমন স্কোর — সব জমা দেওয়া অনুশীলন এক জায়গায়।
           </p>
         </div>
 
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Checking session…
+            <Loader2 className="h-5 w-5 animate-spin" /> সেশন যাচাই হচ্ছে…
           </Card>
         ) : !user ? (
           <Card className="paper-sheet p-8 text-center">
             <GraduationCap className="mx-auto mb-4 h-12 w-12 text-primary" />
-            <h2 className="exam-heading text-xl font-semibold">Login required</h2>
+            <h2 className="exam-heading text-xl font-semibold">লগইন প্রয়োজন</h2>
             <Button asChild className="mt-4">
-              <Link to="/auth">Login / Sign up</Link>
+              <Link to="/auth">লগইন / সাইন আপ</Link>
             </Button>
           </Card>
         ) : loading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Loading history…
+            <Loader2 className="h-5 w-5 animate-spin" /> ইতিহাস লোড হচ্ছে…
           </Card>
         ) : error ? (
           <Card className="paper-sheet p-6">
-            <h2 className="font-semibold text-destructive">Could not load history</h2>
+            <h2 className="font-semibold text-destructive">ইতিহাস লোড করা যায়নি</h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : attempts.length === 0 ? (
           <Card className="paper-sheet p-10 text-center">
             <Clock className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h2 className="exam-heading text-xl font-semibold">No attempts yet</h2>
+            <h2 className="exam-heading text-xl font-semibold">এখনো কোনো অনুশীলন নেই</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Practice a chapter to start building your history.
+              একটি অধ্যায় অনুশীলন করলে এখানে ইতিহাস জমা হবে।
             </p>
             <div className="mt-6 flex justify-center gap-3">
               <Button asChild>
                 <Link to="/subjects">
-                  <FileText className="mr-2 h-4 w-4" /> Start Practice
+                  <FileText className="mr-2 h-4 w-4" /> অনুশীলন শুরু করুন
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/mock-test">Open Mock Test</Link>
+                <Link to="/mock-test">মক টেস্ট দিন</Link>
               </Button>
             </div>
           </Card>
@@ -152,8 +152,8 @@ function HistoryPage() {
               const max = Number(a.max_score ?? 0);
               const pct = max > 0 ? Math.round((score / max) * 100) : 0;
               const date = a.submitted_at
-                ? new Date(a.submitted_at).toLocaleString()
-                : "In progress";
+                ? new Date(a.submitted_at).toLocaleString("bn-BD")
+                : "চলমান";
               return (
                 <Card key={a.id} className="paper-sheet p-4">
                   <div className="flex items-center gap-3">
@@ -170,18 +170,18 @@ function HistoryPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="exam-heading font-semibold truncate">
-                        {ch?.name ?? "Practice attempt"}
+                        {ch?.name ?? "অনুশীলন"}
                       </div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                         <span>{date}</span>
                         {a.status === "submitted" ? (
                           <>
                             <span>
-                              Score {toBnDigits(score)} / {toBnDigits(max)} ({pct}%)
+                              নম্বর {toBnDigits(score)} / {toBnDigits(max)} ({pct}%)
                             </span>
                             <span>
                               {toBnDigits(a.correct_count ?? 0)} /{" "}
-                              {toBnDigits(a.total_questions ?? 0)} correct
+                              {toBnDigits(a.total_questions ?? 0)} সঠিক
                             </span>
                           </>
                         ) : (
@@ -191,7 +191,7 @@ function HistoryPage() {
                     </div>
                     <Button asChild size="sm" variant="outline">
                       <Link to="/result/$attemptId" params={{ attemptId: a.id }}>
-                        View <ChevronRight className="ml-1 h-4 w-4" />
+                        দেখুন <ChevronRight className="ml-1 h-4 w-4" />
                       </Link>
                     </Button>
                   </div>

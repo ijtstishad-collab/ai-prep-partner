@@ -173,10 +173,10 @@ function AdminQuestionReviewPage() {
       await approveQuestionDraft({
         data: { draft_id: draftId, notes: reviewNotes[draftId] || undefined },
       });
-      toast.success("Draft approved and published.");
+      toast.success("খসড়া অনুমোদিত ও প্রকাশিত · Draft approved and published");
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not approve draft.");
+      toast.error(err instanceof Error ? err.message : "অনুমোদন করা যায়নি · Could not approve draft");
     } finally {
       setReviewingId(null);
     }
@@ -185,17 +185,17 @@ function AdminQuestionReviewPage() {
   const rejectDraft = async (draftId: string) => {
     const notes = reviewNotes[draftId]?.trim() ?? "";
     if (notes.length < 3) {
-      toast.error("Add a review note before rejecting.");
+      toast.error("প্রত্যাখ্যানের আগে একটি পর্যালোচনা নোট যোগ করুন · Add a review note before rejecting");
       return;
     }
 
     setReviewingId(draftId);
     try {
       await rejectQuestionDraft({ data: { draft_id: draftId, notes } });
-      toast.success("Draft rejected with review note.");
+      toast.success("খসড়া প্রত্যাখ্যাত · Draft rejected with review note");
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not reject draft.");
+      toast.error(err instanceof Error ? err.message : "প্রত্যাখ্যান করা যায়নি · Could not reject draft");
     } finally {
       setReviewingId(null);
     }
@@ -487,7 +487,7 @@ function DraftCard({
             value={note}
             onChange={(event) => onNoteChange(event.target.value)}
             className="min-h-20 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            placeholder="Review note for approval or rejection..."
+            placeholder="অনুমোদন বা প্রত্যাখ্যানের জন্য পর্যালোচনা নোট লিখুন..."
           />
           <div className="flex flex-wrap gap-2">
             <Button onClick={onApprove} disabled={reviewing}>
@@ -496,7 +496,7 @@ function DraftCard({
               ) : (
                 <CheckCircle2 className="h-4 w-4" />
               )}
-              Approve and Publish
+              অনুমোদন ও প্রকাশ · Approve & Publish
             </Button>
             <Button onClick={onReject} disabled={reviewing} variant="destructive">
               {reviewing ? (
@@ -504,7 +504,7 @@ function DraftCard({
               ) : (
                 <XCircle className="h-4 w-4" />
               )}
-              Reject
+              প্রত্যাখ্যান · Reject
             </Button>
           </div>
         </div>
@@ -514,8 +514,9 @@ function DraftCard({
 }
 
 function StatusBadge({ status }: { status: QuestionDraft["status"] }) {
-  if (status === "approved") return <Badge>Approved</Badge>;
-  if (status === "rejected") return <Badge variant="destructive">Rejected</Badge>;
-  if (status === "pending_review") return <Badge variant="secondary">Pending Review</Badge>;
+  if (status === "approved") return <Badge>অনুমোদিত · Approved</Badge>;
+  if (status === "rejected") return <Badge variant="destructive">প্রত্যাখ্যাত · Rejected</Badge>;
+  if (status === "pending_review") return <Badge variant="secondary">পর্যালোচনাধীন · Pending</Badge>;
+  if (status === "draft") return <Badge variant="outline">খসড়া · Draft</Badge>;
   return <Badge variant="outline">{status}</Badge>;
 }

@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import url("https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nunito+Sans:wght@300;400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -51,79 +52,99 @@
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 0.25rem;
 
-  --background: oklch(0.99 0.005 240);
-  --foreground: oklch(0.22 0.04 250);
+  /* Paper & Ink palette */
+  --paper: #f5f3ee;
+  --paper-shadow: #e8e4dd;
+  --ink: #0d0d0d;
+  --ink-soft: #2d2d2d;
+  --tile: #ffffff;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 250);
+  --background: var(--paper);
+  --foreground: var(--ink);
 
-  --primary: oklch(0.58 0.16 200);
-  --primary-foreground: oklch(0.99 0.005 240);
-  --primary-glow: oklch(0.72 0.14 195);
+  --card: var(--tile);
+  --card-foreground: var(--ink);
+  --popover: var(--tile);
+  --popover-foreground: var(--ink);
 
-  --secondary: oklch(0.95 0.03 260);
-  --secondary-foreground: oklch(0.3 0.08 260);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --primary-glow: var(--ink-soft);
 
-  --muted: oklch(0.96 0.01 250);
-  --muted-foreground: oklch(0.5 0.03 250);
+  --secondary: var(--paper-shadow);
+  --secondary-foreground: var(--ink);
 
-  --accent: oklch(0.92 0.07 165);
-  --accent-foreground: oklch(0.28 0.1 165);
+  --muted: var(--paper-shadow);
+  --muted-foreground: color-mix(in srgb, var(--ink) 55%, transparent);
 
-  --success: oklch(0.7 0.15 155);
-  --success-foreground: oklch(0.99 0.005 240);
-  --warning: oklch(0.78 0.16 75);
-  --warning-foreground: oklch(0.25 0.05 75);
-  --destructive: oklch(0.6 0.22 27);
-  --destructive-foreground: oklch(0.99 0.005 240);
+  --accent: var(--paper-shadow);
+  --accent-foreground: var(--ink);
 
-  --border: oklch(0.9 0.015 250);
-  --input: oklch(0.93 0.012 250);
-  --ring: oklch(0.58 0.16 200);
+  --success: oklch(0.55 0.12 155);
+  --success-foreground: var(--paper);
+  --warning: oklch(0.62 0.13 60);
+  --warning-foreground: var(--paper);
+  --destructive: oklch(0.55 0.18 25);
+  --destructive-foreground: var(--paper);
 
-  --chart-1: oklch(0.58 0.16 200);
-  --chart-2: oklch(0.7 0.15 155);
-  --chart-3: oklch(0.78 0.16 75);
-  --chart-4: oklch(0.6 0.22 27);
-  --chart-5: oklch(0.55 0.2 290);
+  --border: color-mix(in srgb, var(--ink) 12%, transparent);
+  --input: color-mix(in srgb, var(--ink) 18%, transparent);
+  --ring: var(--ink);
 
-  --sidebar: oklch(0.98 0.01 240);
-  --sidebar-foreground: oklch(0.22 0.04 250);
-  --sidebar-primary: oklch(0.58 0.16 200);
-  --sidebar-primary-foreground: oklch(0.99 0.005 240);
-  --sidebar-accent: oklch(0.95 0.03 260);
-  --sidebar-accent-foreground: oklch(0.3 0.08 260);
-  --sidebar-border: oklch(0.9 0.015 250);
-  --sidebar-ring: oklch(0.58 0.16 200);
+  --chart-1: var(--ink);
+  --chart-2: var(--ink-soft);
+  --chart-3: color-mix(in srgb, var(--ink) 60%, transparent);
+  --chart-4: color-mix(in srgb, var(--ink) 35%, transparent);
+  --chart-5: color-mix(in srgb, var(--ink) 18%, transparent);
 
-  --gradient-hero: linear-gradient(135deg, oklch(0.58 0.16 200), oklch(0.65 0.18 260));
-  --gradient-card: linear-gradient(135deg, oklch(0.98 0.02 200), oklch(0.96 0.03 260));
-  --shadow-soft: 0 8px 24px -8px oklch(0.58 0.16 200 / 0.18);
-  --shadow-elegant: 0 20px 50px -20px oklch(0.55 0.2 250 / 0.25);
+  --sidebar: var(--paper);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: var(--paper-shadow);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: color-mix(in srgb, var(--ink) 12%, transparent);
+  --sidebar-ring: var(--ink);
+
+  --gradient-hero: linear-gradient(135deg, var(--ink), var(--ink-soft));
+  --gradient-card: linear-gradient(180deg, var(--tile), var(--paper));
+  --shadow-soft: 2px 2px 0px color-mix(in srgb, var(--ink) 6%, transparent);
+  --shadow-elegant: 3px 3px 0px color-mix(in srgb, var(--ink) 8%, transparent);
+
+  --font-serif: "Lora", Georgia, "Hind Siliguri", serif;
+  --font-sans: "Nunito Sans", "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark {
-  --background: oklch(0.18 0.03 250);
-  --foreground: oklch(0.96 0.01 240);
-  --card: oklch(0.22 0.04 250);
-  --card-foreground: oklch(0.96 0.01 240);
-  --popover: oklch(0.22 0.04 250);
-  --popover-foreground: oklch(0.96 0.01 240);
-  --primary: oklch(0.72 0.14 195);
-  --primary-foreground: oklch(0.18 0.03 250);
-  --secondary: oklch(0.3 0.05 260);
-  --secondary-foreground: oklch(0.96 0.01 240);
-  --muted: oklch(0.28 0.03 250);
-  --muted-foreground: oklch(0.7 0.02 250);
-  --accent: oklch(0.35 0.08 165);
-  --accent-foreground: oklch(0.96 0.01 240);
-  --border: oklch(1 0 0 / 0.1);
-  --input: oklch(1 0 0 / 0.15);
-  --ring: oklch(0.72 0.14 195);
+  --paper: #1a1a1a;
+  --paper-shadow: #2d2d2d;
+  --ink: #f5f3ee;
+  --ink-soft: #d6d2c8;
+  --tile: #232323;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--tile);
+  --card-foreground: var(--ink);
+  --popover: var(--tile);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-shadow);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-shadow);
+  --muted-foreground: color-mix(in srgb, var(--ink) 60%, transparent);
+  --accent: var(--paper-shadow);
+  --accent-foreground: var(--ink);
+  --border: color-mix(in srgb, var(--ink) 14%, transparent);
+  --input: color-mix(in srgb, var(--ink) 20%, transparent);
+  --ring: var(--ink);
+}
+
+@theme inline {
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
 }
 
 @layer base {
@@ -131,7 +152,11 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Hind Siliguri", sans-serif;
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv01";
+  }
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif);
   }
 }
 
@@ -140,27 +165,53 @@
 .shadow-soft { box-shadow: var(--shadow-soft); }
 .shadow-elegant { box-shadow: var(--shadow-elegant); }
 
-/* --- HSC exam-paper inspired surfaces --- */
+/* --- Paper & Ink exam-paper surfaces (Bound Notebook direction) --- */
+.paper-tile {
+  background-color: var(--tile);
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0px color-mix(in srgb, var(--ink) 5%, transparent);
+  color: var(--ink);
+  position: relative;
+}
+.paper-tile--quiet {
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+}
 .paper-sheet {
-  background-color: #ffffff;
-  border: 1px solid oklch(0.78 0.01 250);
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 0 oklch(0.78 0.01 250), 0 8px 24px -16px oklch(0.4 0.05 250 / 0.18);
-  color: oklch(0.18 0.02 250);
+  background-color: var(--tile);
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0px color-mix(in srgb, var(--ink) 5%, transparent);
+  color: var(--ink);
 }
-.dark .paper-sheet {
-  background-color: oklch(0.96 0.005 240);
-  color: oklch(0.18 0.02 250);
-  border-color: oklch(0.7 0.01 250);
-}
-.paper-rule { border-bottom: 1px dashed oklch(0.72 0.01 250); }
-.paper-divider { border-top: 1px solid oklch(0.78 0.01 250); }
+.paper-rule { border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
+.paper-divider { border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
 .exam-heading {
-  font-family: ui-serif, "Hind Siliguri", Georgia, serif;
-  letter-spacing: 0.02em;
+  font-family: var(--font-serif);
+  letter-spacing: -0.005em;
+}
+.serial-marker {
+  position: absolute;
+  left: -1.5rem;
+  top: 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--ink) 40%, transparent);
+}
+.notation-rule {
+  display: inline-block;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  padding-top: 0.5rem;
+}
+.bn-label {
+  font-family: var(--font-sans);
+  font-weight: 400;
 }
 
-/* OMR-style option bubble */
+/* OMR-style option bubble (kept for practice screen) */
 .omr-bubble {
   display: inline-flex;
   align-items: center;
@@ -168,17 +219,18 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 9999px;
-  border: 1.5px solid oklch(0.4 0.02 250);
-  font-weight: 600;
-  background: #ffffff;
-  color: oklch(0.25 0.02 250);
+  border: 1.5px solid var(--ink);
+  font-weight: 700;
+  font-family: var(--font-serif);
+  background: var(--tile);
+  color: var(--ink);
   transition: all 0.15s ease;
 }
 .omr-bubble--selected {
-  background: oklch(0.25 0.02 250);
-  color: #ffffff;
-  border-color: oklch(0.18 0.02 250);
-  box-shadow: 0 0 0 3px oklch(0.85 0.02 250);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 12%, transparent);
 }
 .omr-bubble--correct {
   background: var(--success);

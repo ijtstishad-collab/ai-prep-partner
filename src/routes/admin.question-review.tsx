@@ -173,10 +173,10 @@ function AdminQuestionReviewPage() {
       await approveQuestionDraft({
         data: { draft_id: draftId, notes: reviewNotes[draftId] || undefined },
       });
-      toast.success("Draft approved and published.");
+      toast.success("খসড়া অনুমোদিত ও প্রকাশিত · Draft approved and published");
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not approve draft.");
+      toast.error(err instanceof Error ? err.message : "অনুমোদন করা যায়নি · Could not approve draft");
     } finally {
       setReviewingId(null);
     }
@@ -185,17 +185,17 @@ function AdminQuestionReviewPage() {
   const rejectDraft = async (draftId: string) => {
     const notes = reviewNotes[draftId]?.trim() ?? "";
     if (notes.length < 3) {
-      toast.error("Add a review note before rejecting.");
+      toast.error("প্রত্যাখ্যানের আগে একটি পর্যালোচনা নোট যোগ করুন · Add a review note before rejecting");
       return;
     }
 
     setReviewingId(draftId);
     try {
       await rejectQuestionDraft({ data: { draft_id: draftId, notes } });
-      toast.success("Draft rejected with review note.");
+      toast.success("খসড়া প্রত্যাখ্যাত · Draft rejected with review note");
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not reject draft.");
+      toast.error(err instanceof Error ? err.message : "প্রত্যাখ্যান করা যায়নি · Could not reject draft");
     } finally {
       setReviewingId(null);
     }

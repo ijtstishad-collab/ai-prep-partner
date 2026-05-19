@@ -118,23 +118,28 @@
 }
 
 .dark {
-  --background: oklch(0.18 0.03 250);
-  --foreground: oklch(0.96 0.01 240);
-  --card: oklch(0.22 0.04 250);
-  --card-foreground: oklch(0.96 0.01 240);
-  --popover: oklch(0.22 0.04 250);
-  --popover-foreground: oklch(0.96 0.01 240);
-  --primary: oklch(0.72 0.14 195);
-  --primary-foreground: oklch(0.18 0.03 250);
-  --secondary: oklch(0.3 0.05 260);
-  --secondary-foreground: oklch(0.96 0.01 240);
-  --muted: oklch(0.28 0.03 250);
-  --muted-foreground: oklch(0.7 0.02 250);
-  --accent: oklch(0.35 0.08 165);
-  --accent-foreground: oklch(0.96 0.01 240);
-  --border: oklch(1 0 0 / 0.1);
-  --input: oklch(1 0 0 / 0.15);
-  --ring: oklch(0.72 0.14 195);
+  --paper: #1a1a1a;
+  --paper-shadow: #2d2d2d;
+  --ink: #f5f3ee;
+  --ink-soft: #d6d2c8;
+  --tile: #232323;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--tile);
+  --card-foreground: var(--ink);
+  --popover: var(--tile);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-shadow);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-shadow);
+  --muted-foreground: color-mix(in srgb, var(--ink) 60%, transparent);
+  --accent: var(--paper-shadow);
+  --accent-foreground: var(--ink);
+  --border: color-mix(in srgb, var(--ink) 14%, transparent);
+  --input: color-mix(in srgb, var(--ink) 20%, transparent);
+  --ring: var(--ink);
 }
 
 @theme inline {

@@ -249,25 +249,25 @@ function ResultPage() {
 
               <div className="grid gap-4 px-6 py-6 sm:grid-cols-4">
                 <Stat
-                  label="Score · নম্বর"
+                  label="নম্বর"
                   value={`${toBnDigits(score)} / ${toBnDigits(maxScore)}`}
                   hint={`${scorePercent}%`}
                   icon={<Trophy className="h-4 w-4" />}
                 />
                 <Stat
-                  label="Correct · সঠিক"
+                  label="সঠিক"
                   value={toBnDigits(correctCount)}
-                  hint={`of ${toBnDigits(totalQuestions)}`}
+                  hint={`মোট ${toBnDigits(totalQuestions)}`}
                   icon={<CheckCircle2 className="h-4 w-4 text-success" />}
                 />
                 <Stat
-                  label="Wrong · ভুল"
+                  label="ভুল"
                   value={toBnDigits(wrongCount)}
-                  hint={`of ${toBnDigits(totalQuestions)}`}
+                  hint={`মোট ${toBnDigits(totalQuestions)}`}
                   icon={<XCircle className="h-4 w-4 text-destructive" />}
                 />
                 <Stat
-                  label="Time · সময়"
+                  label="ব্যয়িত সময়"
                   value={elapsedSeconds > 0 ? formatDuration(elapsedSeconds) : "—"}
                   hint="elapsed"
                 />

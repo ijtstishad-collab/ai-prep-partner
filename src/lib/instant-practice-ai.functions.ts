@@ -176,7 +176,7 @@ export const generateInstantPracticeQuestions = createServerFn({ method: "POST" 
   .handler(async ({ data, context }) => {
     const { data: chapter, error: chapterError } = await table("chapters")
       .select(
-        "id, name, name_bn, subject_id, exam_type_id, class_id, group_id, subjects(name, name_bn)",
+        "id, name, name_bn, subject_id, subjects(name, name_bn)",
       )
       .eq("id", data.chapter_id)
       .eq("is_active", true)

@@ -119,7 +119,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="paper-tile fixed bottom-4 top-4 flex h-auto max-h-none max-w-[calc(100vw-2rem)] translate-y-0 flex-col gap-0 overflow-hidden p-0 sm:bottom-[5vh] sm:top-[5vh] sm:max-w-3xl">
+      <DialogContent className="paper-tile flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:h-[min(760px,90dvh)] sm:max-h-[90dvh] sm:max-w-3xl">
         <DialogHeader className="shrink-0 border-b border-foreground/10 px-5 py-4">
           <DialogTitle className="exam-heading text-base font-bold">
             দ্রুত অনুশীলন
@@ -145,7 +145,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
           {/* Subject row */}
           {!subjectId ? (
-            <div>
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
               <p className="exam-heading mb-3 text-sm font-bold">
                 বিষয় বেছে নিন · Choose a subject
               </p>
@@ -175,9 +175,9 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
               )}
             </div>
           ) : (
-            <>
+            <div className="flex min-h-0 flex-1 flex-col">
               {/* Selected subject pill */}
-              <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="mb-3 flex shrink-0 items-center justify-between gap-2">
                 <div className="text-xs">
                   <span className="opacity-60">বিষয়: </span>
                   <span className="exam-heading font-bold">{selectedSubject?.name}</span>
@@ -196,7 +196,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
               </div>
 
               {/* Chapter search + list */}
-              <div className="mb-3 relative">
+              <div className="relative mb-3 shrink-0">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-50" />
                 <Input
                   placeholder="অধ্যায় খুঁজুন · Search chapter"
@@ -259,7 +259,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
               {/* Mode chips — shown once chapter chosen */}
               {chapterId && (
-                <div className="mt-5 border-t border-foreground/10 pt-4">
+                <div className="mt-4 shrink-0 border-t border-foreground/10 pt-3">
                   <p className="exam-heading mb-3 text-xs font-bold uppercase tracking-widest opacity-70">
                     মোড · Practice Mode
                   </p>
@@ -287,7 +287,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
 

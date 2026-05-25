@@ -216,7 +216,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
                   কোনো অধ্যায় পাওয়া যায়নি
                 </p>
               ) : (
-                <ul className="max-h-64 space-y-1 overflow-y-auto pr-1">
+                <ul className="space-y-1 pr-1">
                   {filteredChapters.map((c, idx) => {
                     const active = c.id === chapterId;
                     return (

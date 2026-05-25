@@ -119,7 +119,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="paper-tile fixed bottom-4 top-4 flex h-auto max-h-none max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden p-0 sm:bottom-[5vh] sm:top-[5vh] sm:max-w-3xl">
+      <DialogContent className="paper-tile fixed bottom-4 top-4 flex h-auto max-h-none max-w-[calc(100vw-2rem)] translate-y-0 flex-col gap-0 overflow-hidden p-0 sm:bottom-[5vh] sm:top-[5vh] sm:max-w-3xl">
         <DialogHeader className="shrink-0 border-b border-foreground/10 px-5 py-4">
           <DialogTitle className="exam-heading text-base font-bold">
             দ্রুত অনুশীলন
@@ -216,7 +216,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
                   কোনো অধ্যায় পাওয়া যায়নি
                 </p>
               ) : (
-                <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+                <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1">
                   {filteredChapters.map((c, idx) => {
                     const active = c.id === chapterId;
                     return (

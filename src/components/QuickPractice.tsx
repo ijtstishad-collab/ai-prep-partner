@@ -119,8 +119,8 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="paper-tile max-h-[90vh] max-w-2xl overflow-hidden p-0 sm:max-w-3xl">
-        <DialogHeader className="border-b border-foreground/10 px-5 py-4">
+      <DialogContent className="paper-tile flex max-h-[90vh] max-w-2xl flex-col overflow-hidden p-0 sm:max-w-3xl">
+        <DialogHeader className="shrink-0 border-b border-foreground/10 px-5 py-4">
           <DialogTitle className="exam-heading text-base font-bold">
             দ্রুত অনুশীলন
             <span className="bn-label ml-2 text-[10px] font-normal opacity-60">
@@ -129,7 +129,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex max-h-[75vh] flex-col overflow-y-auto px-5 py-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {/* Step indicator */}
           <div className="mb-4 flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
             <span className={subjectId ? "opacity-50 line-through" : "font-bold text-foreground"}>
@@ -216,7 +216,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
                   কোনো অধ্যায় পাওয়া যায়নি
                 </p>
               ) : (
-                <ul className="max-h-64 space-y-1 overflow-y-auto pr-1">
+                <ul className="space-y-1 pr-1">
                   {filteredChapters.map((c, idx) => {
                     const active = c.id === chapterId;
                     return (
@@ -292,7 +292,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
         </div>
 
         {/* Footer action */}
-        <div className="flex items-center justify-between gap-3 border-t border-foreground/10 px-5 py-3">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-foreground/10 px-5 py-3">
           <p className="text-[10px] opacity-60">
             {chapterId ? "শুরু করতে প্রস্তুত · Ready" : "একটি অধ্যায় বেছে নিন"}
           </p>

@@ -292,7 +292,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
         </div>
 
         {/* Footer action */}
-        <div className="flex items-center justify-between gap-3 border-t border-foreground/10 px-5 py-3">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-foreground/10 px-5 py-3">
           <p className="text-[10px] opacity-60">
             {chapterId ? "শুরু করতে প্রস্তুত · Ready" : "একটি অধ্যায় বেছে নিন"}
           </p>

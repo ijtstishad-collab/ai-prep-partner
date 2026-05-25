@@ -119,7 +119,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="paper-tile flex max-h-[90vh] max-w-2xl flex-col overflow-hidden p-0 sm:max-w-3xl">
+      <DialogContent className="left-1/2 top-1/2 flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-hidden rounded-[2px] border border-foreground/10 bg-card p-0 text-card-foreground shadow-[2px_2px_0_color-mix(in_srgb,var(--foreground)_5%,transparent)] sm:h-[min(760px,90dvh)] sm:max-h-[90dvh] sm:max-w-3xl">
         <DialogHeader className="shrink-0 border-b border-foreground/10 px-5 py-4">
           <DialogTitle className="exam-heading text-base font-bold">
             দ্রুত অনুশীলন
@@ -129,7 +129,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-4">
           {/* Step indicator */}
           <div className="mb-4 flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
             <span className={subjectId ? "opacity-50 line-through" : "font-bold text-foreground"}>
@@ -145,7 +145,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
           {/* Subject row */}
           {!subjectId ? (
-            <div>
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
               <p className="exam-heading mb-3 text-sm font-bold">
                 বিষয় বেছে নিন · Choose a subject
               </p>
@@ -175,9 +175,9 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
               )}
             </div>
           ) : (
-            <>
+            <div className="flex min-h-0 flex-1 flex-col">
               {/* Selected subject pill */}
-              <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="mb-3 flex shrink-0 items-center justify-between gap-2">
                 <div className="text-xs">
                   <span className="opacity-60">বিষয়: </span>
                   <span className="exam-heading font-bold">{selectedSubject?.name}</span>
@@ -196,7 +196,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
               </div>
 
               {/* Chapter search + list */}
-              <div className="mb-3 relative">
+              <div className="relative mb-3 shrink-0">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-50" />
                 <Input
                   placeholder="অধ্যায় খুঁজুন · Search chapter"
@@ -216,7 +216,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
                   কোনো অধ্যায় পাওয়া যায়নি
                 </p>
               ) : (
-                <ul className="space-y-1 pr-1">
+                <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1">
                   {filteredChapters.map((c, idx) => {
                     const active = c.id === chapterId;
                     return (
@@ -259,7 +259,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
               {/* Mode chips — shown once chapter chosen */}
               {chapterId && (
-                <div className="mt-5 border-t border-foreground/10 pt-4">
+                <div className="mt-4 shrink-0 border-t border-foreground/10 pt-3">
                   <p className="exam-heading mb-3 text-xs font-bold uppercase tracking-widest opacity-70">
                     মোড · Practice Mode
                   </p>
@@ -287,7 +287,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
 

@@ -246,7 +246,7 @@ export const createManualMcqDraft = createServerFn({ method: "POST" })
     }
 
     const { data: chapter, error: chapterError } = await table("chapters")
-      .select("id, subject_id, exam_type_id, class_id, group_id")
+      .select("id, subject_id")
       .eq("id", data.chapter_id)
       .maybeSingle();
 

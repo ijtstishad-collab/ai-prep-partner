@@ -24,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsSlugRouteImport } from './routes/subjects.$slug'
 import { Route as ResultAttemptIdRouteImport } from './routes/result.$attemptId'
 import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapterId'
+import { Route as DemoGravitationRouteImport } from './routes/demo.gravitation'
 import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question-review'
 
 const SubjectsRoute = SubjectsRouteImport.update({
@@ -101,6 +102,11 @@ const PracticeChapterIdRoute = PracticeChapterIdRouteImport.update({
   path: '/$chapterId',
   getParentRoute: () => PracticeRoute,
 } as any)
+const DemoGravitationRoute = DemoGravitationRouteImport.update({
+  id: '/demo/gravitation',
+  path: '/demo/gravitation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminQuestionReviewRoute = AdminQuestionReviewRouteImport.update({
   id: '/question-review',
   path: '/question-review',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
+  '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
+  '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
+  '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/subjects'
     | '/admin/question-review'
+    | '/demo/gravitation'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/subjects'
     | '/admin/question-review'
+    | '/demo/gravitation'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/subjects'
     | '/admin/question-review'
+    | '/demo/gravitation'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   PracticeRoute: typeof PracticeRouteWithChildren
   ProfileRoute: typeof ProfileRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
+  DemoGravitationRoute: typeof DemoGravitationRoute
   ResultAttemptIdRoute: typeof ResultAttemptIdRoute
 }
 
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeChapterIdRouteImport
       parentRoute: typeof PracticeRoute
     }
+    '/demo/gravitation': {
+      id: '/demo/gravitation'
+      path: '/demo/gravitation'
+      fullPath: '/demo/gravitation'
+      preLoaderRoute: typeof DemoGravitationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/question-review': {
       id: '/admin/question-review'
       path: '/question-review'
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   PracticeRoute: PracticeRouteWithChildren,
   ProfileRoute: ProfileRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
+  DemoGravitationRoute: DemoGravitationRoute,
   ResultAttemptIdRoute: ResultAttemptIdRoute,
 }
 export const routeTree = rootRouteImport

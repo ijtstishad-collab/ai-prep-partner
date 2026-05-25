@@ -82,6 +82,26 @@ function Dashboard() {
           </p>
         </header>
 
+        {/* Demo banner */}
+        <Link
+          to="/demo/gravitation"
+          className="paper-tile relative mb-4 flex items-center justify-between gap-3 p-4 transition hover:border-foreground/40 sm:p-5"
+        >
+          <div className="min-w-0">
+            <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60">
+              <Sparkles className="h-3 w-3" />
+              ডেমো · Try the demo
+            </div>
+            <p className="exam-heading text-sm font-bold sm:text-base">
+              Physics 1st Paper · মহাকর্ষ — ১০টি নমুনা MCQ
+            </p>
+            <p className="bn-label mt-0.5 text-[11px] opacity-60">
+              Score, explanations, weak topics — সম্পূর্ণ অভিজ্ঞতা।
+            </p>
+          </div>
+          <ArrowUpRight className="h-5 w-5 shrink-0 opacity-60" />
+        </Link>
+
         {/* HERO: Quick Start */}
         <div className="paper-tile relative mb-4 overflow-hidden p-5 sm:p-6">
           <span className="serial-marker hidden sm:block">০১.</span>

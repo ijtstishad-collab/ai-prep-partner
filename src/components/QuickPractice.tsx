@@ -119,8 +119,8 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="paper-tile max-h-[90vh] max-w-2xl overflow-hidden p-0 sm:max-w-3xl">
-        <DialogHeader className="border-b border-foreground/10 px-5 py-4">
+      <DialogContent className="paper-tile flex max-h-[90vh] max-w-2xl flex-col overflow-hidden p-0 sm:max-w-3xl">
+        <DialogHeader className="shrink-0 border-b border-foreground/10 px-5 py-4">
           <DialogTitle className="exam-heading text-base font-bold">
             দ্রুত অনুশীলন
             <span className="bn-label ml-2 text-[10px] font-normal opacity-60">
@@ -129,7 +129,7 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex max-h-[75vh] flex-col overflow-y-auto px-5 py-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {/* Step indicator */}
           <div className="mb-4 flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
             <span className={subjectId ? "opacity-50 line-through" : "font-bold text-foreground"}>

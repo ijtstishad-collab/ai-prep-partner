@@ -5,8 +5,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const GenerateInstantPracticeSchema = z.object({
   chapter_id: z.string().uuid(),
-  count: z.number().int().min(1).max(5).default(5),
+  count: z.number().int().min(1).max(20).default(10),
   difficulty: z.enum(["easy", "medium", "hard"]).default("easy"),
+  question_style: z.enum(["mcq", "short", "board"]).default("mcq"),
+  language: z.enum(["bn", "en", "mixed"]).default("bn"),
 });
 
 type Difficulty = "easy" | "medium" | "hard";

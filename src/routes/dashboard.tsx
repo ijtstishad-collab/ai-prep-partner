@@ -1,266 +1,273 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
-import { useAuth } from "@/lib/auth";
-import { useEffect, useState } from "react";
-import { ArrowUpRight, BookOpen, History, BarChart3, Sparkles, Play, Zap } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { QuickPractice } from "@/components/QuickPractice";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/auth";
 import { toBnDigits } from "@/lib/bn";
-import { allowedGroupsFor, subjectMatchesGroup } from "@/lib/student-group";
+import { getDashboardData } from "@/lib/dashboard.functions";
+import {
+  CalendarClock,
+  Target,
+  History,
+  TrendingUp,
+  AlertTriangle,
+  Sparkles,
+  ChevronRight,
+  RefreshCw,
+  Trophy,
+  BookOpen,
+} from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
-
-type Subject = { id: string; name: string; name_bn: string | null; group_type?: string | null };
-
-type LastAttempt = {
-  id: string;
-  chapter_id: string | null;
-  subject_id: string | null;
-  score: number;
-  total_questions: number;
-  completed_at: string | null;
-  chapters?: { name: string | null } | null;
-};
-
-const fromTable = (n: string) => (supabase.from as unknown as (name: string) => any)(n);
 
 function Dashboard() {
   const { user, profile, loading } = useAuth();
   const nav = useNavigate();
-
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [lastAttempt, setLastAttempt] = useState<LastAttempt | null>(null);
-  const [quickOpen, setQuickOpen] = useState(false);
-  const [presetSubject, setPresetSubject] = useState<string | null>(null);
+  const fetchDash = useServerFn(getDashboardData);
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
     if (!loading && user && profile && !profile.onboarded) nav({ to: "/onboarding" });
   }, [loading, user, profile, nav]);
 
-  // Subjects strip — filtered by student's group
-  useEffect(() => {
-    if (!user) return;
-    fromTable("subjects")
-      .select("id, name, name_bn, group_type")
-      .eq("is_active", true)
-      .then(({ data }: { data: Subject[] | null }) => {
-        const allowed = allowedGroupsFor(profile?.student_group);
-        const filtered = (data ?? []).filter((s) => subjectMatchesGroup(s, allowed));
-        setSubjects(filtered.slice(0, 8));
-      });
-  }, [user, profile?.student_group]);
+  const q = useQuery({
+    queryKey: ["dashboard", user?.id],
+    queryFn: () => fetchDash(),
+    enabled: !!user,
+  });
 
-  // Most recent attempt → resume / next chapter
-  useEffect(() => {
-    if (!user) return;
-    fromTable("test_attempts")
-      .select("id, chapter_id, subject_id, score, total_questions, completed_at, chapters(name)")
-      .eq("user_id", user.id)
-      .order("started_at", { ascending: false })
-      .limit(1)
-      .then(({ data }: { data: LastAttempt[] | null }) => setLastAttempt(data?.[0] ?? null));
-  }, [user]);
-
+  const data = q.data;
   const studentName = profile?.full_name?.split(" ")[0] || "শিক্ষার্থী";
+  const examYear = (data?.profile as any)?.target_exam_year ?? profile?.target_exam_year ?? 2026;
+  const examDate = (data?.profile as any)?.exam_date ?? null;
+  const daysLeft = examDate
+    ? Math.max(0, Math.ceil((new Date(examDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
 
-  const openQuick = (subjectId?: string | null) => {
-    setPresetSubject(subjectId ?? null);
-    setQuickOpen(true);
-  };
-
-  const resumeChapter = lastAttempt?.chapter_id ?? null;
-  const lastChapterName = lastAttempt?.chapters?.name ?? null;
+  const rec = data?.recommended;
 
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-[480px] px-5 py-8 sm:max-w-3xl sm:px-10 lg:max-w-5xl">
+      <div className="container mx-auto max-w-5xl px-4 py-6 sm:py-8">
         {/* Greeting */}
-        <header className="mb-6">
-          <h1 className="exam-heading text-2xl font-bold leading-tight text-foreground sm:text-3xl">
-            স্বাগতম, {studentName}
-          </h1>
-          <p className="bn-label mt-1 text-sm opacity-60">
-            Welcome back — pick a chapter and start practicing.
-          </p>
+        <header className="mb-5">
+          <h1 className="exam-heading text-2xl font-bold sm:text-3xl">স্বাগতম, {studentName}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">আজকের প্রস্তুতি শুরু করুন।</p>
         </header>
 
-        {/* Demo banner */}
-        <Link
-          to="/demo/gravitation"
-          className="paper-tile relative mb-4 flex items-center justify-between gap-3 p-4 transition hover:border-foreground/40 sm:p-5"
-        >
-          <div className="min-w-0">
-            <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60">
-              <Sparkles className="h-3 w-3" />
-              ডেমো · Try the demo
+        {/* Row 1: Countdown + Today Recommended */}
+        <div className="mb-4 grid gap-3 md:grid-cols-3">
+          {/* Countdown */}
+          <Card className="p-4 md:col-span-1">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <CalendarClock className="h-3.5 w-3.5" /> HSC Countdown
             </div>
-            <p className="exam-heading text-sm font-bold sm:text-base">
-              Physics 1st Paper · মহাকর্ষ — ১০টি নমুনা MCQ
-            </p>
-            <p className="bn-label mt-0.5 text-[11px] opacity-60">
-              Score, explanations, weak topics — সম্পূর্ণ অভিজ্ঞতা।
-            </p>
-          </div>
-          <ArrowUpRight className="h-5 w-5 shrink-0 opacity-60" />
-        </Link>
+            {daysLeft !== null ? (
+              <>
+                <div className="exam-heading text-3xl font-bold">{toBnDigits(daysLeft)} দিন</div>
+                <p className="mt-1 text-xs text-muted-foreground">HSC {toBnDigits(examYear)} বাকি</p>
+              </>
+            ) : (
+              <>
+                <div className="exam-heading text-lg font-bold">HSC {toBnDigits(examYear)} প্রস্তুতি চলছে</div>
+                <Button asChild variant="outline" size="sm" className="mt-3">
+                  <Link to="/profile">Exam date সেট করুন</Link>
+                </Button>
+              </>
+            )}
+          </Card>
 
-        {/* HERO: Quick Start */}
-        <div className="paper-tile relative mb-4 overflow-hidden p-5 sm:p-6">
-          <span className="serial-marker hidden sm:block">০১.</span>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60">
-                <Zap className="h-3 w-3" />
-                দ্রুত শুরু · Quick Start
-              </div>
-              <h2 className="exam-heading text-xl font-bold leading-tight sm:text-2xl">
-                আজ কোন অধ্যায় অনুশীলন করবেন?
-              </h2>
-              <p className="bn-label mt-1 text-xs opacity-60">
-                Subject → Chapter → Start. Two clicks.
-              </p>
+          {/* Today's Recommended (HERO) */}
+          <Card className="border-primary/30 bg-primary/[0.03] p-5 md:col-span-2">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
+              <Target className="h-3.5 w-3.5" /> আজকের ফোকাস
             </div>
-            <Button
-              size="lg"
-              className="exam-heading shrink-0"
-              onClick={() => openQuick()}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              অনুশীলন শুরু করুন
-            </Button>
-          </div>
-
-          {/* Resume row */}
-          {resumeChapter && (
-            <div className="mt-4 flex items-center justify-between gap-3 border-t border-foreground/10 pt-3">
-              <div className="min-w-0 text-xs">
-                <span className="opacity-60">সর্বশেষ · Last: </span>
-                <span className="exam-heading font-bold">
-                  {lastChapterName ?? "অনুশীলন"}
-                </span>
-                {lastAttempt && (
-                  <span className="ml-2 opacity-60">
-                    স্কোর {toBnDigits(lastAttempt.score)}/{toBnDigits(lastAttempt.total_questions)}
-                  </span>
+            {q.isLoading ? (
+              <p className="text-sm text-muted-foreground">লোড হচ্ছে...</p>
+            ) : rec?.chapter ? (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  {rec.chapter.subjects?.name ?? ""}
+                  {rec.chapter.subjects?.paper ? ` · ${rec.chapter.subjects.paper}` : ""}
+                </p>
+                <h2 className="exam-heading mt-0.5 text-xl font-bold">{rec.chapter.name}</h2>
+                {rec.chapter.name_bn && (
+                  <p className="text-sm text-muted-foreground">{rec.chapter.name_bn}</p>
                 )}
-              </div>
-              <Link
-                to="/practice"
-                search={{ chapterId: resumeChapter, mode: "chapter" as const }}
-                className="exam-heading shrink-0 text-xs font-bold underline-offset-4 hover:underline"
-              >
-                আবার অনুশীলন →
-              </Link>
-            </div>
-          )}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  <Badge variant="secondary" className="text-[10px]">
+                    {(data?.profile as any)?.board ? `${(data!.profile as any).board} Board` : "All Boards"}
+                  </Badge>
+                  {rec.bqCount > 0 ? (
+                    <Badge className="text-[10px]">{toBnDigits(rec.bqCount)}টি Board Question</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px]">AI Practice</Badge>
+                  )}
+                  {rec.source === "weak_subject" && (
+                    <Badge variant="outline" className="border-amber-300 text-[10px] text-amber-700">
+                      Weak Subject
+                    </Badge>
+                  )}
+                </div>
+                <Button asChild className="mt-3">
+                  <Link
+                    to="/chapters/$chapterId"
+                    params={{ chapterId: rec.chapter.id }}
+                  >
+                    আজকের Practice শুরু করুন <ChevronRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <h2 className="exam-heading text-base font-semibold">শুরু করার জন্য একটি বিষয় বাছুন</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Onboarding-এ weak subject সেট করলে এখানে recommendation দেখানো হবে।
+                </p>
+                <Button asChild className="mt-3" variant="outline">
+                  <Link to="/subjects">বিষয় দেখুন</Link>
+                </Button>
+              </>
+            )}
+          </Card>
         </div>
 
-        {/* Subject quick-pick chips */}
-        <div className="paper-tile relative mb-4 p-5">
-          <span className="serial-marker hidden sm:block">০২.</span>
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="exam-heading text-sm font-bold">
-              আপনার বিষয়সমূহ
-              <span className="bn-label ml-2 text-[10px] font-normal opacity-60">
-                Jump into a subject
-              </span>
-            </h3>
-            <Link
-              to="/subjects"
-              className="text-[11px] underline-offset-4 hover:underline opacity-70"
-            >
-              সব দেখুন →
-            </Link>
+        {/* Row 2: Continue + Recent Performance */}
+        <div className="mb-4 grid gap-3 md:grid-cols-2">
+          <Card className="p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <RefreshCw className="h-3.5 w-3.5" /> সর্বশেষ অধ্যায়
+            </div>
+            {data?.lastAttempt?.chapter_id ? (
+              <>
+                <p className="exam-heading text-base font-semibold">
+                  {data.lastAttempt.chapters?.name ?? "অধ্যায়"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  স্কোর {toBnDigits(Math.round(Number(data.lastAttempt.score)))}/
+                  {toBnDigits(data.lastAttempt.total_questions)}
+                </p>
+                <Button asChild variant="outline" size="sm" className="mt-3">
+                  <Link to="/chapters/$chapterId" params={{ chapterId: data.lastAttempt.chapter_id }}>
+                    আবার practice
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                আপনি এখনো কোনো chapter শুরু করেননি।
+              </p>
+            )}
+          </Card>
+
+          <Card className="p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5" /> সাম্প্রতিক পারফরম্যান্স
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <Stat label="মোট" value={data?.totalAttempted ?? 0} />
+              <Stat label="শুদ্ধতা" value={`${toBnDigits(data?.accuracy ?? 0)}%`} />
+              <Stat label="Revision" value={data?.revisionCount ?? 0} />
+              <Stat label="৭ দিন" value={data?.last7Count ?? 0} />
+            </div>
+          </Card>
+        </div>
+
+        {/* Row 3: Weak Chapters */}
+        <Card className="mb-4 p-4">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <AlertTriangle className="h-3.5 w-3.5" /> দুর্বল অধ্যায়
           </div>
-          {subjects.length === 0 ? (
-            <p className="text-xs opacity-60">কোনো বিষয় পাওয়া যায়নি।</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-              {subjects.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => openQuick(s.id)}
-                  className="group flex items-center justify-between gap-2 rounded border border-foreground/15 px-3 py-2.5 text-left transition hover:border-foreground/40 hover:bg-foreground/[0.02]"
+          {(data?.totalAttempted ?? 0) < 20 ? (
+            <p className="text-sm text-muted-foreground">
+              ২০টি প্রশ্ন practice করলে weak chapter দেখা যাবে। এখন পর্যন্ত: {toBnDigits(data?.totalAttempted ?? 0)}।
+            </p>
+          ) : data?.weakChapters?.length ? (
+            <div className="space-y-2">
+              {data.weakChapters.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/chapters/$chapterId"
+                  params={{ chapterId: c.id }}
+                  className="flex items-center justify-between rounded-md border p-2 text-sm hover:border-foreground/40"
                 >
-                  <span className="min-w-0">
-                    <span className="exam-heading block truncate text-sm font-semibold leading-tight">
-                      {s.name}
-                    </span>
-                    {s.name_bn && (
-                      <span className="bn-label block truncate text-[10px] opacity-60">
-                        {s.name_bn}
-                      </span>
-                    )}
-                  </span>
-                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-40 transition group-hover:opacity-100" />
-                </button>
+                  <span className="exam-heading font-medium">{c.name}</span>
+                  <Badge variant="outline" className="border-red-300 text-red-700">
+                    {toBnDigits(c.accuracy)}% শুদ্ধ
+                  </Badge>
+                </Link>
               ))}
             </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">কোনো দুর্বল অধ্যায় চিহ্নিত হয়নি — চালিয়ে যান।</p>
           )}
-        </div>
+        </Card>
 
-        {/* Secondary tiles row */}
-        <div className="grid grid-cols-3 gap-3">
-          <SmallTile
-            to="/analytics"
-            icon={BarChart3}
-            bn="ফলাফল"
-            en="Analytics"
-          />
-          <SmallTile
-            to="/history"
-            icon={History}
-            bn="ইতিহাস"
-            en="History"
-          />
-          <SmallTile
-            to="/mock-test"
+        {/* Row 4: Trends + Mock shortcuts */}
+        <div className="grid gap-3 md:grid-cols-2">
+          <ShortcutCard
+            to="/past-paper-analyzer"
             icon={Sparkles}
-            bn="মক টেস্ট"
-            en="Mock Test"
+            title="যেসব প্রশ্ন বারবার এসেছে"
+            cta="Board Trends দেখুন"
+          />
+          <ShortcutCard
+            to="/mock-test"
+            icon={Trophy}
+            title="Chapter mock দিয়ে নিজেকে যাচাই করুন"
+            cta="Mock Test শুরু করুন"
           />
         </div>
 
-        {/* Footer notation */}
-        <div className="mt-10 text-center">
-          <p className="exam-heading text-[10px] italic opacity-40">
-            বোর্ড মানদণ্ড অনুসারে অনুশীলন · Board-Standard Practice Interface
-          </p>
+        {/* Footer quick links */}
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Link to="/board-questions" className="text-xs underline-offset-4 hover:underline">
+            <BookOpen className="mr-1 inline h-3 w-3" /> সব Board Questions
+          </Link>
+          <Link to="/history" className="text-xs text-muted-foreground underline-offset-4 hover:underline">
+            <History className="mr-1 inline h-3 w-3" /> Practice History
+          </Link>
         </div>
       </div>
-
-      <QuickPractice
-        open={quickOpen}
-        onOpenChange={setQuickOpen}
-        initialSubjectId={presetSubject}
-      />
     </AppShell>
   );
 }
 
-function SmallTile({
+function Stat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div>
+      <div className="exam-heading text-xl font-bold">
+        {typeof value === "number" ? toBnDigits(value) : value}
+      </div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function ShortcutCard({
   to,
   icon: Icon,
-  bn,
-  en,
+  title,
+  cta,
 }: {
   to: string;
-  icon: typeof BookOpen;
-  bn: string;
-  en: string;
+  icon: typeof Sparkles;
+  title: string;
+  cta: string;
 }) {
   return (
-    <Link
-      to={to}
-      className="paper-tile flex flex-col items-start justify-between p-3 transition hover:border-foreground/40"
-    >
-      <Icon className="h-4 w-4 opacity-70" />
-      <div className="mt-3">
-        <p className="exam-heading text-xs font-bold leading-tight">{bn}</p>
-        <p className="bn-label text-[10px] opacity-60">{en}</p>
-      </div>
+    <Link to={to} className="block">
+      <Card className="flex items-center gap-3 p-4 transition hover:border-foreground/40">
+        <Icon className="h-5 w-5 text-primary" />
+        <div className="min-w-0 flex-1">
+          <p className="exam-heading text-sm font-semibold">{title}</p>
+          <p className="text-xs text-muted-foreground">{cta} →</p>
+        </div>
+      </Card>
     </Link>
   );
 }

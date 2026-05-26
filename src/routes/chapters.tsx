@@ -334,7 +334,7 @@ function ChaptersPage() {
                   </div>
                 </div>
                 <a
-                  href={`/chapters/${activeChapter.id}/board-questions`}
+                  href={`/chapters/${activeChapter.id}`}
                   className="mb-3 block rounded-lg border-2 border-primary bg-primary/5 p-4 transition hover:bg-primary/10"
                 >
                   <div className="flex items-center gap-3">
@@ -342,8 +342,8 @@ function ChaptersPage() {
                       <Library className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold">বোর্ড প্রশ্ন ট্র্যাকার</div>
-                      <div className="text-xs text-muted-foreground">Board Questions · Year · Board · Pattern</div>
+                      <div className="font-semibold">Chapter Page খুলুন</div>
+                      <div className="text-xs text-muted-foreground">Board Q · Patterns · AI · Test · Notes</div>
                     </div>
                     <ChevronRight className="h-4 w-4" />
                   </div>

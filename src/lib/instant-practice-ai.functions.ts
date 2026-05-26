@@ -9,9 +9,7 @@ const GenerateInstantPracticeSchema = z.object({
   difficulty: z.enum(["easy", "medium", "hard"]).default("easy"),
 });
 
-type DbTable = ReturnType<typeof supabaseAdmin.from>;
 type Difficulty = "easy" | "medium" | "hard";
-type QuestionType = "mcq";
 
 type GeneratedMcq = {
   question_text: string;
@@ -23,10 +21,11 @@ type GeneratedMcq = {
 export type InsertedQuestion = {
   id: string;
   chapter_id: string;
-  question_type: QuestionType;
+  question_type: "mcq";
   difficulty: Difficulty;
   question_text: string;
-  marks: number;
+  options: Record<string, string>;
+  correct_answer: string;
 };
 
 export type InsertedOption = {
@@ -37,55 +36,7 @@ export type InsertedOption = {
   display_order: number;
 };
 
-const table = (name: string) =>
-  (supabaseAdmin.from as unknown as (tableName: string) => DbTable)(name);
-
-const schemaMismatchPattern = /(column .* does not exist|schema cache)/i;
 const MAX_AI_QUESTIONS_PER_HOUR = 25;
-
-function asString(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : value == null ? fallback : String(value);
-}
-
-function asNumber(value: unknown, fallback = 0): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function asDifficulty(value: unknown, fallback: Difficulty): Difficulty {
-  return value === "easy" || value === "medium" || value === "hard" ? value : fallback;
-}
-
-function asQuestionType(value: unknown): QuestionType {
-  return value === "mcq" ? "mcq" : "mcq";
-}
-
-function mapInsertedQuestion(
-  row: unknown,
-  defaults: { chapter_id: string; difficulty: Difficulty; question_text: string },
-): InsertedQuestion {
-  const r = (row ?? {}) as Record<string, unknown>;
-  return {
-    id: asString(r.id),
-    chapter_id: asString(r.chapter_id, defaults.chapter_id),
-    question_type: asQuestionType(r.question_type),
-    difficulty: asDifficulty(r.difficulty, defaults.difficulty),
-    question_text: asString(r.question_text, defaults.question_text),
-    marks: asNumber(r.marks, 1),
-  };
-}
-
-function mapInsertedOption(row: unknown): InsertedOption {
-  const r = (row ?? {}) as Record<string, unknown>;
-  return {
-    id: asString(r.id),
-    question_id: asString(r.question_id),
-    option_key: asString(r.option_key),
-    option_text: asString(r.option_text),
-    display_order: asNumber(r.display_order),
-  };
-}
 
 function parseAiJson(content: string): GeneratedMcq[] {
   let parsed: unknown;
@@ -120,64 +71,13 @@ function parseAiJson(content: string): GeneratedMcq[] {
     );
 }
 
-async function getHscExamTypeId() {
-  const { data, error } = await table("exam_types").select("id").eq("code", "HSC").maybeSingle();
-  if (error) throw new Error(error.message);
-  return (data?.id as string | undefined) ?? null;
-}
-
-async function createReviewDraft({
-  chapter,
-  question,
-  userId,
-  difficulty,
-}: {
-  chapter: Record<string, unknown>;
-  question: GeneratedMcq;
-  userId: string;
-  difficulty: "easy" | "medium" | "hard";
-}) {
-  const examTypeId = (chapter.exam_type_id as string | null) ?? (await getHscExamTypeId());
-  if (!examTypeId) return;
-
-  const options = question.options.map((option, index) => ({
-    key: String.fromCharCode(65 + index),
-    text: option,
-    isCorrect: option === question.correct_answer,
-  }));
-
-  const { error } = await table("question_drafts").insert({
-    exam_type_id: examTypeId,
-    class_id: chapter.class_id ?? null,
-    group_id: chapter.group_id ?? null,
-    subject_id: chapter.subject_id,
-    chapter_id: chapter.id,
-    question_type: "mcq",
-    difficulty,
-    question_text: question.question_text,
-    options,
-    correct_answer: question.correct_answer,
-    explanation: question.explanation_bn ?? null,
-    source: "ai_instant_student",
-    status: "pending_review",
-    created_by: userId,
-    submitted_by: userId,
-    submitted_at: new Date().toISOString(),
-  });
-
-  if (error && !schemaMismatchPattern.test(error.message)) {
-    throw new Error(error.message);
-  }
-}
-
 export const generateInstantPracticeQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => GenerateInstantPracticeSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { data: chapter, error: chapterError } = await table("chapters")
-      .select(
-        "id, name, name_bn, subject_id, subjects(name, name_bn)",
-      )
+    const { data: chapter, error: chapterError } = await supabaseAdmin
+      .from("chapters")
+      .select("id, name, name_bn, subject_id, subjects(name, name_bn)")
       .eq("id", data.chapter_id)
       .eq("is_active", true)
       .maybeSingle();
@@ -186,15 +86,14 @@ export const generateInstantPracticeQuestions = createServerFn({ method: "POST" 
     if (!chapter) throw new Error("Chapter not found.");
 
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { count, error: quotaError } = await table("questions")
+    const { count, error: quotaError } = await supabaseAdmin
+      .from("questions")
       .select("id", { count: "exact", head: true })
       .eq("created_by", context.userId)
       .eq("source", "ai_instant_student")
       .gte("created_at", since);
 
-    if (quotaError && !schemaMismatchPattern.test(quotaError.message)) {
-      throw new Error(quotaError.message);
-    }
+    if (quotaError) throw new Error(quotaError.message);
     if ((count ?? 0) >= MAX_AI_QUESTIONS_PER_HOUR) {
       throw new Error("AI generation limit reached. Try again in about an hour.");
     }
@@ -205,7 +104,8 @@ export const generateInstantPracticeQuestions = createServerFn({ method: "POST" 
     }
 
     const subjectName = (chapter.subjects as { name?: string; name_bn?: string } | null)?.name;
-    const subjectNameBn = (chapter.subjects as { name?: string; name_bn?: string } | null)?.name_bn;
+    const subjectNameBn = (chapter.subjects as { name?: string; name_bn?: string } | null)
+      ?.name_bn;
 
     const systemPrompt =
       "You write original HSC exam-preparation MCQs for Bangladeshi students. Do not copy past board questions. Keep questions factual, syllabus-friendly, and suitable for practice. Return strict JSON only.";
@@ -217,7 +117,6 @@ Rules:
 - Each question must have 4 short options.
 - correct_answer must exactly match one option.
 - Do not include answer labels inside option text.
-- Do not mention that the question is AI-generated.
 - Provide a short Bangla explanation in explanation_bn.
 
 Return JSON exactly like:
@@ -230,7 +129,7 @@ Return JSON exactly like:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -255,99 +154,58 @@ Return JSON exactly like:
 
     const insertedQuestions: InsertedQuestion[] = [];
     const insertedOptions: InsertedOption[] = [];
-    const now = new Date().toISOString();
 
     for (const question of generated) {
-      await createReviewDraft({
-        chapter: chapter as Record<string, unknown>,
-        question,
-        userId: context.userId,
-        difficulty: data.difficulty,
+      const optionsObj: Record<string, string> = {};
+      question.options.forEach((opt, i) => {
+        optionsObj[String.fromCharCode(65 + i)] = opt;
       });
+      const correctKey =
+        Object.entries(optionsObj).find(([, v]) => v === question.correct_answer)?.[0] ??
+        question.correct_answer;
 
-      const optionTexts = question.options;
-      let questionPayload: Record<string, unknown> = {
-        exam_type_id: chapter.exam_type_id ?? null,
-        class_id: chapter.class_id ?? null,
-        group_id: chapter.group_id ?? null,
-        subject_id: chapter.subject_id,
-        chapter_id: chapter.id,
-        question_type: "mcq",
-        difficulty: data.difficulty,
-        question_text: question.question_text,
-        options: optionTexts,
-        correct_answer: question.correct_answer,
-        explanation_bn: question.explanation_bn ?? null,
-        is_approved: true,
-        teacher_reviewed: false,
-        source: "ai_instant_student",
-        created_by: context.userId,
-        marks: 1,
-        status: "approved",
-        is_active: true,
-        approved_at: now,
-        updated_at: now,
-      };
-
-      let { data: insertedQuestion, error: insertError } = await table("questions")
-        .insert(questionPayload)
-        .select("id, chapter_id, question_type, difficulty, question_text, marks")
-        .single();
-
-      if (insertError && schemaMismatchPattern.test(insertError.message)) {
-        questionPayload = {
+      const { data: insertedQuestion, error: insertError } = await supabaseAdmin
+        .from("questions")
+        .insert({
           chapter_id: chapter.id,
           question_type: "mcq",
           difficulty: data.difficulty,
           question_text: question.question_text,
-          options: optionTexts,
-          correct_answer: question.correct_answer,
+          options: optionsObj,
+          correct_answer: correctKey,
           explanation_bn: question.explanation_bn ?? null,
           is_approved: true,
           teacher_reviewed: false,
           source: "ai_instant_student",
           created_by: context.userId,
-        };
-
-        const fallback = await table("questions")
-          .insert(questionPayload)
-          .select("id, chapter_id, question_type, difficulty, question_text")
-          .single();
-        insertedQuestion = fallback.data;
-        insertError = fallback.error;
-      }
+        })
+        .select("id, chapter_id, question_type, difficulty, question_text")
+        .single();
 
       if (insertError) throw new Error(insertError.message);
       if (!insertedQuestion) throw new Error("AI question could not be saved.");
 
-      const questionRow = mapInsertedQuestion(insertedQuestion, {
-        chapter_id: String(chapter.id),
+      insertedQuestions.push({
+        id: insertedQuestion.id as string,
+        chapter_id: insertedQuestion.chapter_id as string,
+        question_type: "mcq",
         difficulty: data.difficulty,
-        question_text: question.question_text,
+        question_text: insertedQuestion.question_text as string,
+        options: optionsObj,
+        correct_answer: correctKey,
       });
-      insertedQuestions.push(questionRow);
 
-      const optionRows = optionTexts.map((option, index) => ({
-        question_id: questionRow.id,
-        option_key: String.fromCharCode(65 + index),
-        option_text: option,
-        display_order: index + 1,
-      }));
-
-      const { data: optionsData, error: optionsError } = await table("question_options")
-        .insert(optionRows)
-        .select("id, question_id, option_key, option_text, display_order");
-
-      if (optionsError) throw new Error(optionsError.message);
-      const rawOptions = Array.isArray(optionsData) ? (optionsData as unknown[]) : [];
-      for (const opt of rawOptions) {
-        insertedOptions.push(mapInsertedOption(opt));
-      }
+      question.options.forEach((opt, i) => {
+        const key = String.fromCharCode(65 + i);
+        insertedOptions.push({
+          id: `${insertedQuestion.id}-${key}`,
+          question_id: insertedQuestion.id as string,
+          option_key: key,
+          option_text: opt,
+          display_order: i + 1,
+        });
+      });
     }
 
-    const result: { questions: InsertedQuestion[]; options: InsertedOption[] } = {
-      questions: insertedQuestions,
-      options: insertedOptions,
-    };
-    return result;
+    return { questions: insertedQuestions, options: insertedOptions };
   });

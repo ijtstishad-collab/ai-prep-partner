@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SubjectsRouteImport } from './routes/subjects'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -31,6 +32,11 @@ import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
   path: '/subjects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/practice': typeof PracticeRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/practice': typeof PracticeRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/practice': typeof PracticeRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/practice'
     | '/profile'
+    | '/reset-password'
     | '/subjects'
     | '/admin/question-review'
     | '/demo/gravitation'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/practice'
     | '/profile'
+    | '/reset-password'
     | '/subjects'
     | '/admin/question-review'
     | '/demo/gravitation'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/practice'
     | '/profile'
+    | '/reset-password'
     | '/subjects'
     | '/admin/question-review'
     | '/demo/gravitation'
@@ -256,6 +268,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PracticeRoute: typeof PracticeRouteWithChildren
   ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
   DemoGravitationRoute: typeof DemoGravitationRoute
   ResultAttemptIdRoute: typeof ResultAttemptIdRoute
@@ -268,6 +281,13 @@ declare module '@tanstack/react-router' {
       path: '/subjects'
       fullPath: '/subjects'
       preLoaderRoute: typeof SubjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -439,6 +459,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PracticeRoute: PracticeRouteWithChildren,
   ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
   DemoGravitationRoute: DemoGravitationRoute,
   ResultAttemptIdRoute: ResultAttemptIdRoute,

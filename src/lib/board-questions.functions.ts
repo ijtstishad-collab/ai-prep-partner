@@ -68,6 +68,7 @@ export const listBoardQuestions = createServerFn({ method: "POST" })
     if (data.tab === "high_priority") q = q.gte("priority_score", 70);
     if (data.tab === "ai_similar") q = q.eq("source_type", "ai_generated");
     if (data.tab === "repeated" || data.tab === "pattern") q = q.not("pattern_id", "is", null);
+    if (!data.include_unverified) q = q.eq("verification_status", "verified");
 
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);

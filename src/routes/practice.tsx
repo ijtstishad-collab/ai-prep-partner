@@ -158,10 +158,8 @@ function PracticePage() {
     () => options.filter((option) => option.question_id === currentQuestion?.id),
     [currentQuestion?.id, options],
   );
-  const totalMarks = useMemo(
-    () => questions.reduce((sum, q) => sum + Number(q.marks ?? 1), 0),
-    [questions],
-  );
+  const totalMarks = useMemo(() => questions.length, [questions]);
+
   const progressValue =
     questions.length > 0 ? Math.round(((currentIndex + 1) / questions.length) * 100) : 0;
 

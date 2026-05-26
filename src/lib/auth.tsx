@@ -10,6 +10,10 @@ type Profile = {
   target_exam_year: number | null;
   subscription_tier: string;
   onboarded: boolean;
+  board?: string | null;
+  weak_subject_ids?: string[] | null;
+  daily_minutes?: number | null;
+  preferred_study_days?: string[] | null;
 };
 
 type AuthContextValue = {

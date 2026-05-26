@@ -22,6 +22,7 @@ import { Route as HistoryRouteImport } from './routes/history'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ChaptersRouteImport } from './routes/chapters'
+import { Route as BoardQuestionsRouteImport } from './routes/board-questions'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AiGeneratorRouteImport } from './routes/ai-generator'
@@ -101,6 +102,11 @@ const ChaptersRoute = ChaptersRouteImport.update({
   path: '/chapters',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BoardQuestionsRoute = BoardQuestionsRouteImport.update({
+  id: '/board-questions',
+  path: '/board-questions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/board-questions': typeof BoardQuestionsRoute
   '/chapters': typeof ChaptersRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/board-questions': typeof BoardQuestionsRoute
   '/chapters': typeof ChaptersRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/board-questions': typeof BoardQuestionsRoute
   '/chapters': typeof ChaptersRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -262,6 +271,7 @@ export interface FileRouteTypes {
     | '/ai-generator'
     | '/analytics'
     | '/auth'
+    | '/board-questions'
     | '/chapters'
     | '/dashboard'
     | '/forgot-password'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/ai-generator'
     | '/analytics'
     | '/auth'
+    | '/board-questions'
     | '/chapters'
     | '/dashboard'
     | '/forgot-password'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/ai-generator'
     | '/analytics'
     | '/auth'
+    | '/board-questions'
     | '/chapters'
     | '/dashboard'
     | '/forgot-password'
@@ -347,6 +359,7 @@ export interface RootRouteChildren {
   AiGeneratorRoute: typeof AiGeneratorRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
+  BoardQuestionsRoute: typeof BoardQuestionsRoute
   ChaptersRoute: typeof ChaptersRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -455,6 +468,13 @@ declare module '@tanstack/react-router' {
       path: '/chapters'
       fullPath: '/chapters'
       preLoaderRoute: typeof ChaptersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/board-questions': {
+      id: '/board-questions'
+      path: '/board-questions'
+      fullPath: '/board-questions'
+      preLoaderRoute: typeof BoardQuestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -607,6 +627,7 @@ const rootRouteChildren: RootRouteChildren = {
   AiGeneratorRoute: AiGeneratorRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
+  BoardQuestionsRoute: BoardQuestionsRoute,
   ChaptersRoute: ChaptersRouteWithChildren,
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -626,13 +647,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

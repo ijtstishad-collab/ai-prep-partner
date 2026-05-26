@@ -65,9 +65,9 @@ function AnalyzerPage() {
     <AppShell>
       <div className="container mx-auto max-w-6xl px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Past Paper Analyzer</h1>
+          <h1 className="text-3xl font-bold">Board Question Trends</h1>
           <p className="mt-1 text-muted-foreground">
-            Frequency analysis of past board questions — focus on what comes up most.
+            বোর্ড প্রশ্নের পুনরাবৃত্তি, বছর ও বোর্ডভিত্তিক বিশ্লেষণ — কোথায় বেশি ফোকাস দরকার তা এক নজরে।
           </p>
         </div>
 

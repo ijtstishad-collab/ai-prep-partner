@@ -291,37 +291,49 @@ export type Database = {
       }
       profiles: {
         Row: {
+          board: string | null
           class: string | null
           created_at: string
+          daily_minutes: number
           full_name: string | null
           id: string
           onboarded: boolean
+          preferred_study_days: string[]
           student_group: string | null
           subscription_tier: string
           target_exam_year: number | null
           updated_at: string
+          weak_subject_ids: string[]
         }
         Insert: {
+          board?: string | null
           class?: string | null
           created_at?: string
+          daily_minutes?: number
           full_name?: string | null
           id: string
           onboarded?: boolean
+          preferred_study_days?: string[]
           student_group?: string | null
           subscription_tier?: string
           target_exam_year?: number | null
           updated_at?: string
+          weak_subject_ids?: string[]
         }
         Update: {
+          board?: string | null
           class?: string | null
           created_at?: string
+          daily_minutes?: number
           full_name?: string | null
           id?: string
           onboarded?: boolean
+          preferred_study_days?: string[]
           student_group?: string | null
           subscription_tier?: string
           target_exam_year?: number | null
           updated_at?: string
+          weak_subject_ids?: string[]
         }
         Relationships: []
       }
@@ -574,6 +586,33 @@ export type Database = {
           },
         ]
       }
+      revision_items: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          question_id: string
+          source_table: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          question_id: string
+          source_table?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          question_id?: string
+          source_table?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_plans: {
         Row: {
           created_at: string
@@ -619,7 +658,9 @@ export type Database = {
           is_active: boolean
           name: string
           name_bn: string | null
+          paper: string | null
           slug: string
+          sort_order: number
         }
         Insert: {
           created_at?: string
@@ -629,7 +670,9 @@ export type Database = {
           is_active?: boolean
           name: string
           name_bn?: string | null
+          paper?: string | null
           slug: string
+          sort_order?: number
         }
         Update: {
           created_at?: string
@@ -639,7 +682,9 @@ export type Database = {
           is_active?: boolean
           name?: string
           name_bn?: string | null
+          paper?: string | null
           slug?: string
+          sort_order?: number
         }
         Relationships: []
       }

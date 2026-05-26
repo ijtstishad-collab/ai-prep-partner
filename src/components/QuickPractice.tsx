@@ -161,9 +161,17 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
                 বিষয় বেছে নিন · Choose a subject
               </p>
               {loadingSubjects ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  লোড হচ্ছে…
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col items-start rounded border border-foreground/10 p-3"
+                    >
+                      <Skeleton className="mb-2 h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="mt-1 h-3 w-1/2" />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

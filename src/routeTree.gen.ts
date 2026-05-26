@@ -32,6 +32,7 @@ import { Route as ResultAttemptIdRouteImport } from './routes/result.$attemptId'
 import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapterId'
 import { Route as DemoGravitationRouteImport } from './routes/demo.gravitation'
 import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question-review'
+import { Route as AdminBoardQuestionsRouteImport } from './routes/admin.board-questions'
 import { Route as ChaptersChapterIdBoardQuestionsRouteImport } from './routes/chapters.$chapterId.board-questions'
 import { Route as ChaptersChapterIdBoardPracticeRouteImport } from './routes/chapters.$chapterId.board-practice'
 
@@ -150,6 +151,11 @@ const AdminQuestionReviewRoute = AdminQuestionReviewRouteImport.update({
   path: '/question-review',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBoardQuestionsRoute = AdminBoardQuestionsRouteImport.update({
+  id: '/board-questions',
+  path: '/board-questions',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ChaptersChapterIdBoardQuestionsRoute =
   ChaptersChapterIdBoardQuestionsRouteImport.update({
     id: '/$chapterId/board-questions',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/study-plan': typeof StudyPlanRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/admin/board-questions': typeof AdminBoardQuestionsRoute
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/study-plan': typeof StudyPlanRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/admin/board-questions': typeof AdminBoardQuestionsRoute
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/study-plan': typeof StudyPlanRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/admin/board-questions': typeof AdminBoardQuestionsRoute
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/study-plan'
     | '/subjects'
+    | '/admin/board-questions'
     | '/admin/question-review'
     | '/demo/gravitation'
     | '/practice/$chapterId'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/study-plan'
     | '/subjects'
+    | '/admin/board-questions'
     | '/admin/question-review'
     | '/demo/gravitation'
     | '/practice/$chapterId'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/study-plan'
     | '/subjects'
+    | '/admin/board-questions'
     | '/admin/question-review'
     | '/demo/gravitation'
     | '/practice/$chapterId'
@@ -515,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminQuestionReviewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/board-questions': {
+      id: '/admin/board-questions'
+      path: '/board-questions'
+      fullPath: '/admin/board-questions'
+      preLoaderRoute: typeof AdminBoardQuestionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/chapters/$chapterId/board-questions': {
       id: '/chapters/$chapterId/board-questions'
       path: '/$chapterId/board-questions'
@@ -533,10 +552,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminBoardQuestionsRoute: typeof AdminBoardQuestionsRoute
   AdminQuestionReviewRoute: typeof AdminQuestionReviewRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBoardQuestionsRoute: AdminBoardQuestionsRoute,
   AdminQuestionReviewRoute: AdminQuestionReviewRoute,
 }
 

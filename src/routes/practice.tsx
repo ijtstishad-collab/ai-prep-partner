@@ -707,6 +707,142 @@ function PracticePage() {
             </div>
           </>
         )}
+
+        <Dialog open={genOpen} onOpenChange={(open) => !generating && setGenOpen(open)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="exam-heading">AI দিয়ে Practice Set তৈরি করুন</DialogTitle>
+              <DialogDescription>
+                আপনার পছন্দ অনুযায়ী প্রশ্ন তৈরি হবে। প্রশ্নগুলি “AI Generated – Review Needed” হিসেবে চিহ্নিত থাকবে।
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">প্রশ্ন সংখ্যা</Label>
+                <RadioGroup
+                  value={String(genCount)}
+                  onValueChange={(v) => setGenCount(Number(v) as 5 | 10 | 20)}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[5, 10, 20].map((n) => (
+                    <Label
+                      key={n}
+                      htmlFor={`count-${n}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genCount === n ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`count-${n}`} value={String(n)} className="sr-only" />
+                      {toBnDigits(n)}টি
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">কঠিনতা</Label>
+                <RadioGroup
+                  value={genDifficulty}
+                  onValueChange={(v) => setGenDifficulty(v as "easy" | "medium" | "hard")}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[
+                    { v: "easy", l: "সহজ" },
+                    { v: "medium", l: "মাঝারি" },
+                    { v: "hard", l: "কঠিন" },
+                  ].map((o) => (
+                    <Label
+                      key={o.v}
+                      htmlFor={`diff-${o.v}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genDifficulty === o.v ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`diff-${o.v}`} value={o.v} className="sr-only" />
+                      {o.l}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">প্রশ্নের ধরন</Label>
+                <RadioGroup
+                  value={genStyle}
+                  onValueChange={(v) => setGenStyle(v as "mcq" | "short" | "board")}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[
+                    { v: "mcq", l: "MCQ" },
+                    { v: "short", l: "Short Q" },
+                    { v: "board", l: "Board Style" },
+                  ].map((o) => (
+                    <Label
+                      key={o.v}
+                      htmlFor={`style-${o.v}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genStyle === o.v ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`style-${o.v}`} value={o.v} className="sr-only" />
+                      {o.l}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">ভাষা</Label>
+                <RadioGroup
+                  value={genLanguage}
+                  onValueChange={(v) => setGenLanguage(v as "bn" | "en" | "mixed")}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[
+                    { v: "bn", l: "বাংলা" },
+                    { v: "en", l: "English" },
+                    { v: "mixed", l: "Mixed" },
+                  ].map((o) => (
+                    <Label
+                      key={o.v}
+                      htmlFor={`lang-${o.v}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genLanguage === o.v ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`lang-${o.v}`} value={o.v} className="sr-only" />
+                      {o.l}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              {error ? (
+                <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {error}
+                </p>
+              ) : null}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setGenOpen(false)} disabled={generating}>
+                বাতিল
+              </Button>
+              <Button onClick={() => generateAiQuestions()} disabled={generating}>
+                {generating ? (
+                  <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> তৈরি হচ্ছে…</>
+                ) : (
+                  <><Sparkles className="mr-1 h-4 w-4" /> Generate Practice Set</>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppShell>
   );

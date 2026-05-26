@@ -185,10 +185,19 @@ export type Database = {
           chapter_id: string
           created_at: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
+          exam_level: string | null
+          explanation_bn: string | null
           id: string
+          options: Json | null
+          paper: string | null
+          pattern_id: string | null
+          priority_score: number
           question_text: string
           question_type: Database["public"]["Enums"]["question_type"]
+          source_type: string
           subject_id: string
+          topic: string | null
+          verification_status: string
           year: number | null
         }
         Insert: {
@@ -197,10 +206,19 @@ export type Database = {
           chapter_id: string
           created_at?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          exam_level?: string | null
+          explanation_bn?: string | null
           id?: string
+          options?: Json | null
+          paper?: string | null
+          pattern_id?: string | null
+          priority_score?: number
           question_text: string
           question_type?: Database["public"]["Enums"]["question_type"]
+          source_type?: string
           subject_id: string
+          topic?: string | null
+          verification_status?: string
           year?: number | null
         }
         Update: {
@@ -209,10 +227,19 @@ export type Database = {
           chapter_id?: string
           created_at?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          exam_level?: string | null
+          explanation_bn?: string | null
           id?: string
+          options?: Json | null
+          paper?: string | null
+          pattern_id?: string | null
+          priority_score?: number
           question_text?: string
           question_type?: Database["public"]["Enums"]["question_type"]
+          source_type?: string
           subject_id?: string
+          topic?: string | null
+          verification_status?: string
           year?: number | null
         }
         Relationships: []
@@ -295,6 +322,57 @@ export type Database = {
           subscription_tier?: string
           target_exam_year?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      question_patterns: {
+        Row: {
+          appeared_boards: string[]
+          appeared_years: number[]
+          chapter_id: string
+          created_at: string
+          created_by: string | null
+          description_bn: string | null
+          frequency_count: number
+          id: string
+          name: string
+          name_bn: string | null
+          priority_label: string
+          priority_score: number
+          subject_id: string
+          topic_importance: number
+        }
+        Insert: {
+          appeared_boards?: string[]
+          appeared_years?: number[]
+          chapter_id: string
+          created_at?: string
+          created_by?: string | null
+          description_bn?: string | null
+          frequency_count?: number
+          id?: string
+          name: string
+          name_bn?: string | null
+          priority_label?: string
+          priority_score?: number
+          subject_id: string
+          topic_importance?: number
+        }
+        Update: {
+          appeared_boards?: string[]
+          appeared_years?: number[]
+          chapter_id?: string
+          created_at?: string
+          created_by?: string | null
+          description_bn?: string | null
+          frequency_count?: number
+          id?: string
+          name?: string
+          name_bn?: string | null
+          priority_label?: string
+          priority_score?: number
+          subject_id?: string
+          topic_importance?: number
         }
         Relationships: []
       }
@@ -750,6 +828,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      compute_priority_score: {
+        Args: {
+          p_distinct_boards: number
+          p_frequency: number
+          p_latest_year: number
+          p_topic_importance: number
+        }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

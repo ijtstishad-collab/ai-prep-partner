@@ -7,12 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  BookOpenCheck,
-  ChevronDown,
-  LogOut,
-  Menu,
-} from "lucide-react";
+import { BookOpenCheck, ChevronDown, LogOut, Menu } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 type AppRoute =
@@ -20,40 +15,42 @@ type AppRoute =
   | "/auth"
   | "/dashboard"
   | "/subjects"
-  | "/chapters"
+  | "/board-questions"
   | "/practice"
   | "/mock-test"
+  | "/analytics"
+  | "/study-plan"
   | "/resources"
   | "/ai-generator"
   | "/past-paper-analyzer"
-  | "/study-plan"
-  | "/analytics"
   | "/history"
   | "/profile"
-  | "/admin/question-review";
+  | "/admin/question-review"
+  | "/admin/board-questions";
 
 type NavLink = { to: AppRoute; label: string };
 
-// 4 primary tabs — the everyday flow
 const primaryLinks: NavLink[] = [
-  { to: "/dashboard", label: "Home" },
-  { to: "/subjects", label: "Practice" },
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/subjects", label: "Subjects" },
+  { to: "/board-questions", label: "Board Questions" },
+  { to: "/practice", label: "Practice" },
   { to: "/mock-test", label: "Mock Test" },
   { to: "/analytics", label: "Progress" },
+  { to: "/study-plan", label: "Study Plan" },
 ];
 
-// Everything else lives under "More"
 const moreLinks: NavLink[] = [
-  { to: "/resources", label: "Resources" },
   { to: "/ai-generator", label: "AI Generator" },
+  { to: "/resources", label: "Resources" },
   { to: "/past-paper-analyzer", label: "Board Trends" },
-  { to: "/study-plan", label: "Study Plan" },
   { to: "/history", label: "History" },
   { to: "/profile", label: "Profile" },
 ];
 
 const adminLinks: NavLink[] = [
-  { to: "/admin/question-review", label: "Admin Review" },
+  { to: "/admin/board-questions", label: "Admin · Board Questions" },
+  { to: "/admin/question-review", label: "Admin · Review" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -67,39 +64,38 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 font-bold text-lg">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 font-bold text-lg shrink-0">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft">
               <BookOpenCheck className="h-5 w-5" />
             </span>
-            <span>
+            <span className="hidden sm:inline">
               AI Prep <span className="text-primary">Partner</span>
             </span>
           </Link>
 
           {showAppNav ? (
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
               {primaryLinks.map((l) => (
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="px-3 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                  className="px-2.5 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
                   activeProps={{
                     className:
-                      "px-3 py-2 text-sm rounded-lg text-foreground bg-muted font-medium",
+                      "px-2.5 py-2 text-sm rounded-lg text-foreground bg-muted font-medium",
                   }}
                 >
                   {l.label}
                 </Link>
               ))}
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-3 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition inline-flex items-center gap-1">
+                  <button className="px-2.5 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition inline-flex items-center gap-1">
                     More <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-56">
                   {more.map((l) => (
                     <DropdownMenuItem key={l.to} asChild>
                       <Link to={l.to}>{l.label}</Link>
@@ -110,7 +106,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           ) : null}
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2 shrink-0">
             {user ? (
               <Button
                 variant="ghost"
@@ -135,7 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <button
-            className="md:hidden p-2"
+            className="lg:hidden p-2"
             onClick={() => setOpen((o) => !o)}
             aria-label="menu"
           >
@@ -144,7 +140,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         {open && (
-          <div className="md:hidden border-t bg-card px-4 py-3 space-y-1">
+          <div className="lg:hidden border-t bg-card px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
             {showAppNav ? (
               <>
                 {primaryLinks.map((l) => (
@@ -209,7 +205,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-        AI Prep Partner - HSC exam preparation for Bangladeshi students
+        AI Prep Partner — HSC Board Question Practice for Bangladeshi students
       </footer>
     </div>
   );

@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Bar,
@@ -15,9 +16,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Loader2, TrendingUp } from "lucide-react";
+import { BookOpen, Loader2, Sparkles, TrendingUp, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/past-paper-analyzer")({ component: AnalyzerPage });
+
 
 type Row = { chapter_id: string; chapter: string; subject: string };
 

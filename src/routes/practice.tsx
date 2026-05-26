@@ -91,6 +91,9 @@ type SubmissionResult = {
   score: number;
   maxScore: number;
   selectedAnswer: string;
+  correctAnswer?: string | null;
+  correctText?: string | null;
+  explanation?: string | null;
 };
 
 const fromTable = (tableName: string) =>
@@ -264,18 +267,11 @@ function PracticePage() {
         data: {
           chapter_id: chapterId,
           question_id: currentQuestion.id,
-          selected_answer: selected.option_text,
+          selected_answer: selected.option_key,
         },
       });
       setResult(submission);
-      // Auto-advance to next question to reduce clicks
-      if (currentIndex < questions.length - 1) {
-        setTimeout(() => {
-          setCurrentIndex((i) => Math.min(i + 1, questions.length - 1));
-          setSelectedOptionId(null);
-          setResult(null);
-        }, 1400);
-      }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not submit your answer.");
     } finally {
@@ -593,11 +589,28 @@ function PracticePage() {
                       ) : (
                         <XCircle className="mt-0.5 h-6 w-6 text-destructive" />
                       )}
-                      <div>
+                      <div className="flex-1">
                         <h3 className="exam-heading font-semibold">
-                          {result.isCorrect ? "সঠিক উত্তর" : "ভুল উত্তর"}
+                          {result.isCorrect ? "সঠিক উত্তর!" : "ভুল উত্তর"}
                         </h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        {!result.isCorrect && (result.correctText || result.correctAnswer) ? (
+                          <p className="mt-1 text-sm">
+                            <span className="font-medium">সঠিক উত্তর: </span>
+                            <span className="text-foreground">
+                              {result.correctAnswer ? `${result.correctAnswer}. ` : ""}
+                              {result.correctText ?? ""}
+                            </span>
+                          </p>
+                        ) : null}
+                        {result.explanation ? (
+                          <div className="mt-2 rounded-md border bg-background/60 px-3 py-2 text-sm leading-6">
+                            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                              ব্যাখ্যা
+                            </div>
+                            <p className="mt-1 whitespace-pre-line">{result.explanation}</p>
+                          </div>
+                        ) : null}
+                        <p className="mt-2 text-xs text-muted-foreground">
                           আপনি পেয়েছেন {toBnDigits(result.score)} / {toBnDigits(result.maxScore)} নম্বর।
                         </p>
                       </div>

@@ -111,7 +111,17 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
 
   const start = () => {
     if (!chapterId) return;
+    const subj = subjects.find((s) => s.id === subjectId);
+    const chap = chapters.find((c) => c.id === chapterId);
+    const subjText = `${subj?.name ?? ""} ${subj?.name_bn ?? ""}`.toLowerCase();
+    const chapText = `${chap?.name ?? ""} ${chap?.name_bn ?? ""}`.toLowerCase();
+    const isPhysics1 = /physics.*1|১ম.*পদার্থ|পদার্থ.*১ম|physics 1st/i.test(subjText);
+    const isGravitation = /gravitation|মহাকর্ষ/i.test(chapText);
     onOpenChange(false);
+    if (isPhysics1 && isGravitation) {
+      nav({ to: "/demo/gravitation" });
+      return;
+    }
     nav({ to: "/practice", search: { chapterId, mode } });
   };
 

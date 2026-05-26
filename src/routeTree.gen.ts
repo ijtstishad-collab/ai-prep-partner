@@ -31,6 +31,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsSlugRouteImport } from './routes/subjects.$slug'
 import { Route as ResultAttemptIdRouteImport } from './routes/result.$attemptId'
 import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapterId'
+import { Route as MockTestSetupRouteImport } from './routes/mock-test.setup'
+import { Route as MockTestMockIdRouteImport } from './routes/mock-test.$mockId'
 import { Route as DemoGravitationRouteImport } from './routes/demo.gravitation'
 import { Route as AdminQuestionsRouteImport } from './routes/admin.questions'
 import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question-review'
@@ -149,6 +151,16 @@ const PracticeChapterIdRoute = PracticeChapterIdRouteImport.update({
   path: '/$chapterId',
   getParentRoute: () => PracticeRoute,
 } as any)
+const MockTestSetupRoute = MockTestSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => MockTestRoute,
+} as any)
+const MockTestMockIdRoute = MockTestMockIdRouteImport.update({
+  id: '/$mockId',
+  path: '/$mockId',
+  getParentRoute: () => MockTestRoute,
+} as any)
 const DemoGravitationRoute = DemoGravitationRouteImport.update({
   id: '/demo/gravitation',
   path: '/demo/gravitation',
@@ -198,7 +210,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
-  '/mock-test': typeof MockTestRoute
+  '/mock-test': typeof MockTestRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/past-paper-analyzer': typeof PastPaperAnalyzerRoute
   '/practice': typeof PracticeRouteWithChildren
@@ -211,6 +223,8 @@ export interface FileRoutesByFullPath {
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/demo/gravitation': typeof DemoGravitationRoute
+  '/mock-test/$mockId': typeof MockTestMockIdRoute
+  '/mock-test/setup': typeof MockTestSetupRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -229,7 +243,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
-  '/mock-test': typeof MockTestRoute
+  '/mock-test': typeof MockTestRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/past-paper-analyzer': typeof PastPaperAnalyzerRoute
   '/practice': typeof PracticeRouteWithChildren
@@ -242,6 +256,8 @@ export interface FileRoutesByTo {
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/demo/gravitation': typeof DemoGravitationRoute
+  '/mock-test/$mockId': typeof MockTestMockIdRoute
+  '/mock-test/setup': typeof MockTestSetupRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -261,7 +277,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
-  '/mock-test': typeof MockTestRoute
+  '/mock-test': typeof MockTestRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/past-paper-analyzer': typeof PastPaperAnalyzerRoute
   '/practice': typeof PracticeRouteWithChildren
@@ -274,6 +290,8 @@ export interface FileRoutesById {
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/demo/gravitation': typeof DemoGravitationRoute
+  '/mock-test/$mockId': typeof MockTestMockIdRoute
+  '/mock-test/setup': typeof MockTestSetupRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
@@ -307,6 +325,8 @@ export interface FileRouteTypes {
     | '/admin/question-review'
     | '/admin/questions'
     | '/demo/gravitation'
+    | '/mock-test/$mockId'
+    | '/mock-test/setup'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -338,6 +358,8 @@ export interface FileRouteTypes {
     | '/admin/question-review'
     | '/admin/questions'
     | '/demo/gravitation'
+    | '/mock-test/$mockId'
+    | '/mock-test/setup'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -369,6 +391,8 @@ export interface FileRouteTypes {
     | '/admin/question-review'
     | '/admin/questions'
     | '/demo/gravitation'
+    | '/mock-test/$mockId'
+    | '/mock-test/setup'
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
@@ -388,7 +412,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HistoryRoute: typeof HistoryRoute
-  MockTestRoute: typeof MockTestRoute
+  MockTestRoute: typeof MockTestRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   PastPaperAnalyzerRoute: typeof PastPaperAnalyzerRoute
   PracticeRoute: typeof PracticeRouteWithChildren
@@ -557,6 +581,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeChapterIdRouteImport
       parentRoute: typeof PracticeRoute
     }
+    '/mock-test/setup': {
+      id: '/mock-test/setup'
+      path: '/setup'
+      fullPath: '/mock-test/setup'
+      preLoaderRoute: typeof MockTestSetupRouteImport
+      parentRoute: typeof MockTestRoute
+    }
+    '/mock-test/$mockId': {
+      id: '/mock-test/$mockId'
+      path: '/$mockId'
+      fullPath: '/mock-test/$mockId'
+      preLoaderRoute: typeof MockTestMockIdRouteImport
+      parentRoute: typeof MockTestRoute
+    }
     '/demo/gravitation': {
       id: '/demo/gravitation'
       path: '/demo/gravitation'
@@ -639,6 +677,20 @@ const ChaptersRouteWithChildren = ChaptersRoute._addFileChildren(
   ChaptersRouteChildren,
 )
 
+interface MockTestRouteChildren {
+  MockTestMockIdRoute: typeof MockTestMockIdRoute
+  MockTestSetupRoute: typeof MockTestSetupRoute
+}
+
+const MockTestRouteChildren: MockTestRouteChildren = {
+  MockTestMockIdRoute: MockTestMockIdRoute,
+  MockTestSetupRoute: MockTestSetupRoute,
+}
+
+const MockTestRouteWithChildren = MockTestRoute._addFileChildren(
+  MockTestRouteChildren,
+)
+
 interface PracticeRouteChildren {
   PracticeChapterIdRoute: typeof PracticeChapterIdRoute
 }
@@ -674,7 +726,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HistoryRoute: HistoryRoute,
-  MockTestRoute: MockTestRoute,
+  MockTestRoute: MockTestRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   PastPaperAnalyzerRoute: PastPaperAnalyzerRoute,
   PracticeRoute: PracticeRouteWithChildren,

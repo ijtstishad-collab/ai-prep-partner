@@ -3,11 +3,56 @@ import { AppShell } from "@/components/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Timer, Trophy } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { listMockHistory } from "@/lib/mock-test.functions";
+import { BookCheck, GraduationCap, Layers, Target, Timer } from "lucide-react";
 
-export const Route = createFileRoute("/mock-test")({ component: MockTestPage });
+export const Route = createFileRoute("/mock-test")({ component: MockTestHub });
 
-function MockTestPage() {
+const TYPES = [
+  {
+    key: "chapter",
+    icon: Layers,
+    title: "Chapter Mock",
+    title_bn: "অধ্যায়ভিত্তিক মক",
+    use: "একটি নির্দিষ্ট অধ্যায়ের দ্রুত প্রস্তুতি",
+    time: "১০–২০ মিনিট",
+    source: "নির্বাচিত অধ্যায়ের verified board প্রশ্ন",
+  },
+  {
+    key: "subject",
+    icon: BookCheck,
+    title: "Subject Mock",
+    title_bn: "বিষয়ভিত্তিক মক",
+    use: "পুরো বিষয়ের revision",
+    time: "৩০–৬০ মিনিট",
+    source: "একটি বিষয়ের সব অধ্যায়ের verified প্রশ্ন",
+  },
+  {
+    key: "board_pattern",
+    icon: Target,
+    title: "Board Pattern Mock",
+    title_bn: "বোর্ড প্যাটার্ন মক",
+    use: "নির্দিষ্ট বোর্ড ও বছর অনুযায়ী repeated pattern",
+    time: "৩০ মিনিট",
+    source: "Repeated pattern + verified board question",
+  },
+  {
+    key: "final_hsc",
+    icon: GraduationCap,
+    title: "Final HSC Mock",
+    title_bn: "Final HSC মক",
+    use: "Full exam simulation",
+    time: "৬০–৯০ মিনিট",
+    source: "Group অনুযায়ী মিশ্র verified প্রশ্ন",
+  },
+] as const;
+
+function MockTestHub() {
+  const fetchHistory = useServerFn(listMockHistory);
+  const { data } = useQuery({ queryKey: ["mock-history"], queryFn: () => fetchHistory() });
+
   return (
     <AppShell>
       <div className="container mx-auto px-4 py-10">
@@ -15,56 +60,79 @@ function MockTestPage() {
           <p className="text-sm font-medium text-primary">মক টেস্ট · Mock Test</p>
           <h1 className="mt-1 text-3xl font-bold">সময়সহ পূর্ণ মক পরীক্ষা</h1>
           <p className="mt-2 text-muted-foreground">
-            এইচএসসি মক-টেস্ট ইঞ্জিনের জন্য প্রস্তুত কাঠামো। এই ধাপে কোনো সেশন বা স্কোর টেবিল পরিবর্তন করা হয়নি।
+            বোর্ড প্রশ্ন, repeated pattern এবং chapter-wise practice দিয়ে নিজেকে যাচাই করুন।
           </p>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card className="p-6">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Timer className="h-6 w-6" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold">এইচএসসি পদার্থবিজ্ঞান মক টেস্ট</h2>
-                <p className="text-sm text-muted-foreground">শুধুমাত্র উদাহরণ কনফিগারেশন।</p>
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Info label="সময়সীমা" value="৬০ মিনিট" />
-              <Info label="প্রশ্ন" value="৩০" />
-              <Info label="অবস্থা" value="খসড়া" />
-            </div>
-            <div className="mt-6 rounded-xl border p-5 text-sm text-muted-foreground">
-              পরে এখান থেকে সময়সহ সেশন শুরু করে যাচাইকৃত প্রশ্নের উত্তর দিয়ে একবারে জমা দেওয়া যাবে; অধ্যায়ভিত্তিক ব্রেকডাউনসহ স্কোর পাওয়া যাবে।
-            </div>
-          </Card>
+        <div className="grid gap-4 md:grid-cols-2">
+          {TYPES.map((t) => {
+            const Icon = t.icon;
+            return (
+              <Card key={t.key} className="p-6 flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold">{t.title_bn}</h2>
+                    <p className="text-xs text-muted-foreground">{t.title}</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <Row label="ব্যবহার" value={t.use} />
+                  <Row label="সময়" value={t.time} />
+                  <Row label="প্রশ্নের উৎস" value={t.source} />
+                </div>
+                <Button asChild className="mt-auto">
+                  <Link to="/mock-test/setup" search={{ type: t.key }}>সেটআপ শুরু করুন</Link>
+                </Button>
+              </Card>
+            );
+          })}
+        </div>
 
-          <Card className="p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold">পরিকল্পিত টেস্ট ধরন</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge>বিষয়ভিত্তিক মক</Badge>
-              <Badge variant="secondary">অধ্যায়ভিত্তিক মক</Badge>
-              <Badge variant="outline">পূর্ণ এইচএসসি পেপার</Badge>
-            </div>
-            <Button asChild className="mt-6 w-full">
-              <Link to="/analytics">ফলাফল বিশ্লেষণ দেখুন</Link>
-            </Button>
-          </Card>
+        <div className="mt-10">
+          <h2 className="mb-3 text-lg font-semibold">সাম্প্রতিক মক টেস্ট</h2>
+          {(!data?.items || data.items.length === 0) ? (
+            <Card className="p-6 text-sm text-muted-foreground">এখনো কোনো mock test দেওয়া হয়নি।</Card>
+          ) : (
+            <Card className="divide-y">
+              {data.items.map((m: any) => (
+                <Link
+                  key={m.id}
+                  to="/mock-test/$mockId"
+                  params={{ mockId: m.id }}
+                  search={m.status === "in_progress" ? {} : { view: "result" }}
+                  className="flex items-center justify-between p-4 hover:bg-muted/40"
+                >
+                  <div>
+                    <div className="font-medium text-sm capitalize">{m.mock_type.replace("_", " ")}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(m.started_at).toLocaleString("bn-BD")}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {m.status === "in_progress" ? (
+                      <Badge variant="secondary"><Timer className="mr-1 h-3 w-3" />চলমান</Badge>
+                    ) : (
+                      <Badge>{m.correct_count}/{m.question_count} · {Math.round(m.accuracy)}%</Badge>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </Card>
+          )}
         </div>
       </div>
     </AppShell>
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border p-4">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-1 text-xl font-bold">{value}</div>
+    <div className="flex justify-between gap-3">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium text-right">{value}</span>
     </div>
   );
 }

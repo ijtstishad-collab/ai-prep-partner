@@ -63,9 +63,8 @@ type PracticeQuestion = {
   question_type: string;
   difficulty: string | null;
   question_text: string;
-  marks: number | string | null;
-  board?: string | null;
-  year?: number | string | null;
+  options: unknown;
+  correct_answer: string | null;
 };
 
 type QuestionOption = {
@@ -87,72 +86,45 @@ type SubmissionResult = {
 const fromTable = (tableName: string) =>
   (supabase.from as unknown as (name: string) => any)(tableName);
 
-const schemaMismatchPattern =
-  /(column .* does not exist|schema cache|status|is_active|marks|is_approved)/i;
-const ignorableLegacyPattern =
-  /(permission denied|column .* does not exist|schema cache|is_approved)/i;
+const KEYS = ["A", "B", "C", "D", "E", "F"];
 
-const uniqueById = (rows: PracticeQuestion[]) => {
-  const seen = new Set<string>();
-  return rows.filter((row) => {
-    if (seen.has(row.id)) return false;
-    seen.add(row.id);
-    return true;
-  });
-};
+function deriveOptions(question: PracticeQuestion): QuestionOption[] {
+  const raw = question.options;
+  let entries: { key: string; text: string }[] = [];
+  if (Array.isArray(raw)) {
+    entries = raw.map((value, idx) => ({
+      key: KEYS[idx] ?? String(idx + 1),
+      text: typeof value === "string" ? value : JSON.stringify(value),
+    }));
+  } else if (raw && typeof raw === "object") {
+    entries = Object.entries(raw as Record<string, unknown>).map(([k, v], idx) => ({
+      key: KEYS[idx] ?? k,
+      text: typeof v === "string" ? v : JSON.stringify(v),
+    }));
+  }
+  return entries.map((entry, idx) => ({
+    id: `${question.id}-${idx}`,
+    question_id: question.id,
+    option_key: entry.key,
+    option_text: entry.text,
+    display_order: idx,
+  }));
+}
 
-async function fetchLegacyApprovedQuestions(chapterId: string) {
+async function fetchApprovedQuestions(chapterId: string) {
   const { data, error } = await fromTable("questions")
-    .select("id, chapter_id, question_type, difficulty, question_text")
+    .select(
+      "id, chapter_id, question_type, difficulty, question_text, options, correct_answer",
+    )
     .eq("chapter_id", chapterId)
     .eq("is_approved", true)
     .eq("question_type", "mcq")
     .order("created_at", { ascending: true })
     .limit(25);
 
-  return {
-    rows: ((data ?? []) as PracticeQuestion[]).map((row) => ({
-      ...row,
-      marks: row.marks ?? 1,
-    })),
-    error,
-  };
+  return { rows: (data ?? []) as PracticeQuestion[], error };
 }
 
-async function fetchApprovedQuestions(chapterId: string) {
-  const { data, error } = await fromTable("questions")
-    .select("id, chapter_id, question_type, difficulty, question_text, marks")
-    .eq("chapter_id", chapterId)
-    .eq("status", "approved")
-    .eq("is_active", true)
-    .eq("question_type", "mcq")
-    .order("created_at", { ascending: true })
-    .limit(25);
-
-  if (error) {
-    if (schemaMismatchPattern.test(error.message)) {
-      const legacy = await fetchLegacyApprovedQuestions(chapterId);
-      return {
-        rows: legacy.rows,
-        error:
-          legacy.error && !ignorableLegacyPattern.test(legacy.error.message) ? legacy.error : null,
-      };
-    }
-    return { rows: [] as PracticeQuestion[], error };
-  }
-
-  const phase2Rows = (data ?? []) as PracticeQuestion[];
-  if (phase2Rows.length > 0) {
-    return { rows: phase2Rows, error: null };
-  }
-
-  const legacy = await fetchLegacyApprovedQuestions(chapterId);
-  if (legacy.error && !ignorableLegacyPattern.test(legacy.error.message)) {
-    return { rows: [] as PracticeQuestion[], error: legacy.error };
-  }
-
-  return { rows: uniqueById([...phase2Rows, ...legacy.rows]), error: null };
-}
 
 function PracticePage() {
   const { chapterId, mode } = Route.useSearch();

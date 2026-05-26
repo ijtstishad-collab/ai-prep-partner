@@ -97,7 +97,9 @@ function ResetPasswordPage() {
           </p>
           {!ready ? (
             <p className="text-sm text-center text-muted-foreground">
-              Open this page from the password reset link in your email.
+              {error
+                ? `Reset link error: ${error}. Request a new password reset link.`
+                : "Verifying your password reset link…"}
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3">

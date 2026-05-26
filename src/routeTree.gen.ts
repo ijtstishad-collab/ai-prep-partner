@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SubjectsRouteImport } from './routes/subjects'
+import { Route as StudyPlanRouteImport } from './routes/study-plan'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PracticeRouteImport } from './routes/practice'
+import { Route as PastPaperAnalyzerRouteImport } from './routes/past-paper-analyzer'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MockTestRouteImport } from './routes/mock-test'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -21,6 +24,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ChaptersRouteImport } from './routes/chapters'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AiGeneratorRouteImport } from './routes/ai-generator'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsSlugRouteImport } from './routes/subjects.$slug'
@@ -32,6 +36,16 @@ import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
   path: '/subjects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudyPlanRoute = StudyPlanRouteImport.update({
+  id: '/study-plan',
+  path: '/study-plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -47,6 +61,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const PracticeRoute = PracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PastPaperAnalyzerRoute = PastPaperAnalyzerRouteImport.update({
+  id: '/past-paper-analyzer',
+  path: '/past-paper-analyzer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -89,6 +108,11 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiGeneratorRoute = AiGeneratorRouteImport.update({
+  id: '/ai-generator',
+  path: '/ai-generator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -128,6 +152,7 @@ const AdminQuestionReviewRoute = AdminQuestionReviewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/chapters': typeof ChaptersRoute
@@ -136,9 +161,12 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
+  '/past-paper-analyzer': typeof PastPaperAnalyzerRoute
   '/practice': typeof PracticeRouteWithChildren
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
+  '/study-plan': typeof StudyPlanRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
@@ -149,6 +177,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/chapters': typeof ChaptersRoute
@@ -157,9 +186,12 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
+  '/past-paper-analyzer': typeof PastPaperAnalyzerRoute
   '/practice': typeof PracticeRouteWithChildren
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
+  '/study-plan': typeof StudyPlanRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
@@ -171,6 +203,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/chapters': typeof ChaptersRoute
@@ -179,9 +212,12 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
+  '/past-paper-analyzer': typeof PastPaperAnalyzerRoute
   '/practice': typeof PracticeRouteWithChildren
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
+  '/study-plan': typeof StudyPlanRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/question-review': typeof AdminQuestionReviewRoute
   '/demo/gravitation': typeof DemoGravitationRoute
@@ -194,6 +230,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/ai-generator'
     | '/analytics'
     | '/auth'
     | '/chapters'
@@ -202,9 +239,12 @@ export interface FileRouteTypes {
     | '/history'
     | '/mock-test'
     | '/onboarding'
+    | '/past-paper-analyzer'
     | '/practice'
     | '/profile'
     | '/reset-password'
+    | '/resources'
+    | '/study-plan'
     | '/subjects'
     | '/admin/question-review'
     | '/demo/gravitation'
@@ -215,6 +255,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/ai-generator'
     | '/analytics'
     | '/auth'
     | '/chapters'
@@ -223,9 +264,12 @@ export interface FileRouteTypes {
     | '/history'
     | '/mock-test'
     | '/onboarding'
+    | '/past-paper-analyzer'
     | '/practice'
     | '/profile'
     | '/reset-password'
+    | '/resources'
+    | '/study-plan'
     | '/subjects'
     | '/admin/question-review'
     | '/demo/gravitation'
@@ -236,6 +280,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/ai-generator'
     | '/analytics'
     | '/auth'
     | '/chapters'
@@ -244,9 +289,12 @@ export interface FileRouteTypes {
     | '/history'
     | '/mock-test'
     | '/onboarding'
+    | '/past-paper-analyzer'
     | '/practice'
     | '/profile'
     | '/reset-password'
+    | '/resources'
+    | '/study-plan'
     | '/subjects'
     | '/admin/question-review'
     | '/demo/gravitation'
@@ -258,6 +306,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AiGeneratorRoute: typeof AiGeneratorRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
   ChaptersRoute: typeof ChaptersRoute
@@ -266,9 +315,12 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   MockTestRoute: typeof MockTestRoute
   OnboardingRoute: typeof OnboardingRoute
+  PastPaperAnalyzerRoute: typeof PastPaperAnalyzerRoute
   PracticeRoute: typeof PracticeRouteWithChildren
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ResourcesRoute: typeof ResourcesRoute
+  StudyPlanRoute: typeof StudyPlanRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
   DemoGravitationRoute: typeof DemoGravitationRoute
   ResultAttemptIdRoute: typeof ResultAttemptIdRoute
@@ -281,6 +333,20 @@ declare module '@tanstack/react-router' {
       path: '/subjects'
       fullPath: '/subjects'
       preLoaderRoute: typeof SubjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study-plan': {
+      id: '/study-plan'
+      path: '/study-plan'
+      fullPath: '/study-plan'
+      preLoaderRoute: typeof StudyPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -302,6 +368,13 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof PracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/past-paper-analyzer': {
+      id: '/past-paper-analyzer'
+      path: '/past-paper-analyzer'
+      fullPath: '/past-paper-analyzer'
+      preLoaderRoute: typeof PastPaperAnalyzerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -358,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-generator': {
+      id: '/ai-generator'
+      path: '/ai-generator'
+      fullPath: '/ai-generator'
+      preLoaderRoute: typeof AiGeneratorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -449,6 +529,7 @@ const SubjectsRouteWithChildren = SubjectsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AiGeneratorRoute: AiGeneratorRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
   ChaptersRoute: ChaptersRoute,
@@ -457,9 +538,12 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   MockTestRoute: MockTestRoute,
   OnboardingRoute: OnboardingRoute,
+  PastPaperAnalyzerRoute: PastPaperAnalyzerRoute,
   PracticeRoute: PracticeRouteWithChildren,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ResourcesRoute: ResourcesRoute,
+  StudyPlanRoute: StudyPlanRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
   DemoGravitationRoute: DemoGravitationRoute,
   ResultAttemptIdRoute: ResultAttemptIdRoute,

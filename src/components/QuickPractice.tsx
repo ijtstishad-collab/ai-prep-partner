@@ -3,9 +3,10 @@ import { useNavigate } from "@tanstack/react-router";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { toBnDigits } from "@/lib/bn";
-import { FileText, Library, Sparkles, Shuffle, Loader2, Search, BookOpen } from "lucide-react";
+import { FileText, Library, Sparkles, Shuffle, Search, BookOpen } from "lucide-react";
 
 type Subject = {
   id: string;

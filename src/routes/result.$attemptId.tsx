@@ -199,7 +199,7 @@ function ResultPage() {
       }
 
       if (!alive) return;
-      setAttempt(attemptRow as Attempt);
+      setAttempt(attemptRow);
       setAnswers(safeAnswers);
       setQuestions(questionRows);
       setChapter(chapterRow);

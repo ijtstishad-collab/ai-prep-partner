@@ -410,70 +410,40 @@ function PracticePage() {
           <Card className="paper-sheet p-6 sm:p-8">
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles className="h-7 w-7 text-primary" />
+                {generating ? (
+                  <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                ) : (
+                  <Sparkles className="h-7 w-7 text-primary" />
+                )}
               </div>
               <h2 className="exam-heading mt-4 text-xl font-semibold sm:text-2xl">
-                এই অধ্যায়ের জন্য এখনো কোনো যাচাইকৃত MCQ নেই
+                {generating ? "১০টি প্রশ্ন তৈরি হচ্ছে…" : "অনুশীলনের জন্য প্রস্তুত"}
               </h2>
-              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-                আপনি চাইলে AI দিয়ে এখনই একটি Practice Set তৈরি করতে পারেন। নিচ থেকে যেকোনো একটি বেছে নিন।
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                {generating
+                  ? "একটু অপেক্ষা করুন — কয়েক সেকেন্ডের মধ্যেই প্রশ্ন চলে আসবে।"
+                  : "AI দিয়ে তাৎক্ষণিক MCQ তৈরি করুন।"}
               </p>
-            </div>
 
-            <div className="mx-auto mt-6 grid max-w-2xl gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setGenOpen(true)}
-                disabled={generating}
-                className="group flex items-start gap-3 rounded-lg border-2 border-primary/30 bg-primary/5 p-4 text-left transition hover:border-primary hover:bg-primary/10 disabled:opacity-60"
-              >
-                <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <div>
-                  <div className="font-semibold">AI দিয়ে ১০টি MCQ তৈরি করুন</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    তাৎক্ষণিক — সংখ্যা, কঠিনতা ও ভাষা বেছে নিতে পারবেন
-                  </div>
+              {!generating ? (
+                <div className="mt-6 flex flex-col items-center gap-2">
+                  <Button
+                    size="lg"
+                    onClick={() =>
+                      generateAiQuestions({ count: 10, difficulty: "medium", question_style: "mcq", language: "bn" })
+                    }
+                  >
+                    <Sparkles className="mr-1 h-4 w-4" /> ১০টি MCQ শুরু করুন
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setGenOpen(true)}
+                    className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                  >
+                    কাস্টম সেটিংস
+                  </button>
                 </div>
-              </button>
-
-              <a
-                href={`/upload?chapterId=${chapterId}`}
-                className="group flex items-start gap-3 rounded-lg border bg-white p-4 text-left transition hover:border-foreground/40 hover:bg-muted/40"
-              >
-                <FileText className="mt-0.5 h-5 w-5 shrink-0 text-foreground/70" />
-                <div>
-                  <div className="font-semibold">PDF/Text থেকে প্রশ্ন বানান</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    আপনার নোট বা বই থেকে প্রশ্ন তৈরি করুন
-                  </div>
-                </div>
-              </a>
-
-              <a
-                href={`/board-questions?chapterId=${chapterId}`}
-                className="group flex items-start gap-3 rounded-lg border bg-white p-4 text-left transition hover:border-foreground/40 hover:bg-muted/40"
-              >
-                <ScrollText className="mt-0.5 h-5 w-5 shrink-0 text-foreground/70" />
-                <div>
-                  <div className="font-semibold">বোর্ড প্রশ্ন যোগ করুন</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    গত বছরের বোর্ড প্রশ্ন থেকে অনুশীলন
-                  </div>
-                </div>
-              </a>
-
-              <a
-                href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}
-                className="group flex items-start gap-3 rounded-lg border bg-white p-4 text-left transition hover:border-foreground/40 hover:bg-muted/40"
-              >
-                <ArrowRightLeft className="mt-0.5 h-5 w-5 shrink-0 text-foreground/70" />
-                <div>
-                  <div className="font-semibold">অন্য অধ্যায়ে যান</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    এই বিষয়ের অন্য অধ্যায় থেকে অনুশীলন শুরু করুন
-                  </div>
-                </div>
-              </a>
+              ) : null}
             </div>
 
             {error ? (
@@ -482,7 +452,6 @@ function PracticePage() {
               </p>
             ) : null}
 
-            <p className="mx-auto mt-6 max-w-lg text-center text-xs text-muted-foreground">
               AI-তৈরি প্রশ্ন “AI Generated – Review Needed” হিসেবে চিহ্নিত থাকে; শিক্ষক যাচাইয়ের পর তা “Verified MCQ” হয়।
             </p>
           </Card>

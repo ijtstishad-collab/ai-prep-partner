@@ -91,6 +91,9 @@ type SubmissionResult = {
   score: number;
   maxScore: number;
   selectedAnswer: string;
+  correctAnswer?: string | null;
+  correctText?: string | null;
+  explanation?: string | null;
 };
 
 const fromTable = (tableName: string) =>

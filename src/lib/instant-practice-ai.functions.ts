@@ -5,8 +5,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const GenerateInstantPracticeSchema = z.object({
   chapter_id: z.string().uuid(),
-  count: z.number().int().min(1).max(5).default(5),
+  count: z.number().int().min(1).max(20).default(10),
   difficulty: z.enum(["easy", "medium", "hard"]).default("easy"),
+  question_style: z.enum(["mcq", "short", "board"]).default("mcq"),
+  language: z.enum(["bn", "en", "mixed"]).default("bn"),
 });
 
 type Difficulty = "easy" | "medium" | "hard";
@@ -107,11 +109,27 @@ export const generateInstantPracticeQuestions = createServerFn({ method: "POST" 
     const subjectNameBn = (chapter.subjects as { name?: string; name_bn?: string } | null)
       ?.name_bn;
 
+    const langInstruction =
+      data.language === "bn"
+        ? "Write questions, options, and explanation in Bangla."
+        : data.language === "en"
+          ? "Write questions, options, and explanation in English. Keep explanation_bn in Bangla."
+          : "Write the question stem in Bangla but keep key technical terms in English. Explanation in Bangla.";
+    const styleInstruction =
+      data.question_style === "board"
+        ? "Match Bangladesh HSC board exam MCQ style (concise stems, distractors close in meaning)."
+        : data.question_style === "short"
+          ? "Frame each MCQ from a short-answer style concept check (definition/identification)."
+          : "Standard 4-option MCQ style suitable for chapter practice.";
+
     const systemPrompt =
       "You write original HSC exam-preparation MCQs for Bangladeshi students. Do not copy past board questions. Keep questions factual, syllabus-friendly, and suitable for practice. Return strict JSON only.";
     const userPrompt = `Generate ${data.count} original ${data.difficulty} MCQ questions for:
 Subject: ${subjectName ?? "HSC subject"}${subjectNameBn ? ` (${subjectNameBn})` : ""}
 Chapter: ${chapter.name}${chapter.name_bn ? ` (${chapter.name_bn})` : ""}
+
+${langInstruction}
+${styleInstruction}
 
 Rules:
 - Each question must have 4 short options.

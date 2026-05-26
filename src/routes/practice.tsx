@@ -13,13 +13,25 @@ import { submitPracticeAnswer } from "@/lib/practice.functions";
 import { cn } from "@/lib/utils";
 import { toBnDigits, toBnOptionLabel, formatDuration } from "@/lib/bn";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
   AlertCircle,
+  ArrowRightLeft,
   BookOpenText,
   CheckCircle2,
   ChevronRight,
-  FileQuestion,
+  FileText,
   GraduationCap,
   Loader2,
+  ScrollText,
   Sparkles,
   Timer,
   XCircle,
@@ -140,6 +152,11 @@ function PracticePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [genOpen, setGenOpen] = useState(false);
+  const [genCount, setGenCount] = useState<5 | 10 | 20>(10);
+  const [genDifficulty, setGenDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [genStyle, setGenStyle] = useState<"mcq" | "short" | "board">("mcq");
+  const [genLanguage, setGenLanguage] = useState<"bn" | "en" | "mixed">("bn");
 
   // Stopwatch — UI only
   const startedAtRef = useRef<number>(Date.now());
@@ -223,10 +240,7 @@ function PracticePage() {
       setOptions(optionRows);
       setLoading(false);
 
-      // Auto-generate if no approved questions yet — no manual click required
-      if (safeQuestions.length === 0 && chapterId) {
-        void generateAiQuestions();
-      }
+      // Empty state will offer the student a guided "Generate Practice Set" modal.
     }
 
 
@@ -259,7 +273,12 @@ function PracticePage() {
     }
   };
 
-  const generateAiQuestions = async () => {
+  const generateAiQuestions = async (overrides?: {
+    count?: number;
+    difficulty?: "easy" | "medium" | "hard";
+    question_style?: "mcq" | "short" | "board";
+    language?: "bn" | "en" | "mixed";
+  }) => {
     if (!chapterId || generating) return;
     setGenerating(true);
     setError(null);
@@ -268,13 +287,20 @@ function PracticePage() {
 
     try {
       const generated = (await generateInstantPracticeQuestions({
-        data: { chapter_id: chapterId, count: 5, difficulty: "easy" },
+        data: {
+          chapter_id: chapterId,
+          count: overrides?.count ?? genCount,
+          difficulty: overrides?.difficulty ?? genDifficulty,
+          question_style: overrides?.question_style ?? genStyle,
+          language: overrides?.language ?? genLanguage,
+        },
       })) as unknown as { questions?: PracticeQuestion[] };
 
       const aiQuestions = (generated.questions ?? []) as PracticeQuestion[];
       setQuestions(aiQuestions);
       setOptions(aiQuestions.flatMap(deriveOptions));
       setCurrentIndex(0);
+      setGenOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not generate AI practice questions.");
     } finally {
@@ -395,30 +421,84 @@ function PracticePage() {
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           </Card>
         ) : questions.length === 0 ? (
-          <Card className="paper-sheet p-8 text-center">
-            <FileQuestion className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h2 className="exam-heading text-xl font-semibold">
-              {mode === "board"
-                ? "এখনো কোনো বোর্ড প্রশ্ন নেই"
-                : "এখনো কোনো যাচাইকৃত এমসিকিউ নেই"}
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              এই অধ্যায়ের জন্য এআই এমসিকিউ তৈরি করুন, বা অধ্যায় তালিকায় ফিরে যান।
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button onClick={generateAiQuestions} disabled={generating}>
-                {generating ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> তৈরি হচ্ছে</>
-                ) : (
-                  <><Sparkles className="mr-1 h-4 w-4" /> এআই এমসিকিউ তৈরি করুন</>
-                )}
-              </Button>
-              <Button asChild variant="outline">
-                <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
-                  অধ্যায়ে ফিরে যান
-                </a>
-              </Button>
+          <Card className="paper-sheet p-6 sm:p-8">
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <Sparkles className="h-7 w-7 text-primary" />
+              </div>
+              <h2 className="exam-heading mt-4 text-xl font-semibold sm:text-2xl">
+                এই অধ্যায়ের জন্য এখনো কোনো যাচাইকৃত MCQ নেই
+              </h2>
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
+                আপনি চাইলে AI দিয়ে এখনই একটি Practice Set তৈরি করতে পারেন। নিচ থেকে যেকোনো একটি বেছে নিন।
+              </p>
             </div>
+
+            <div className="mx-auto mt-6 grid max-w-2xl gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setGenOpen(true)}
+                disabled={generating}
+                className="group flex items-start gap-3 rounded-lg border-2 border-primary/30 bg-primary/5 p-4 text-left transition hover:border-primary hover:bg-primary/10 disabled:opacity-60"
+              >
+                <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <div>
+                  <div className="font-semibold">AI দিয়ে ১০টি MCQ তৈরি করুন</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    তাৎক্ষণিক — সংখ্যা, কঠিনতা ও ভাষা বেছে নিতে পারবেন
+                  </div>
+                </div>
+              </button>
+
+              <a
+                href={`/upload?chapterId=${chapterId}`}
+                className="group flex items-start gap-3 rounded-lg border bg-white p-4 text-left transition hover:border-foreground/40 hover:bg-muted/40"
+              >
+                <FileText className="mt-0.5 h-5 w-5 shrink-0 text-foreground/70" />
+                <div>
+                  <div className="font-semibold">PDF/Text থেকে প্রশ্ন বানান</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    আপনার নোট বা বই থেকে প্রশ্ন তৈরি করুন
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href={`/board-questions?chapterId=${chapterId}`}
+                className="group flex items-start gap-3 rounded-lg border bg-white p-4 text-left transition hover:border-foreground/40 hover:bg-muted/40"
+              >
+                <ScrollText className="mt-0.5 h-5 w-5 shrink-0 text-foreground/70" />
+                <div>
+                  <div className="font-semibold">বোর্ড প্রশ্ন যোগ করুন</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    গত বছরের বোর্ড প্রশ্ন থেকে অনুশীলন
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}
+                className="group flex items-start gap-3 rounded-lg border bg-white p-4 text-left transition hover:border-foreground/40 hover:bg-muted/40"
+              >
+                <ArrowRightLeft className="mt-0.5 h-5 w-5 shrink-0 text-foreground/70" />
+                <div>
+                  <div className="font-semibold">অন্য অধ্যায়ে যান</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    এই বিষয়ের অন্য অধ্যায় থেকে অনুশীলন শুরু করুন
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            {error ? (
+              <p className="mx-auto mt-4 max-w-lg rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+                {error}
+              </p>
+            ) : null}
+
+            <p className="mx-auto mt-6 max-w-lg text-center text-xs text-muted-foreground">
+              AI-তৈরি প্রশ্ন “AI Generated – Review Needed” হিসেবে চিহ্নিত থাকে; শিক্ষক যাচাইয়ের পর তা “Verified MCQ” হয়।
+            </p>
           </Card>
         ) : (
           <>
@@ -606,7 +686,7 @@ function PracticePage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={generateAiQuestions}
+                onClick={() => setGenOpen(true)}
                 disabled={generating}
               >
                 {generating ? (
@@ -626,6 +706,142 @@ function PracticePage() {
             </div>
           </>
         )}
+
+        <Dialog open={genOpen} onOpenChange={(open) => !generating && setGenOpen(open)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="exam-heading">AI দিয়ে Practice Set তৈরি করুন</DialogTitle>
+              <DialogDescription>
+                আপনার পছন্দ অনুযায়ী প্রশ্ন তৈরি হবে। প্রশ্নগুলি “AI Generated – Review Needed” হিসেবে চিহ্নিত থাকবে।
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">প্রশ্ন সংখ্যা</Label>
+                <RadioGroup
+                  value={String(genCount)}
+                  onValueChange={(v) => setGenCount(Number(v) as 5 | 10 | 20)}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[5, 10, 20].map((n) => (
+                    <Label
+                      key={n}
+                      htmlFor={`count-${n}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genCount === n ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`count-${n}`} value={String(n)} className="sr-only" />
+                      {toBnDigits(n)}টি
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">কঠিনতা</Label>
+                <RadioGroup
+                  value={genDifficulty}
+                  onValueChange={(v) => setGenDifficulty(v as "easy" | "medium" | "hard")}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[
+                    { v: "easy", l: "সহজ" },
+                    { v: "medium", l: "মাঝারি" },
+                    { v: "hard", l: "কঠিন" },
+                  ].map((o) => (
+                    <Label
+                      key={o.v}
+                      htmlFor={`diff-${o.v}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genDifficulty === o.v ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`diff-${o.v}`} value={o.v} className="sr-only" />
+                      {o.l}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">প্রশ্নের ধরন</Label>
+                <RadioGroup
+                  value={genStyle}
+                  onValueChange={(v) => setGenStyle(v as "mcq" | "short" | "board")}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[
+                    { v: "mcq", l: "MCQ" },
+                    { v: "short", l: "Short Q" },
+                    { v: "board", l: "Board Style" },
+                  ].map((o) => (
+                    <Label
+                      key={o.v}
+                      htmlFor={`style-${o.v}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genStyle === o.v ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`style-${o.v}`} value={o.v} className="sr-only" />
+                      {o.l}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">ভাষা</Label>
+                <RadioGroup
+                  value={genLanguage}
+                  onValueChange={(v) => setGenLanguage(v as "bn" | "en" | "mixed")}
+                  className="mt-2 grid grid-cols-3 gap-2"
+                >
+                  {[
+                    { v: "bn", l: "বাংলা" },
+                    { v: "en", l: "English" },
+                    { v: "mixed", l: "Mixed" },
+                  ].map((o) => (
+                    <Label
+                      key={o.v}
+                      htmlFor={`lang-${o.v}`}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium",
+                        genLanguage === o.v ? "border-foreground bg-muted" : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      <RadioGroupItem id={`lang-${o.v}`} value={o.v} className="sr-only" />
+                      {o.l}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              {error ? (
+                <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {error}
+                </p>
+              ) : null}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setGenOpen(false)} disabled={generating}>
+                বাতিল
+              </Button>
+              <Button onClick={() => generateAiQuestions()} disabled={generating}>
+                {generating ? (
+                  <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> তৈরি হচ্ছে…</>
+                ) : (
+                  <><Sparkles className="mr-1 h-4 w-4" /> Generate Practice Set</>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppShell>
   );

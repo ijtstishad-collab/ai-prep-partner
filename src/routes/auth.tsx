@@ -79,6 +79,13 @@ function AuthPage() {
                 <Button className="w-full" disabled={busy}>
                   {busy ? "..." : "Login"}
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => nav({ to: "/forgot-password" })}
+                  className="block w-full text-center text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                >
+                  Forgot password?
+                </button>
               </form>
             </TabsContent>
             <TabsContent value="signup" className="mt-4">

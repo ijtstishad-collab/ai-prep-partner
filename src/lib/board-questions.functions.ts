@@ -206,32 +206,54 @@ async function ensureAdmin(userId: string) {
   if (!data) throw new Error("Admin access required");
 }
 
+const UpsertSchema = z.object({
+  id: z.string().uuid().optional(),
+  chapter_id: z.string().uuid(),
+  subject_id: z.string().uuid(),
+  question_text: z.string().min(3),
+  answer: z.string().optional(),
+  explanation_bn: z.string().optional(),
+  explanation_en: z.string().optional(),
+  common_mistake: z.string().optional(),
+  why_a_wrong: z.string().optional(),
+  why_b_wrong: z.string().optional(),
+  why_c_wrong: z.string().optional(),
+  why_d_wrong: z.string().optional(),
+  formula_or_rule: z.string().optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  year: z.number().int().optional(),
+  board: z.string().optional(),
+  exam_level: z.enum(["SSC", "HSC"]).optional(),
+  group_type: z.string().optional(),
+  paper: z.string().optional(),
+  topic: z.string().optional(),
+  question_type: z.string().default("mcq"),
+  source_type: z.string().default("official_board"),
+  verification_status: z.string().default("verified"),
+  pattern_id: z.string().uuid().nullish(),
+  options: z.any().optional(),
+  appeared_years: z.array(z.number().int()).optional(),
+  appeared_boards: z.array(z.string()).optional(),
+});
+
 export const upsertBoardQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) =>
-    z.object({
-      id: z.string().uuid().optional(),
-      chapter_id: z.string().uuid(),
-      subject_id: z.string().uuid(),
-      question_text: z.string().min(3),
-      answer: z.string().optional(),
-      explanation_bn: z.string().optional(),
-      year: z.number().int().optional(),
-      board: z.string().optional(),
-      exam_level: z.enum(["SSC", "HSC"]).optional(),
-      paper: z.string().optional(),
-      topic: z.string().optional(),
-      question_type: z.string().default("mcq"),
-      source_type: z.string().default("official_board"),
-      verification_status: z.string().default("verified"),
-      pattern_id: z.string().uuid().nullish(),
-      options: z.any().optional(),
-    }).parse(i),
-  )
+  .inputValidator((i: unknown) => UpsertSchema.parse(i))
   .handler(async ({ data, context }) => {
     await ensureAdmin(context.userId);
-    const payload: any = { ...data };
+    // Validation rules
+    if (data.source_type === "official_board" && (!data.board || !data.year)) {
+      throw new Error("Official board questions require board and year");
+    }
+    if (data.source_type === "ai_generated" && data.verification_status === "verified") {
+      // allow but not as official — caller already labels
+    }
+    if (data.verification_status === "verified" && !data.answer) {
+      throw new Error("Verified questions need an answer");
+    }
+    const payload: any = { ...data, updated_at: new Date().toISOString() };
     delete payload.id;
+    if (!data.id) payload.created_by = context.userId;
     if (data.id) {
       const { error } = await tbl("past_questions").update(payload).eq("id", data.id);
       if (error) throw new Error(error.message);

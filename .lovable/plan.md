@@ -1,113 +1,123 @@
-# Board Question Tracker & Practice System
+# HSC Board Question Practice System — Rebuild Plan
 
-Turn the chapter practice flow into a board-question-first experience: every chapter shows real SSC/HSC board questions filterable by year, board, and type, with repeated-pattern grouping, priority scoring, and AI-generated similar questions clearly labelled.
-
----
-
-## Scope
-
-Build (in order):
-
-1. **DB schema** — extend `past_questions`, add `question_patterns` + join, add priority + frequency fields.
-2. **Server functions** — list/filter board questions, group repeated patterns, compute stats, generate AI similar questions tagged to a source pattern.
-3. **Chapter Board Questions page** — new `/chapter/$chapterId/board-questions` route with breadcrumb, stats, filters, tabs, table.
-4. **Practice mode** — single-question view with year/board badge, answer, Bangla explanation, "Try Similar".
-5. **Admin upload + verify + merge** — extend admin panel.
-6. **Empty state** — Bangla CTA with AI-generate / upload / change chapter actions.
-
-Out of scope this pass: subject-level dashboards, mock test reshuffle, leaderboards.
+Lock the product to HSC and make board questions the spine of every flow. Most database scaffolding (past_questions extended, question_patterns, priority scoring, board-questions / board-practice / admin routes) is already in place from earlier iterations — this plan focuses on wiring the **student journey, navigation, content, and missing UX surfaces** on top.
 
 ---
 
-## Database changes (single migration)
+## 1. Navigation & shell (`src/components/AppShell.tsx`)
 
-Extend `past_questions`:
+Replace the current 4-tab + More layout with the spec:
 
-- `exam_level text` ('SSC' | 'HSC')
-- `paper text` (e.g. '1st' / '2nd')
-- `topic text`
-- `source_type text` default `'official_board'` ('official_board' | 'test_paper' | 'model_test' | 'ai_generated')
-- `verification_status text` default `'verified'` ('verified' | 'review_needed')
-- `pattern_id uuid` nullable → `question_patterns.id`
-- `priority_score int` default 0
-- `explanation_bn text`
+Primary: **Dashboard · Subjects · Board Questions · Practice · Mock Test · Progress · Study Plan**
+More: **AI Generator · Resources · History · Profile** (+ Admin links when admin)
 
-New `question_patterns`:
+- Add a new top-level route `/board-questions` (subject → chapter chooser that funnels into existing `chapters.$chapterId.board-questions.tsx`).
+- Drop "Board Trends" from primary nav (still reachable via More → Resources or via Dashboard widget).
 
-- `id, chapter_id, subject_id, name, name_bn, description_bn`
-- `appeared_years int[]`, `appeared_boards text[]`
-- `frequency_count int`, `priority_score int`, `priority_label text`
-- `created_at`, `created_by`
+## 2. Homepage (`src/routes/index.tsx`)
 
-GRANTs: SELECT for authenticated on both; admin manage via existing `has_role` pattern. RLS: read-approved/verified or admin.
+Rewrite hero + sections:
+- H1: "HSC Board Question Practice, AI Explanation & Smart Revision"
+- Bangla subtitle as specified
+- CTA: **Get Started** → `/auth` (new users) or `/onboarding`
+- Section blocks (icon + 2-line copy each): Choose Group, Previous Board Questions, Year & Board Tracking, Repeated Pattern Analysis, AI Bangla Explanation, Weak Chapter Detection, Smart Study Plan, Mock Test Simulation
+- Keep current minimal editorial black/white style.
 
-Priority score function (`public.compute_priority_score`): weighted sum — frequency 40, recency (latest year within 3y) 25, distinct boards 20, topic importance 15 → clamps 0..100. Label thresholds: ≥70 Very Important, ≥40 Important, else Practice Later.
+## 3. Onboarding (`src/routes/onboarding.tsx`)
+
+Convert single-form into a 5-step wizard (HSC is implicit, no exam-level choice):
+
+1. Group (Science / Business Studies / Humanities)
+2. Board (11 boards as radio grid in Bangla + English)
+3. Exam Year (HSC 2026 / 2027)
+4. Weak Subjects (multi-select, filtered by group)
+5. Daily Study Time (slider 30–240 min)
+
+Persist to `profiles` — extend with `board`, `weak_subject_ids[]`, `daily_minutes` columns (migration).
+
+## 4. Dashboard (`src/routes/dashboard.tsx`)
+
+Replace current generic widgets with:
+- **Exam countdown** card (days till HSC exam date per year)
+- **Today's recommended practice** (server fn: pick top-priority unattempted board question in a weak chapter of selected group)
+- **Continue last chapter** (latest `test_attempts` row)
+- **Weak chapters** (lowest accuracy in `performance_summary`, gated: needs ≥20 attempts)
+- **Board question trend** mini card → /past-paper-analyzer
+- **Mock test shortcut**
+- **Recent performance** (last 7 days bar)
+
+Empty states show Bangla helper text instead of demo data.
+
+## 5. Subjects (`src/routes/subjects.tsx`)
+
+- Filter subjects strictly by `profile.student_group`.
+- Seed-data migration to insert the full subject list per group (Bangla 1st/2nd, English 1st/2nd, ICT common; Science / Business / Humanities papers as specified).
+- New card layout: Name · Paper · #chapters · #verified board Qs · last practiced · **Start Practice** + **View Board Questions** buttons.
+
+## 6. Subject detail (`src/routes/subjects.$slug.tsx`)
+
+List chapters with verified board Q count + priority badge; each row → `/chapters/$chapterId/board-questions`.
+
+## 7. Chapter page
+
+Already exists at `chapters.$chapterId.board-questions.tsx`. Refit into a **tabbed** layout:
+Tabs: Board Questions · Repeated Patterns · AI Similar Practice · Chapter Test · Notes.
+Header summary: total verified Qs, years covered, boards covered, repeated patterns, high-priority count.
+
+## 8. Practice flow (`src/routes/chapters.$chapterId.board-practice.tsx` + `practice.tsx`)
+
+One question at a time. Always show **Board · Year · Source** badge. After answer:
+correct/incorrect → correct answer → Bangla explanation → common mistake → formula (optional) → why other options are wrong → **Try Similar** (AI) → **Next**.
+
+Add **Skip** and **Add to Revision** buttons (revision = new table `revision_items`).
+
+## 9. AI labeling
+
+Anywhere a question comes from `generated_questions`, render badge:
+- "AI Generated — Not Official Board Question" (generic)
+- "AI Similar — Based on {Board} {Year} Pattern" (when `source_context.pattern_id` exists)
+
+## 10. Board Question Trends (`src/routes/past-paper-analyzer.tsx`)
+
+Rename UI title to **Board Question Trends**. Sections:
+- Most repeated chapters (group by chapter_id, count)
+- Most repeated patterns (from `question_patterns`)
+- Board-wise frequency table
+- Year-wise trend (sparkline)
+- High priority questions table with **Practice** action
+- Always-on sample-structure block when DB empty + admin upload CTA.
+
+## 11. Progress (`src/routes/analytics.tsx` → rename "Progress")
+
+Show: overall accuracy · questions attempted · weak chapters · strong chapters · board question completion % · revision queue size · last 7 days activity. <20 attempts → show Bangla gating message.
+
+## 12. Study Plan (`src/routes/study-plan.tsx`)
+
+Inputs: exam date · daily minutes · weak subjects (prefilled from profile) · preferred days (checkbox row).
+Output: 7-day plan rows (Topic · Board Q practice · Revision · Mock · Weak chapter focus) generated by existing `study-plan.functions.ts` (extend prompt).
+
+## 13. Mock Test (`src/routes/mock-test.tsx`)
+
+Four mock types as cards: Chapter / Subject / Board Pattern / Final HSC.
+Engine rules: timer, fixed Q count, no explanations mid-test, single submit, result + explanations after, save mistakes to revision.
+
+## 14. Admin (`src/routes/admin.board-questions.tsx`)
+
+Already exists. Add: CSV import (paste CSV → parse → preview → bulk insert), explicit Verify toggle, Merge-into-pattern UI confirmation. Source-type selector (official_board / textbook / model_test / ai).
+
+## 15. Database migrations
+
+Single migration adds:
+- `profiles.board text`, `profiles.weak_subject_ids uuid[]`, `profiles.daily_minutes int default 60`
+- `subjects.paper text`, `subjects.group_type` already exists — backfill via seed
+- `revision_items` table (user_id, question_id, source_table, created_at) with RLS
+- Seed inserts for full HSC subject list per group (idempotent on slug)
+
+(past_questions extensions, question_patterns, priority scoring already done.)
+
+## Out of scope (defer)
+- Realtime leaderboards, payments, push notifications, multi-exam (SSC) support, full CSV parser robustness beyond comma-delimited.
 
 ---
 
-## Server functions (`src/lib/board-questions.functions.ts`)
-
-- `listBoardQuestions({ chapterId, filters })` → questions + patterns
-- `getChapterBoardStats(chapterId)` → totals, years covered, boards covered, repeated count, high-priority count
-- `listRepeatedPatterns(chapterId)` → grouped patterns
-- `generateAISimilarQuestion({ sourceQuestionId })` → calls Lovable AI, inserts into `generated_questions` with `source_context = { pattern_id, board, year }`, returns labelled question
-- Admin: `upsertBoardQuestion`, `verifyBoardQuestion`, `mergeQuestionsIntoPattern`
-
-All use `requireSupabaseAuth`. Admin ones gate on `has_role('admin')`.
-
----
-
-## Routes
-
-- `src/routes/chapters.$chapterId.board-questions.tsx` — main page (breadcrumb, header, stats cards, filters bar, tabs, table)
-- `src/routes/chapters.$chapterId.board-practice.tsx` — practice mode (single question, badges, answer reveal, explanation, Try Similar)
-- `src/routes/admin.board-questions.tsx` — upload/verify/merge UI
-
-Link from existing chapter cards: replace "Practice" CTA with "Board Questions" as primary, keep "Quick Practice" secondary.
-
----
-
-## UI structure
-
-```text
-Breadcrumb: Dashboard / Subjects / HSC / English 2nd / Narration
-
-[Chapter Header]
-Narration · Board Questions
-[stat][stat][stat][stat][stat]
-
-[Filters row: Exam | Year range | Board | Type | Frequency | Priority]
-
-[Tabs: All | Repeated | Pattern Practice | High Priority | AI Similar]
-
-[Table: Year | Board | Question | Type | Freq | Priority | Actions]
-```
-
-Badges: board (color-coded), year, source_type (`AI Similar` distinct outline), priority label in Bangla.
-
----
-
-## Empty state
-
-Card with Bangla copy + three buttons (AI generate / Upload / Change chapter). Triggers `generateAISimilarQuestion` in batch (5 questions) using chapter syllabus when no real questions exist.
-
----
-
-## Technical notes
-
-- All new tables follow public-schema GRANT + RLS pattern.
-- AI generation uses existing `LOVABLE_API_KEY` via `src/lib/ai.functions.ts` helper (already present).
-- Priority recomputed on insert/verify via DB trigger calling `compute_priority_score`.
-- Patterns auto-suggested at admin time (admin merges manually; no auto-clustering this pass).
-
----
-
-## Deliverables checklist
-
-- [ ] Migration: extend `past_questions`, add `question_patterns`, GRANTs, RLS, trigger, function
-- [ ] `board-questions.functions.ts` (6 server fns)
-- [ ] `chapters.$chapterId.board-questions.tsx`
-- [ ] `chapters.$chapterId.board-practice.tsx`
-- [ ] `admin.board-questions.tsx`
-- [ ] Link updates in existing chapter list / QuickPractice
-- [ ] Empty-state Bangla component
+**Build order:** migration → AppShell nav → onboarding wizard → homepage → subjects seed/UI → dashboard rewire → chapter tabs → practice answer panel → trends page → progress gating → study plan inputs → mock test types → admin CSV.

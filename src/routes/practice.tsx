@@ -380,9 +380,48 @@ function PracticePage() {
             </Button>
           </Card>
         ) : loading ? (
-          <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            প্রশ্ন লোড হচ্ছে…
+          <Card className="paper-sheet overflow-hidden">
+            {/* Header skeleton */}
+            <div className="paper-divider border-b-2 px-6 pt-6 pb-4">
+              <div className="space-y-2 text-center">
+                <Skeleton className="mx-auto h-3 w-48" />
+                <Skeleton className="mx-auto h-7 w-64" />
+                <Skeleton className="mx-auto h-4 w-40" />
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full rounded" />
+                ))}
+              </div>
+            </div>
+            {/* Progress skeleton */}
+            <div className="border-b bg-muted/30 px-6 py-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <Skeleton className="mt-2 h-1.5 w-full rounded-full" />
+            </div>
+            {/* Question body skeleton */}
+            <div className="px-6 py-6">
+              <div className="flex items-baseline gap-3">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-5/6" />
+                </div>
+              </div>
+              <div className="mt-5 space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded" />
+                ))}
+              </div>
+            </div>
+            {/* Footer skeleton */}
+            <div className="paper-divider flex items-center justify-between border-t-2 px-6 py-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-9 w-28 rounded" />
+            </div>
           </Card>
         ) : error && questions.length === 0 ? (
           <Card className="paper-sheet p-6">

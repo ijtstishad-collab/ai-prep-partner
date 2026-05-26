@@ -3,6 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,11 +60,11 @@ function ResetPasswordPage() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <Label>New Password</Label>
-                <Input name="password" type="password" minLength={8} required />
+                <PasswordInput name="password" minLength={8} required />
               </div>
               <div>
                 <Label>Confirm Password</Label>
-                <Input name="confirm" type="password" minLength={8} required />
+                <PasswordInput name="confirm" minLength={8} required />
               </div>
               <Button className="w-full" disabled={busy}>
                 {busy ? "Updating..." : "Update Password"}

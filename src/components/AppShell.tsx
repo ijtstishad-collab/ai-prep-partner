@@ -1,7 +1,18 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { BookOpenCheck, LogOut, Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  BookOpenCheck,
+  ChevronDown,
+  LogOut,
+  Menu,
+} from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 type AppRoute =
@@ -21,40 +32,43 @@ type AppRoute =
   | "/profile"
   | "/admin/question-review";
 
-type NavLink = {
-  to: AppRoute;
-  label: string;
-};
+type NavLink = { to: AppRoute; label: string };
 
-const studentLinks: NavLink[] = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/subjects", label: "Subjects" },
+// 4 primary tabs — the everyday flow
+const primaryLinks: NavLink[] = [
+  { to: "/dashboard", label: "Home" },
+  { to: "/subjects", label: "Practice" },
+  { to: "/mock-test", label: "Mock Test" },
+  { to: "/analytics", label: "Progress" },
+];
+
+// Everything else lives under "More"
+const moreLinks: NavLink[] = [
   { to: "/resources", label: "Resources" },
-  { to: "/practice", label: "Practice" },
   { to: "/ai-generator", label: "AI Generator" },
-  { to: "/past-paper-analyzer", label: "Trends" },
+  { to: "/past-paper-analyzer", label: "Board Trends" },
   { to: "/study-plan", label: "Study Plan" },
-  { to: "/analytics", label: "Analytics" },
+  { to: "/history", label: "History" },
+  { to: "/profile", label: "Profile" },
 ];
 
 const adminLinks: NavLink[] = [
   { to: "/admin/question-review", label: "Admin Review" },
 ];
 
-const publicLinks: NavLink[] = [{ to: "/", label: "Home" }];
-
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, isAdmin, signOut } = useAuth();
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const links = user ? (isAdmin ? [...studentLinks, ...adminLinks] : studentLinks) : publicLinks;
+  const showAppNav = !!user;
+  const more = isAdmin ? [...moreLinks, ...adminLinks] : moreLinks;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 font-bold text-lg">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft">
               <BookOpenCheck className="h-5 w-5" />
             </span>
@@ -63,21 +77,38 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
-            {links.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="px-3 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
-                activeProps={{
-                  className:
-                    "px-3 py-2 text-sm rounded-lg text-foreground bg-muted font-medium",
-                }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
+          {showAppNav ? (
+            <nav className="hidden md:flex items-center gap-1">
+              {primaryLinks.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  className="px-3 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                  activeProps={{
+                    className:
+                      "px-3 py-2 text-sm rounded-lg text-foreground bg-muted font-medium",
+                  }}
+                >
+                  {l.label}
+                </Link>
+              ))}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="px-3 py-2 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition inline-flex items-center gap-1">
+                    More <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {more.map((l) => (
+                    <DropdownMenuItem key={l.to} asChild>
+                      <Link to={l.to}>{l.label}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </nav>
+          ) : null}
 
           <div className="hidden md:flex items-center gap-2">
             {user ? (
@@ -114,21 +145,48 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {open && (
           <div className="md:hidden border-t bg-card px-4 py-3 space-y-1">
-            {links.map((l) => (
+            {showAppNav ? (
+              <>
+                {primaryLinks.map((l) => (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={() => setOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-sm hover:bg-muted"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+                <div className="my-2 border-t" />
+                <p className="px-3 pt-1 pb-1 text-xs uppercase tracking-wider text-muted-foreground">
+                  More
+                </p>
+                {more.map((l) => (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={() => setOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-sm hover:bg-muted"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </>
+            ) : (
               <Link
-                key={l.to}
-                to={l.to}
+                to="/"
                 onClick={() => setOpen(false)}
                 className="block px-3 py-2 rounded-lg text-sm hover:bg-muted"
               >
-                {l.label}
+                Home
               </Link>
-            ))}
+            )}
+
             {user ? (
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full"
+                className="w-full mt-2"
                 onClick={async () => {
                   await signOut();
                   setOpen(false);
@@ -138,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 Logout
               </Button>
             ) : (
-              <Button asChild size="sm" className="w-full">
+              <Button asChild size="sm" className="w-full mt-2">
                 <Link to="/auth" onClick={() => setOpen(false)}>
                   Login / Sign up
                 </Link>

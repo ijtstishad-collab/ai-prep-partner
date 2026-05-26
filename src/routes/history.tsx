@@ -50,11 +50,11 @@ function HistoryPage() {
     async function load() {
       setLoading(true);
       setError(null);
-      const { data, error: qErr } = await fromTable("attempts")
+      const { data, error: qErr } = await fromTable("test_attempts")
         .select(
-          "id, status, score, max_score, total_questions, correct_count, submitted_at, started_at, chapter_id",
+          "id, score, total_questions, correct_count, completed_at, started_at, chapter_id",
         )
-        .order("submitted_at", { ascending: false, nullsFirst: false })
+        .order("started_at", { ascending: false })
         .limit(50);
 
       if (!alive) return;

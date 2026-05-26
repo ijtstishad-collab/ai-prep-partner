@@ -60,11 +60,11 @@ function ResetPasswordPage() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <Label>New Password</Label>
-                <Input name="password" type="password" minLength={8} required />
+                <PasswordInput name="password" minLength={8} required />
               </div>
               <div>
                 <Label>Confirm Password</Label>
-                <Input name="confirm" type="password" minLength={8} required />
+                <PasswordInput name="confirm" minLength={8} required />
               </div>
               <Button className="w-full" disabled={busy}>
                 {busy ? "Updating..." : "Update Password"}

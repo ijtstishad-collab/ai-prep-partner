@@ -687,7 +687,7 @@ function PracticePage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={generateAiQuestions}
+                onClick={() => setGenOpen(true)}
                 disabled={generating}
               >
                 {generating ? (

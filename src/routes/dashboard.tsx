@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuickPractice } from "@/components/QuickPractice";
 import { Button } from "@/components/ui/button";
 import { toBnDigits } from "@/lib/bn";
+import { allowedGroupsFor, subjectMatchesGroup } from "@/lib/student-group";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 

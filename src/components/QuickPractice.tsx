@@ -14,6 +14,7 @@ type Subject = {
   id: string;
   name: string;
   name_bn: string | null;
+  group_type?: string | null;
 };
 
 type Chapter = {

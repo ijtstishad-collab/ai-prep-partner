@@ -32,6 +32,7 @@ import { Route as SubjectsSlugRouteImport } from './routes/subjects.$slug'
 import { Route as ResultAttemptIdRouteImport } from './routes/result.$attemptId'
 import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapterId'
 import { Route as DemoGravitationRouteImport } from './routes/demo.gravitation'
+import { Route as AdminQuestionsRouteImport } from './routes/admin.questions'
 import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question-review'
 import { Route as AdminBoardQuestionsRouteImport } from './routes/admin.board-questions'
 import { Route as ChaptersChapterIdIndexRouteImport } from './routes/chapters.$chapterId.index'
@@ -153,6 +154,11 @@ const DemoGravitationRoute = DemoGravitationRouteImport.update({
   path: '/demo/gravitation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminQuestionsRoute = AdminQuestionsRouteImport.update({
+  id: '/questions',
+  path: '/questions',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminQuestionReviewRoute = AdminQuestionReviewRouteImport.update({
   id: '/question-review',
   path: '/question-review',
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/board-questions': typeof AdminBoardQuestionsRoute
   '/admin/question-review': typeof AdminQuestionReviewRoute
+  '/admin/questions': typeof AdminQuestionsRoute
   '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
@@ -233,6 +240,7 @@ export interface FileRoutesByTo {
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/board-questions': typeof AdminBoardQuestionsRoute
   '/admin/question-review': typeof AdminQuestionReviewRoute
+  '/admin/questions': typeof AdminQuestionsRoute
   '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
@@ -264,6 +272,7 @@ export interface FileRoutesById {
   '/subjects': typeof SubjectsRouteWithChildren
   '/admin/board-questions': typeof AdminBoardQuestionsRoute
   '/admin/question-review': typeof AdminQuestionReviewRoute
+  '/admin/questions': typeof AdminQuestionsRoute
   '/demo/gravitation': typeof DemoGravitationRoute
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/admin/board-questions'
     | '/admin/question-review'
+    | '/admin/questions'
     | '/demo/gravitation'
     | '/practice/$chapterId'
     | '/result/$attemptId'
@@ -326,6 +336,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/admin/board-questions'
     | '/admin/question-review'
+    | '/admin/questions'
     | '/demo/gravitation'
     | '/practice/$chapterId'
     | '/result/$attemptId'
@@ -356,6 +367,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/admin/board-questions'
     | '/admin/question-review'
+    | '/admin/questions'
     | '/demo/gravitation'
     | '/practice/$chapterId'
     | '/result/$attemptId'
@@ -552,6 +564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoGravitationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/questions': {
+      id: '/admin/questions'
+      path: '/questions'
+      fullPath: '/admin/questions'
+      preLoaderRoute: typeof AdminQuestionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/question-review': {
       id: '/admin/question-review'
       path: '/question-review'
@@ -593,11 +612,13 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminBoardQuestionsRoute: typeof AdminBoardQuestionsRoute
   AdminQuestionReviewRoute: typeof AdminQuestionReviewRoute
+  AdminQuestionsRoute: typeof AdminQuestionsRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBoardQuestionsRoute: AdminBoardQuestionsRoute,
   AdminQuestionReviewRoute: AdminQuestionReviewRoute,
+  AdminQuestionsRoute: AdminQuestionsRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

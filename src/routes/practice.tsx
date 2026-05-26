@@ -274,7 +274,12 @@ function PracticePage() {
     }
   };
 
-  const generateAiQuestions = async () => {
+  const generateAiQuestions = async (overrides?: {
+    count?: number;
+    difficulty?: "easy" | "medium" | "hard";
+    question_style?: "mcq" | "short" | "board";
+    language?: "bn" | "en" | "mixed";
+  }) => {
     if (!chapterId || generating) return;
     setGenerating(true);
     setError(null);
@@ -283,13 +288,20 @@ function PracticePage() {
 
     try {
       const generated = (await generateInstantPracticeQuestions({
-        data: { chapter_id: chapterId, count: 5, difficulty: "easy" },
+        data: {
+          chapter_id: chapterId,
+          count: overrides?.count ?? genCount,
+          difficulty: overrides?.difficulty ?? genDifficulty,
+          question_style: overrides?.question_style ?? genStyle,
+          language: overrides?.language ?? genLanguage,
+        },
       })) as unknown as { questions?: PracticeQuestion[] };
 
       const aiQuestions = (generated.questions ?? []) as PracticeQuestion[];
       setQuestions(aiQuestions);
       setOptions(aiQuestions.flatMap(deriveOptions));
       setCurrentIndex(0);
+      setGenOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not generate AI practice questions.");
     } finally {

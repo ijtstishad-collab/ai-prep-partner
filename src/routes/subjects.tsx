@@ -12,12 +12,15 @@ import { QuickPractice } from "@/components/QuickPractice";
 
 export const Route = createFileRoute("/subjects")({ component: SubjectsPage });
 
+type GroupKey = "science" | "business" | "humanities" | "general";
+
 type Subject = {
   id: string;
   name: string;
   name_bn: string | null;
   slug: string;
   icon: string | null;
+  group_type?: GroupKey | string | null;
   sort_order?: number | null;
 };
 
@@ -31,16 +34,22 @@ const sortSubjects = (items: Subject[]) =>
     return aOrder - bOrder || a.name.localeCompare(b.name);
   });
 
-// Heuristic group classification from subject name (UI only).
-const groupOf = (name: string): { label: string; bn: string } => {
+const GROUPS: { key: GroupKey; label: string; bn: string }[] = [
+  { key: "science", label: "Science", bn: "বিজ্ঞান" },
+  { key: "business", label: "Business Studies", bn: "ব্যবসায় শিক্ষা" },
+  { key: "humanities", label: "Humanities", bn: "মানবিক" },
+  { key: "general", label: "General", bn: "সাধারণ" },
+];
+
+const groupMeta = (key: string) =>
+  GROUPS.find((g) => g.key === key) ?? { key: "general" as GroupKey, label: "General", bn: "সাধারণ" };
+
+const inferGroup = (name: string): GroupKey => {
   const n = name.toLowerCase();
-  if (/(phys|chem|bio|math|stat|comp|ict|higher math)/.test(n))
-    return { label: "Science", bn: "বিজ্ঞান" };
-  if (/(account|business|finance|management|marketing|production|econ)/.test(n))
-    return { label: "Business Studies", bn: "ব্যবসায় শিক্ষা" };
-  if (/(history|civic|logic|geog|sociology|islam|psych|arts)/.test(n))
-    return { label: "Humanities", bn: "মানবিক" };
-  return { label: "HSC", bn: "এইচএসসি" };
+  if (/(phys|chem|bio|higher math|stat)/.test(n)) return "science";
+  if (/(account|business|finance|management|marketing|banking|insurance)/.test(n)) return "business";
+  if (/(history|civic|logic|geog|sociology|islam|psych|econ)/.test(n)) return "humanities";
+  return "general";
 };
 
 function SubjectsPage() {

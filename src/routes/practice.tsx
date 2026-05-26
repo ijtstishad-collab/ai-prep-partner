@@ -28,7 +28,7 @@ import {
   BookOpenText,
   CheckCircle2,
   ChevronRight,
-  FileQuestion,
+  FileText,
   FileText,
   GraduationCap,
   Loader2,

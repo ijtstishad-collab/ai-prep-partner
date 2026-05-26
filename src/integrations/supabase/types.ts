@@ -430,6 +430,108 @@ export type Database = {
           },
         ]
       }
+      resources: {
+        Row: {
+          chapter_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          mvp_use: string[]
+          page_reference: string | null
+          paper: string | null
+          resource_type: string
+          source_url: string | null
+          status: string
+          subject_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          mvp_use?: string[]
+          page_reference?: string | null
+          paper?: string | null
+          resource_type: string
+          source_url?: string | null
+          status?: string
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          mvp_use?: string[]
+          page_reference?: string | null
+          paper?: string | null
+          resource_type?: string
+          source_url?: string | null
+          status?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resources_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resources_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_plans: {
+        Row: {
+          created_at: string
+          daily_minutes: number
+          exam_date: string
+          id: string
+          notes: string | null
+          target_subject_ids: string[]
+          updated_at: string
+          user_id: string
+          weak_subject_ids: string[]
+        }
+        Insert: {
+          created_at?: string
+          daily_minutes?: number
+          exam_date: string
+          id?: string
+          notes?: string | null
+          target_subject_ids?: string[]
+          updated_at?: string
+          user_id: string
+          weak_subject_ids?: string[]
+        }
+        Update: {
+          created_at?: string
+          daily_minutes?: number
+          exam_date?: string
+          id?: string
+          notes?: string | null
+          target_subject_ids?: string[]
+          updated_at?: string
+          user_id?: string
+          weak_subject_ids?: string[]
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
           created_at: string

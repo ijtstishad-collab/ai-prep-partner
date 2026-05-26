@@ -18,33 +18,33 @@ export const Route = createFileRoute("/")({ component: HomePage });
 const productAreas = [
   {
     icon: BookOpen,
-    title: "HSC subjects",
-    desc: "Physics, Chemistry, Biology, ICT, Bangla, English, and more as the content model grows.",
+    title: "Subject-wise learning",
+    desc: "HSC subjects organized by paper and chapter — Bangla, English, ICT, Physics, Chemistry, Biology, Higher Math.",
   },
   {
     icon: FileQuestion,
-    title: "Chapter-wise practice",
-    desc: "A focused placeholder for solving approved questions by subject and chapter.",
-  },
-  {
-    icon: Timer,
-    title: "Mock tests",
-    desc: "Timed HSC-style exams with scoring and review planned for the next phases.",
-  },
-  {
-    icon: BarChart3,
-    title: "Result analytics",
-    desc: "Track accuracy, recent attempts, and weak chapters once the data layer is ready.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Admin review",
-    desc: "AI-generated questions will stay pending until a reviewer approves them.",
+    title: "AI question generation",
+    desc: "Generate original MCQs, short, creative, board, and admission-style questions — powered by Lovable AI.",
   },
   {
     icon: ClipboardCheck,
-    title: "Board question bank",
-    desc: "Past board questions will be organized by board, year, subject, and chapter.",
+    title: "MCQ practice",
+    desc: "Practice one question at a time with instant answer, Bangla explanation, and saved attempts.",
+  },
+  {
+    icon: BarChart3,
+    title: "Past paper trend analysis",
+    desc: "See which chapters repeat most across board exams and focus your revision.",
+  },
+  {
+    icon: Timer,
+    title: "Personal study plan",
+    desc: "Set your exam date and daily minutes — get a weekly schedule with weak-subject focus.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Admission preparation",
+    desc: "Medical, engineering, and varsity admission-style questions integrated into the practice flow.",
   },
 ];
 
@@ -55,22 +55,21 @@ function HomePage() {
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-accent text-accent-foreground px-3 py-1 text-xs font-medium">
-              <GraduationCap className="h-3 w-3" /> Bangladeshi HSC MVP
+              <GraduationCap className="h-3 w-3" /> HSC AI Prep Partner
             </span>
             <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-              AI Prep Partner for HSC exam preparation
+              AI-powered HSC preparation for Bangladeshi students
             </h1>
             <p className="text-lg text-muted-foreground">
-              Phase 1 establishes the student and admin structure for an HSC-first
-              platform: subjects, chapters, practice, mock tests, result analytics,
-              and question review.
+              Practice MCQs, study by subject, analyze past questions, and generate new questions from your syllabus —
+              all in one place.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link to="/auth">Start as Student</Link>
+                <Link to="/practice">Start Practicing</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/subjects">Explore HSC Subjects</Link>
+                <Link to="/subjects">Explore Subjects</Link>
               </Button>
             </div>
           </div>
@@ -78,14 +77,11 @@ function HomePage() {
       </section>
 
       <section className="container mx-auto px-4 py-14">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold">MVP structure</h2>
-            <p className="mt-2 text-muted-foreground">
-              These are placeholder surfaces only. Database and authentication logic
-              remain unchanged in this phase.
-            </p>
-          </div>
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold">Everything you need to crack HSC</h2>
+          <p className="mt-2 text-muted-foreground">
+            বিজ্ঞান · ব্যবসায় শিক্ষা · মানবিক — built around the way Bangladeshi students actually study.
+          </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {productAreas.map(({ icon: Icon, title, desc }) => (
@@ -104,16 +100,15 @@ function HomePage() {
         <Card className="p-8 bg-gradient-hero text-primary-foreground">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Phase 1 is about structure.</h2>
+              <h2 className="text-2xl font-bold">Ready to start?</h2>
               <p className="mt-2 max-w-2xl opacity-90">
-                The next phase can connect these pages to the Supabase-first schema,
-                RLS policies, and approved question workflow.
+                Sign in, pick a subject, and generate your first AI question in under a minute.
               </p>
             </div>
             <Button asChild variant="secondary">
-              <Link to="/dashboard">
+              <Link to="/auth">
                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                Go to Dashboard
+                Get Started Free
               </Link>
             </Button>
           </div>

@@ -96,9 +96,6 @@ export const submitPracticeAnswer = createServerFn({ method: "POST" })
       selectedAnswer: data.selected_answer,
       correctAnswer: (question.correct_answer as string | null) ?? null,
       correctText,
-      explanation:
-        (question.explanation_bn as string | null) ??
-        (question.explanation as string | null) ??
-        null,
+      explanation: (question.explanation_bn as string | null) ?? null,
     };
   });

@@ -311,12 +311,16 @@ export const submitMockTest = createServerFn({ method: "POST" })
     }
     await Promise.all(updates);
 
-    // Best-effort revision inserts (ignore duplicates)
+    // Best-effort revision inserts: skip questions already saved
     if (revisionInserts.length) {
-      await tbl("revision_items").upsert(revisionInserts, {
-        onConflict: "user_id,question_id",
-        ignoreDuplicates: true,
-      });
+      const qIds = revisionInserts.map((r) => r.question_id);
+      const { data: existing } = await tbl("revision_items")
+        .select("question_id")
+        .eq("user_id", context.userId)
+        .in("question_id", qIds);
+      const have = new Set(((existing as any[]) ?? []).map((r) => r.question_id));
+      const toInsert = revisionInserts.filter((r) => !have.has(r.question_id));
+      if (toInsert.length) await tbl("revision_items").insert(toInsert);
     }
 
     const total = rows.length || 1;

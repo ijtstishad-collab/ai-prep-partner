@@ -160,12 +160,10 @@ function SubjectsPage() {
         ) : (
           <>
             <p className="mb-6 text-sm text-muted-foreground">
-              {toBnDigits(subjects.length)} টি বিষয় পাওয়া গেছে
+              আপনার বিভাগ অনুযায়ী {toBnDigits(visibleSubjects.length)} টি বিষয় দেখা হচ্ছে
             </p>
-            {GROUPS.map((g) => {
-              const items = subjects.filter(
-                (s) => (s.group_type ?? inferGroup(s.name)) === g.key,
-              );
+            {GROUPS.filter((g) => allowed.includes(g.key)).map((g) => {
+              const items = visibleSubjects.filter((s) => subjectMatchesGroup(s, [g.key]));
               if (items.length === 0) return null;
               return (
                 <section key={g.key} className="mb-10">

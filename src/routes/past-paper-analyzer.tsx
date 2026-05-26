@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Bar,
@@ -15,9 +16,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Loader2, TrendingUp } from "lucide-react";
+import { BookOpen, Loader2, Sparkles, TrendingUp, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/past-paper-analyzer")({ component: AnalyzerPage });
+
 
 type Row = { chapter_id: string; chapter: string; subject: string };
 
@@ -74,9 +76,35 @@ function AnalyzerPage() {
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
           </Card>
         ) : total === 0 ? (
-          <Card className="p-8 text-center text-muted-foreground">
-            No past questions in the bank yet. Once admins add past board questions, trends will appear here.
+          <Card className="p-8">
+            <div className="mx-auto max-w-md text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <TrendingUp className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-lg font-semibold">প্রশ্ন ব্যাংক এখনো খালি</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                বোর্ড প্রশ্ন যোগ হওয়ার পর এখানে বছরভিত্তিক ও বোর্ডভিত্তিক ফ্রিকোয়েন্সি ট্রেন্ড দেখা যাবে।
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <Button asChild size="sm">
+                  <Link to="/chapters">
+                    <BookOpen className="mr-1.5 h-4 w-4" /> বোর্ড প্রশ্ন ব্রাউজ করুন
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/admin/board-questions">
+                    <Upload className="mr-1.5 h-4 w-4" /> Admin: প্রশ্ন যোগ করুন
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="ghost">
+                  <Link to="/practice">
+                    <Sparkles className="mr-1.5 h-4 w-4" /> AI প্র্যাকটিস শুরু করুন
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </Card>
+
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="p-5">

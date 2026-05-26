@@ -32,6 +32,7 @@ function AnalyzerPage() {
       const { data } = await supabase
         .from("past_questions")
         .select("chapter_id, chapters(name, subjects(name))")
+        .eq("verification_status", "verified")
         .limit(1000);
       const mapped: Row[] = ((data ?? []) as unknown as Array<{
         chapter_id: string;

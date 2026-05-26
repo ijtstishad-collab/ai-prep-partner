@@ -47,7 +47,7 @@ function BoardQuestionsHub() {
           .select("id,name,name_bn,subject_id")
           .eq("is_active", true)
           .order("order_index", { ascending: true }),
-        (supabase.from("past_questions") as any).select("chapter_id").limit(5000),
+        (supabase.from("past_questions") as any).select("chapter_id").eq("verification_status", "verified").limit(5000),
       ]);
       setSubjects((subs as Subject[]) ?? []);
       setChapters((chs as Chapter[]) ?? []);

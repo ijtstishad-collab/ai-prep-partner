@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({ component: AdminPage });
 
-type AdminAreaRoute = "/admin/question-review" | "/chapters" | "/subjects";
+type AdminAreaRoute = "/admin/question-review" | "/admin/questions" | "/chapters" | "/subjects";
 
 const adminAreas: Array<{
   title: string;
@@ -35,9 +35,9 @@ const adminAreas: Array<{
   },
   {
     title: "বোর্ড প্রশ্নব্যাংক",
-    desc: "বোর্ড, বছর, বিষয় ও অধ্যায়সহ প্রশ্ন ইম্পোর্টের ভবিষ্যৎ ফ্লো।",
-    status: "পরিকল্পিত",
-    to: "/subjects",
+    desc: "Single add, CSV import, review queue ও question bank — সব এক জায়গায়।",
+    status: "চালু",
+    to: "/admin/questions",
     icon: FileQuestion,
   },
   {

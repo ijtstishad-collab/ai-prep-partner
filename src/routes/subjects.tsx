@@ -161,40 +161,57 @@ function SubjectsPage() {
           </Card>
         ) : (
           <>
-            <p className="mb-3 text-sm text-muted-foreground">
+            <p className="mb-6 text-sm text-muted-foreground">
               {toBnDigits(subjects.length)} টি বিষয় পাওয়া গেছে
             </p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {subjects.map((subject, idx) => {
-                const group = groupOf(subject.name);
-                return (
-                  <Card key={subject.id} className="paper-sheet p-5">
-                    {/* Paper "header" stripe */}
-                    <div className="paper-rule -mx-5 -mt-5 mb-4 flex items-center justify-between px-5 py-2 text-xs uppercase tracking-wider text-muted-foreground">
-                      <span>{group.label} · {group.bn}</span>
-                      <span>বিষয় {toBnDigits(idx + 1)}</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-muted text-foreground">
-                        <BookOpen className="h-6 w-6" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h2 className="exam-heading text-lg font-semibold leading-tight">
-                          {subject.name}
-                        </h2>
-                        {subject.name_bn ? (
-                          <p className="mt-0.5 text-sm text-muted-foreground">{subject.name_bn}</p>
-                        ) : null}
-                      </div>
-                      <Badge variant="outline">HSC</Badge>
-                    </div>
-                    <Button className="mt-5 w-full" onClick={() => openQuick(subject.id)}>
-                      অনুশীলন শুরু করুন <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </Card>
-                );
-              })}
-            </div>
+            {GROUPS.map((g) => {
+              const items = subjects.filter(
+                (s) => (s.group_type ?? inferGroup(s.name)) === g.key,
+              );
+              if (items.length === 0) return null;
+              return (
+                <section key={g.key} className="mb-10">
+                  <div className="mb-3 flex items-baseline justify-between border-b pb-2">
+                    <h2 className="exam-heading text-xl font-semibold">
+                      {g.bn}{" "}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        · {g.label}
+                      </span>
+                    </h2>
+                    <span className="text-xs text-muted-foreground">
+                      {toBnDigits(items.length)} টি বিষয়
+                    </span>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {items.map((subject, idx) => (
+                      <Card key={subject.id} className="paper-sheet p-5">
+                        <div className="paper-rule -mx-5 -mt-5 mb-4 flex items-center justify-between px-5 py-2 text-xs uppercase tracking-wider text-muted-foreground">
+                          <span>{g.label} · {g.bn}</span>
+                          <span>বিষয় {toBnDigits(idx + 1)}</span>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-muted text-foreground">
+                            <BookOpen className="h-6 w-6" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="exam-heading text-lg font-semibold leading-tight">
+                              {subject.name}
+                            </h3>
+                            {subject.name_bn ? (
+                              <p className="mt-0.5 text-sm text-muted-foreground">{subject.name_bn}</p>
+                            ) : null}
+                          </div>
+                          <Badge variant="outline">HSC</Badge>
+                        </div>
+                        <Button className="mt-5 w-full" onClick={() => openQuick(subject.id)}>
+                          অনুশীলন শুরু করুন <ChevronRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </>
         )}
       </div>

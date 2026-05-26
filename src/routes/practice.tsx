@@ -222,6 +222,11 @@ function PracticePage() {
       setQuestions(safeQuestions);
       setOptions(optionRows);
       setLoading(false);
+
+      // Auto-generate if no approved questions yet — no manual click required
+      if (safeQuestions.length === 0 && chapterId) {
+        void generateAiQuestions();
+      }
     }
 
 

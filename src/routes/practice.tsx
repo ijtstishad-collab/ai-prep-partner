@@ -238,11 +238,13 @@ function PracticePage() {
     setSubmitting(true);
     setError(null);
     try {
+      const selected = currentOptions.find((o) => o.id === selectedOptionId);
+      if (!selected) throw new Error("Please select an answer.");
       const submission = await submitPracticeAnswer({
         data: {
           chapter_id: chapterId,
           question_id: currentQuestion.id,
-          question_option_id: selectedOptionId,
+          selected_answer: selected.option_text,
         },
       });
       setResult(submission);
@@ -263,10 +265,11 @@ function PracticePage() {
     try {
       const generated = (await generateInstantPracticeQuestions({
         data: { chapter_id: chapterId, count: 5, difficulty: "easy" },
-      })) as { questions?: PracticeQuestion[]; options?: QuestionOption[] };
+      })) as unknown as { questions?: PracticeQuestion[] };
 
-      setQuestions((generated.questions ?? []) as PracticeQuestion[]);
-      setOptions((generated.options ?? []) as QuestionOption[]);
+      const aiQuestions = (generated.questions ?? []) as PracticeQuestion[];
+      setQuestions(aiQuestions);
+      setOptions(aiQuestions.flatMap(deriveOptions));
       setCurrentIndex(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not generate AI practice questions.");
@@ -274,6 +277,7 @@ function PracticePage() {
       setGenerating(false);
     }
   };
+
 
   const goToNextQuestion = () => {
     setCurrentIndex((index) => Math.min(index + 1, questions.length - 1));

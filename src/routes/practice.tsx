@@ -241,10 +241,7 @@ function PracticePage() {
       setOptions(optionRows);
       setLoading(false);
 
-      // Auto-generate if no approved questions yet — no manual click required
-      if (safeQuestions.length === 0 && chapterId) {
-        void generateAiQuestions();
-      }
+      // Empty state will offer the student a guided "Generate Practice Set" modal.
     }
 
 

@@ -1,58 +1,113 @@
-# Simplify Student Journey
+# Board Question Tracker & Practice System
 
-Current flow is 5 clicks: **Dashboard → Group → Subject → Chapter → Mode → Practice**. Each step is a full page reload that mostly just lists items. Goal: reduce to **2 clicks** (Dashboard → Practice) for the common case, while keeping deep browsing available for new users.
+Turn the chapter practice flow into a board-question-first experience: every chapter shows real SSC/HSC board questions filterable by year, board, and type, with repeated-pattern grouping, priority scoring, and AI-generated similar questions clearly labelled.
 
-## New Flow
+---
+
+## Scope
+
+Build (in order):
+
+1. **DB schema** — extend `past_questions`, add `question_patterns` + join, add priority + frequency fields.
+2. **Server functions** — list/filter board questions, group repeated patterns, compute stats, generate AI similar questions tagged to a source pattern.
+3. **Chapter Board Questions page** — new `/chapter/$chapterId/board-questions` route with breadcrumb, stats, filters, tabs, table.
+4. **Practice mode** — single-question view with year/board badge, answer, Bangla explanation, "Try Similar".
+5. **Admin upload + verify + merge** — extend admin panel.
+6. **Empty state** — Bangla CTA with AI-generate / upload / change chapter actions.
+
+Out of scope this pass: subject-level dashboards, mock test reshuffle, leaderboards.
+
+---
+
+## Database changes (single migration)
+
+Extend `past_questions`:
+
+- `exam_level text` ('SSC' | 'HSC')
+- `paper text` (e.g. '1st' / '2nd')
+- `topic text`
+- `source_type text` default `'official_board'` ('official_board' | 'test_paper' | 'model_test' | 'ai_generated')
+- `verification_status text` default `'verified'` ('verified' | 'review_needed')
+- `pattern_id uuid` nullable → `question_patterns.id`
+- `priority_score int` default 0
+- `explanation_bn text`
+
+New `question_patterns`:
+
+- `id, chapter_id, subject_id, name, name_bn, description_bn`
+- `appeared_years int[]`, `appeared_boards text[]`
+- `frequency_count int`, `priority_score int`, `priority_label text`
+- `created_at`, `created_by`
+
+GRANTs: SELECT for authenticated on both; admin manage via existing `has_role` pattern. RLS: read-approved/verified or admin.
+
+Priority score function (`public.compute_priority_score`): weighted sum — frequency 40, recency (latest year within 3y) 25, distinct boards 20, topic importance 15 → clamps 0..100. Label thresholds: ≥70 Very Important, ≥40 Important, else Practice Later.
+
+---
+
+## Server functions (`src/lib/board-questions.functions.ts`)
+
+- `listBoardQuestions({ chapterId, filters })` → questions + patterns
+- `getChapterBoardStats(chapterId)` → totals, years covered, boards covered, repeated count, high-priority count
+- `listRepeatedPatterns(chapterId)` → grouped patterns
+- `generateAISimilarQuestion({ sourceQuestionId })` → calls Lovable AI, inserts into `generated_questions` with `source_context = { pattern_id, board, year }`, returns labelled question
+- Admin: `upsertBoardQuestion`, `verifyBoardQuestion`, `mergeQuestionsIntoPattern`
+
+All use `requireSupabaseAuth`. Admin ones gate on `has_role('admin')`.
+
+---
+
+## Routes
+
+- `src/routes/chapters.$chapterId.board-questions.tsx` — main page (breadcrumb, header, stats cards, filters bar, tabs, table)
+- `src/routes/chapters.$chapterId.board-practice.tsx` — practice mode (single question, badges, answer reveal, explanation, Try Similar)
+- `src/routes/admin.board-questions.tsx` — upload/verify/merge UI
+
+Link from existing chapter cards: replace "Practice" CTA with "Board Questions" as primary, keep "Quick Practice" secondary.
+
+---
+
+## UI structure
 
 ```text
-DASHBOARD (one-screen launcher)
-  ├── Quick Start card        → 1 click to last/recommended chapter
-  ├── Continue last attempt   → 1 click resume
-  ├── Subject picker (inline) → opens chapter+mode sheet
-  └── Browse all subjects     → existing /subjects page (fallback)
+Breadcrumb: Dashboard / Subjects / HSC / English 2nd / Narration
 
-CHAPTER+MODE SHEET (single combined screen, replaces /subjects/$slug + /chapters + mode picker)
-  → Pick chapter from list, pick mode chips inline, "Start" button
-  → 1 screen instead of 3
+[Chapter Header]
+Narration · Board Questions
+[stat][stat][stat][stat][stat]
 
-PRACTICE  (unchanged route, unchanged backend)
-RESULT    (unchanged)
+[Filters row: Exam | Year range | Board | Type | Frequency | Priority]
+
+[Tabs: All | Repeated | Pattern Practice | High Priority | AI Similar]
+
+[Table: Year | Board | Question | Type | Freq | Priority | Actions]
 ```
 
-## Changes by Page
+Badges: board (color-coded), year, source_type (`AI Similar` distinct outline), priority label in Bangla.
 
-### `dashboard.tsx` — becomes the launcher
-- **New "Quick Start" hero tile**: shows last practiced chapter + "Resume" button, or recommended weak chapter if none. Single click → `/practice/$chapterId`.
-- **Inline subject row**: horizontal scrollable chips of student's group subjects. Click → opens combined Chapter+Mode bottom sheet (no navigation).
-- Keep existing bento tiles for History, Analytics, Mock Test, AI MCQ but compress into a smaller secondary row.
-- Remove the 5-step "Journey" progress bar — it advertises the complexity we're removing.
+---
 
-### New combined `ChapterModeSheet` component
-- Shown as a Sheet/Dialog over dashboard (no route change).
-- Left: chapter list (searchable, grouped by paper if applicable).
-- Right (or below on mobile): 4 mode chips — অধ্যায়ভিত্তিক / বোর্ড প্রশ্ন / এআই প্রশ্ন / মিশ্র.
-- Single primary "শুরু করুন · Start Practice" button → navigates straight to `/practice/$chapterId?mode=...`.
-- Replaces the need to visit `/subjects/$slug` then `/chapters` then click a mode.
+## Empty state
 
-### `subjects.tsx` & `chapters.tsx` — kept as fallback
-- Still reachable via "সব বিষয় দেখুন · Browse all" link for users who want to explore.
-- No structural changes; just ensure they also open the new sheet when a subject is clicked (instead of multi-step navigation).
+Card with Bangla copy + three buttons (AI generate / Upload / Change chapter). Triggers `generateAISimilarQuestion` in batch (5 questions) using chapter syllabus when no real questions exist.
 
-### `practice.tsx`
-- Add a compact top bar: subject · chapter · mode + back-to-dashboard.
-- Auto-start (skip the "Start" intro screen if currently present) — user already committed when clicking the chapter.
-- Result screen already exists; add a prominent "পরবর্তী দুর্বল অধ্যায় · Next weak chapter" button so the loop continues with 1 click.
+---
 
-## Out of Scope
-- No backend, RLS, schema, or server function changes.
-- Existing routes stay mounted (deep links keep working).
-- Bangla-first copy and Paper & Ink aesthetic preserved.
+## Technical notes
 
-## Files Touched
-- `src/routes/dashboard.tsx` (restructure)
-- `src/components/ChapterModeSheet.tsx` (new)
-- `src/routes/subjects.tsx`, `src/routes/chapters.tsx` (open sheet on click instead of navigating; keep page accessible)
-- `src/routes/practice.tsx` (compact header, auto-start)
-- `src/routes/result.$attemptId.tsx` (next-chapter CTA prominence)
+- All new tables follow public-schema GRANT + RLS pattern.
+- AI generation uses existing `LOVABLE_API_KEY` via `src/lib/ai.functions.ts` helper (already present).
+- Priority recomputed on insert/verify via DB trigger calling `compute_priority_score`.
+- Patterns auto-suggested at admin time (admin merges manually; no auto-clustering this pass).
 
-Approve and I'll implement.
+---
+
+## Deliverables checklist
+
+- [ ] Migration: extend `past_questions`, add `question_patterns`, GRANTs, RLS, trigger, function
+- [ ] `board-questions.functions.ts` (6 server fns)
+- [ ] `chapters.$chapterId.board-questions.tsx`
+- [ ] `chapters.$chapterId.board-practice.tsx`
+- [ ] `admin.board-questions.tsx`
+- [ ] Link updates in existing chapter list / QuickPractice
+- [ ] Empty-state Bangla component

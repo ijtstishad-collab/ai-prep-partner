@@ -13,13 +13,26 @@ import { submitPracticeAnswer } from "@/lib/practice.functions";
 import { cn } from "@/lib/utils";
 import { toBnDigits, toBnOptionLabel, formatDuration } from "@/lib/bn";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
   AlertCircle,
+  ArrowRightLeft,
   BookOpenText,
   CheckCircle2,
   ChevronRight,
   FileQuestion,
+  FileText,
   GraduationCap,
   Loader2,
+  ScrollText,
   Sparkles,
   Timer,
   XCircle,

@@ -48,12 +48,15 @@ const groupMeta = (key: string) =>
 // inferGroup moved to @/lib/student-group
 
 function SubjectsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
   const [presetSubject, setPresetSubject] = useState<string | null>(null);
+
+  const allowed = allowedGroupsFor(profile?.student_group);
+  const visibleSubjects = subjects.filter((s) => subjectMatchesGroup(s, allowed));
 
   const openQuick = (subjectId: string) => {
     setPresetSubject(subjectId);

@@ -24,6 +24,8 @@ export type InsertedQuestion = {
   question_type: "mcq";
   difficulty: Difficulty;
   question_text: string;
+  options: Record<string, string>;
+  correct_answer: string;
 };
 
 export type InsertedOption = {

@@ -45,13 +45,7 @@ const GROUPS: { key: GroupKey; label: string; bn: string }[] = [
 const groupMeta = (key: string) =>
   GROUPS.find((g) => g.key === key) ?? { key: "general" as GroupKey, label: "General", bn: "সাধারণ" };
 
-const inferGroup = (name: string): GroupKey => {
-  const n = name.toLowerCase();
-  if (/(phys|chem|bio|higher math|stat)/.test(n)) return "science";
-  if (/(account|business|finance|management|marketing|banking|insurance)/.test(n)) return "business";
-  if (/(history|civic|logic|geog|sociology|islam|psych|econ)/.test(n)) return "humanities";
-  return "general";
-};
+// inferGroup moved to @/lib/student-group
 
 function SubjectsPage() {
   const { user, loading: authLoading } = useAuth();

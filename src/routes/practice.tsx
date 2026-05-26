@@ -324,26 +324,8 @@ function PracticePage() {
 
   return (
     <AppShell>
-      <div className="container mx-auto max-w-5xl px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="mb-3 text-xs text-muted-foreground">
-          <Link to="/dashboard" className="hover:text-foreground">ড্যাশবোর্ড</Link>
-          <span className="mx-2">/</span>
-          <Link to="/subjects" className="hover:text-foreground">বিষয়সমূহ</Link>
-          <span className="mx-2">/</span>
-          {subject ? (
-            <a
-              href={`/chapters?subjectId=${subject.id}`}
-              className="hover:text-foreground"
-            >
-              {subject.name}
-            </a>
-          ) : (
-            <span>অধ্যায়সমূহ</span>
-          )}
-          <span className="mx-2">/</span>
-          <span className="text-foreground">অনুশীলন</span>
-        </nav>
+      <div className="container mx-auto max-w-3xl px-4 py-6">
+
 
         {authLoading ? (
           <Card className="paper-sheet flex items-center gap-3 p-6 text-muted-foreground">

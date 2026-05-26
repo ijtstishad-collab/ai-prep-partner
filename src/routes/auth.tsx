@@ -75,7 +75,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <Label>Password</Label>
-                  <Input name="password" type="password" required />
+                  <PasswordInput name="password" required />
                 </div>
                 <Button className="w-full" disabled={busy}>
                   {busy ? "..." : "Login"}

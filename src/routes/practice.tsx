@@ -153,6 +153,11 @@ function PracticePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [genOpen, setGenOpen] = useState(false);
+  const [genCount, setGenCount] = useState<5 | 10 | 20>(10);
+  const [genDifficulty, setGenDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [genStyle, setGenStyle] = useState<"mcq" | "short" | "board">("mcq");
+  const [genLanguage, setGenLanguage] = useState<"bn" | "en" | "mixed">("bn");
 
   // Stopwatch — UI only
   const startedAtRef = useRef<number>(Date.now());

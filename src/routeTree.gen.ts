@@ -34,6 +34,7 @@ import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapte
 import { Route as DemoGravitationRouteImport } from './routes/demo.gravitation'
 import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question-review'
 import { Route as AdminBoardQuestionsRouteImport } from './routes/admin.board-questions'
+import { Route as ChaptersChapterIdIndexRouteImport } from './routes/chapters.$chapterId.index'
 import { Route as ChaptersChapterIdBoardQuestionsRouteImport } from './routes/chapters.$chapterId.board-questions'
 import { Route as ChaptersChapterIdBoardPracticeRouteImport } from './routes/chapters.$chapterId.board-practice'
 
@@ -162,6 +163,11 @@ const AdminBoardQuestionsRoute = AdminBoardQuestionsRouteImport.update({
   path: '/board-questions',
   getParentRoute: () => AdminRoute,
 } as any)
+const ChaptersChapterIdIndexRoute = ChaptersChapterIdIndexRouteImport.update({
+  id: '/$chapterId/',
+  path: '/$chapterId/',
+  getParentRoute: () => ChaptersRoute,
+} as any)
 const ChaptersChapterIdBoardQuestionsRoute =
   ChaptersChapterIdBoardQuestionsRouteImport.update({
     id: '/$chapterId/board-questions',
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/subjects/$slug': typeof SubjectsSlugRoute
   '/chapters/$chapterId/board-practice': typeof ChaptersChapterIdBoardPracticeRoute
   '/chapters/$chapterId/board-questions': typeof ChaptersChapterIdBoardQuestionsRoute
+  '/chapters/$chapterId/': typeof ChaptersChapterIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/subjects/$slug': typeof SubjectsSlugRoute
   '/chapters/$chapterId/board-practice': typeof ChaptersChapterIdBoardPracticeRoute
   '/chapters/$chapterId/board-questions': typeof ChaptersChapterIdBoardQuestionsRoute
+  '/chapters/$chapterId': typeof ChaptersChapterIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -262,6 +270,7 @@ export interface FileRoutesById {
   '/subjects/$slug': typeof SubjectsSlugRoute
   '/chapters/$chapterId/board-practice': typeof ChaptersChapterIdBoardPracticeRoute
   '/chapters/$chapterId/board-questions': typeof ChaptersChapterIdBoardQuestionsRoute
+  '/chapters/$chapterId/': typeof ChaptersChapterIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/subjects/$slug'
     | '/chapters/$chapterId/board-practice'
     | '/chapters/$chapterId/board-questions'
+    | '/chapters/$chapterId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -322,6 +332,7 @@ export interface FileRouteTypes {
     | '/subjects/$slug'
     | '/chapters/$chapterId/board-practice'
     | '/chapters/$chapterId/board-questions'
+    | '/chapters/$chapterId'
   id:
     | '__root__'
     | '/'
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/subjects/$slug'
     | '/chapters/$chapterId/board-practice'
     | '/chapters/$chapterId/board-questions'
+    | '/chapters/$chapterId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -554,6 +566,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBoardQuestionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/chapters/$chapterId/': {
+      id: '/chapters/$chapterId/'
+      path: '/$chapterId'
+      fullPath: '/chapters/$chapterId/'
+      preLoaderRoute: typeof ChaptersChapterIdIndexRouteImport
+      parentRoute: typeof ChaptersRoute
+    }
     '/chapters/$chapterId/board-questions': {
       id: '/chapters/$chapterId/board-questions'
       path: '/$chapterId/board-questions'
@@ -586,11 +605,13 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface ChaptersRouteChildren {
   ChaptersChapterIdBoardPracticeRoute: typeof ChaptersChapterIdBoardPracticeRoute
   ChaptersChapterIdBoardQuestionsRoute: typeof ChaptersChapterIdBoardQuestionsRoute
+  ChaptersChapterIdIndexRoute: typeof ChaptersChapterIdIndexRoute
 }
 
 const ChaptersRouteChildren: ChaptersRouteChildren = {
   ChaptersChapterIdBoardPracticeRoute: ChaptersChapterIdBoardPracticeRoute,
   ChaptersChapterIdBoardQuestionsRoute: ChaptersChapterIdBoardQuestionsRoute,
+  ChaptersChapterIdIndexRoute: ChaptersChapterIdIndexRoute,
 }
 
 const ChaptersRouteWithChildren = ChaptersRoute._addFileChildren(

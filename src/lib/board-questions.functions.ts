@@ -18,7 +18,9 @@ const FiltersSchema = z.object({
   frequency: z.enum(["1", "2-3", "4+"]).optional(),
   priority: z.enum(["very_important", "important", "practice_later"]).optional(),
   tab: z.enum(["all", "repeated", "pattern", "high_priority", "ai_similar"]).optional(),
+  include_unverified: z.boolean().optional(),
 });
+
 
 const tbl = (n: string) => (supabaseAdmin.from as unknown as (name: string) => any)(n);
 

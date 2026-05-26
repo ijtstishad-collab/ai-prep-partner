@@ -634,29 +634,15 @@ function PracticePage() {
               </div>
             </Card>
 
-            {/* Side helpers */}
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setGenOpen(true)}
-                disabled={generating}
-              >
-                {generating ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> তৈরি হচ্ছে</>
-                ) : (
-                  <><Sparkles className="mr-1 h-4 w-4" /> আরও এআই এমসিকিউ</>
-                )}
-              </Button>
-              <Button asChild size="sm" variant="outline">
+            {/* Single side helper — keep it minimal */}
+            <div className="mt-4 flex justify-center">
+              <Button asChild size="sm" variant="ghost">
                 <a href={`/chapters?subjectId=${chapter?.subject_id ?? ""}`}>
                   অধ্যায় পরিবর্তন
                 </a>
               </Button>
-              <Button asChild size="sm" variant="ghost">
-                <Link to="/history">ইতিহাস</Link>
-              </Button>
             </div>
+
           </>
         )}
 

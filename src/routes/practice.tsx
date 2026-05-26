@@ -267,7 +267,7 @@ function PracticePage() {
         data: {
           chapter_id: chapterId,
           question_id: currentQuestion.id,
-          selected_answer: selected.option_text,
+          selected_answer: selected.option_key,
         },
       });
       setResult(submission);

@@ -101,7 +101,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <Label>Password</Label>
-                  <Input name="password" type="password" minLength={8} required />
+                  <PasswordInput name="password" minLength={8} required />
                 </div>
                 <Button className="w-full" disabled={busy}>
                   {busy ? "..." : "Create Account"}

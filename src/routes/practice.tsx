@@ -216,23 +216,7 @@ function PracticePage() {
       }
 
       const safeQuestions = questionResult.rows;
-      const questionIds = safeQuestions.map((q) => q.id);
-      let optionRows: QuestionOption[] = [];
-
-      if (questionIds.length > 0) {
-        const { data, error: optionError } = await fromTable("question_options")
-          .select("id, question_id, option_key, option_text, display_order")
-          .in("question_id", questionIds)
-          .order("display_order", { ascending: true });
-
-        if (!alive) return;
-        if (optionError) {
-          setError(optionError.message);
-          setLoading(false);
-          return;
-        }
-        optionRows = (data ?? []) as QuestionOption[];
-      }
+      const optionRows: QuestionOption[] = safeQuestions.flatMap(deriveOptions);
 
       setChapter(chapterRow as Chapter);
       setSubject((subjectRow as Subject | null) ?? null);
@@ -240,6 +224,7 @@ function PracticePage() {
       setOptions(optionRows);
       setLoading(false);
     }
+
 
     loadPractice();
 

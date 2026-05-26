@@ -44,6 +44,7 @@ type Props = {
 
 export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
   const nav = useNavigate();
+  const { profile } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);

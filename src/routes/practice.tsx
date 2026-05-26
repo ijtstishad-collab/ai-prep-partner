@@ -270,12 +270,21 @@ function PracticePage() {
         },
       });
       setResult(submission);
+      // Auto-advance to next question to reduce clicks
+      if (currentIndex < questions.length - 1) {
+        setTimeout(() => {
+          setCurrentIndex((i) => Math.min(i + 1, questions.length - 1));
+          setSelectedOptionId(null);
+          setResult(null);
+        }, 1400);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not submit your answer.");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   const generateAiQuestions = async (overrides?: {
     count?: number;

@@ -191,6 +191,8 @@ Return JSON exactly like:
         question_type: "mcq",
         difficulty: data.difficulty,
         question_text: insertedQuestion.question_text as string,
+        options: optionsObj,
+        correct_answer: correctKey,
       });
 
       question.options.forEach((opt, i) => {

@@ -64,7 +64,17 @@ function HistoryPage() {
         setLoading(false);
         return;
       }
-      const rows = (data ?? []) as Attempt[];
+      const rows = ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+        id: r.id as string,
+        status: r.completed_at ? "submitted" : "in_progress",
+        score: r.score as number | null,
+        max_score: r.total_questions as number | null,
+        total_questions: r.total_questions as number | null,
+        correct_count: r.correct_count as number | null,
+        submitted_at: (r.completed_at as string | null) ?? null,
+        started_at: r.started_at as string | null,
+        chapter_id: r.chapter_id as string | null,
+      })) as Attempt[];
       setAttempts(rows);
 
       const chapterIds = Array.from(

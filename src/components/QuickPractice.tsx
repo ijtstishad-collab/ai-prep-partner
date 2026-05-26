@@ -64,23 +64,24 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
     }
   }, [open, initialSubjectId]);
 
-  // Load subjects once when opened
+  // Load subjects once when opened — filter by student group
   useEffect(() => {
     if (!open || subjects.length) return;
     let alive = true;
     setLoadingSubjects(true);
     fromTable("subjects")
-      .select("id, name, name_bn")
+      .select("id, name, name_bn, group_type")
       .eq("is_active", true)
       .then(({ data }: { data: Subject[] | null }) => {
         if (!alive) return;
-        setSubjects(data ?? []);
+        const allowed = allowedGroupsFor(profile?.student_group);
+        setSubjects((data ?? []).filter((s) => subjectMatchesGroup(s, allowed)));
         setLoadingSubjects(false);
       });
     return () => {
       alive = false;
     };
-  }, [open, subjects.length]);
+  }, [open, subjects.length, profile?.student_group]);
 
   // Load chapters when subject changes
   useEffect(() => {

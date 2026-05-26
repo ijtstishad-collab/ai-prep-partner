@@ -12,6 +12,10 @@ type AppRoute =
   | "/chapters"
   | "/practice"
   | "/mock-test"
+  | "/resources"
+  | "/ai-generator"
+  | "/past-paper-analyzer"
+  | "/study-plan"
   | "/analytics"
   | "/history"
   | "/profile"
@@ -24,13 +28,13 @@ type NavLink = {
 
 const studentLinks: NavLink[] = [
   { to: "/dashboard", label: "Dashboard" },
-  { to: "/subjects", label: "HSC Subjects" },
-  { to: "/chapters", label: "Chapters" },
+  { to: "/subjects", label: "Subjects" },
+  { to: "/resources", label: "Resources" },
   { to: "/practice", label: "Practice" },
-  { to: "/mock-test", label: "Mock Test" },
+  { to: "/ai-generator", label: "AI Generator" },
+  { to: "/past-paper-analyzer", label: "Trends" },
+  { to: "/study-plan", label: "Study Plan" },
   { to: "/analytics", label: "Analytics" },
-  { to: "/history", label: "History" },
-  { to: "/profile", label: "Profile" },
 ];
 
 const adminLinks: NavLink[] = [

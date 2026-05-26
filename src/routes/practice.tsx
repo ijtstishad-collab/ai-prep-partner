@@ -451,10 +451,8 @@ function PracticePage() {
                 {error}
               </p>
             ) : null}
-
-              AI-তৈরি প্রশ্ন “AI Generated – Review Needed” হিসেবে চিহ্নিত থাকে; শিক্ষক যাচাইয়ের পর তা “Verified MCQ” হয়।
-            </p>
           </Card>
+
         ) : (
           <>
             {/* Exam-paper sheet */}

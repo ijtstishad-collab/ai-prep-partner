@@ -24,18 +24,16 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   AlertCircle,
-  ArrowRightLeft,
   BookOpenText,
   CheckCircle2,
   ChevronRight,
-  FileText,
   GraduationCap,
   Loader2,
-  ScrollText,
   Sparkles,
   Timer,
   XCircle,
 } from "lucide-react";
+
 
 type PracticeMode = "chapter" | "board" | "ai" | "mixed";
 const MODE_META: Record<PracticeMode, { label: string; bn: string }> = {

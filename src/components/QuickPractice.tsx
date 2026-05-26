@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { toBnDigits } from "@/lib/bn";
+import { useAuth } from "@/lib/auth";
+import { allowedGroupsFor, subjectMatchesGroup } from "@/lib/student-group";
 import { FileText, Library, Sparkles, Shuffle, Search, BookOpen } from "lucide-react";
 
 type Subject = {

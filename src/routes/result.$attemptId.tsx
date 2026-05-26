@@ -106,9 +106,9 @@ function ResultPage() {
       setLoading(true);
       setError(null);
 
-      const { data: attemptRow, error: attemptError } = await fromTable("attempts")
+      const { data: attemptRaw, error: attemptError } = await fromTable("test_attempts")
         .select(
-          "id, status, score, max_score, total_questions, correct_count, submitted_at, started_at, chapter_id, subject_id",
+          "id, score, total_questions, correct_count, completed_at, started_at, chapter_id, subject_id",
         )
         .eq("id", attemptId)
         .maybeSingle();
@@ -119,16 +119,29 @@ function ResultPage() {
         setLoading(false);
         return;
       }
-      if (!attemptRow) {
+      if (!attemptRaw) {
         setAttempt(null);
         setAnswers([]);
         setQuestions([]);
         setLoading(false);
         return;
       }
+      const r = attemptRaw as Record<string, unknown>;
+      const attemptRow: Attempt = {
+        id: r.id as string,
+        status: r.completed_at ? "submitted" : "in_progress",
+        score: r.score as number | null,
+        max_score: r.total_questions as number | null,
+        total_questions: r.total_questions as number | null,
+        correct_count: r.correct_count as number | null,
+        submitted_at: (r.completed_at as string | null) ?? null,
+        started_at: r.started_at as string | null,
+        chapter_id: r.chapter_id as string | null,
+        subject_id: r.subject_id as string | null,
+      };
 
-      const { data: answerRows, error: answerError } = await fromTable("student_answers")
-        .select("id, question_id, question_option_id, answer_text, is_correct, points_awarded")
+      const { data: answerRows, error: answerError } = await fromTable("user_answers")
+        .select("id, question_id, user_answer, is_correct")
         .eq("attempt_id", attemptId)
         .order("created_at", { ascending: true });
 
@@ -139,7 +152,14 @@ function ResultPage() {
         return;
       }
 
-      const safeAnswers = (answerRows ?? []) as StudentAnswer[];
+      const safeAnswers = ((answerRows ?? []) as Array<Record<string, unknown>>).map((a) => ({
+        id: a.id as string,
+        question_id: a.question_id as string,
+        question_option_id: null,
+        answer_text: (a.user_answer as string | null) ?? null,
+        is_correct: a.is_correct as boolean | null,
+        points_awarded: a.is_correct ? 1 : 0,
+      })) as StudentAnswer[];
       const questionIds = safeAnswers.map((a) => a.question_id);
       let questionRows: Question[] = [];
 
@@ -147,8 +167,7 @@ function ResultPage() {
         const { data, error: qErr } = await fromTable("questions")
           .select("id, question_text")
           .in("id", questionIds)
-          .eq("status", "approved")
-          .eq("is_active", true);
+          .eq("is_approved", true);
         if (!alive) return;
         if (qErr) {
           setError(qErr.message);
@@ -180,7 +199,7 @@ function ResultPage() {
       }
 
       if (!alive) return;
-      setAttempt(attemptRow as Attempt);
+      setAttempt(attemptRow);
       setAnswers(safeAnswers);
       setQuestions(questionRows);
       setChapter(chapterRow);

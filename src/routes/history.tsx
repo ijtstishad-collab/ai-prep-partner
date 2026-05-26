@@ -50,11 +50,11 @@ function HistoryPage() {
     async function load() {
       setLoading(true);
       setError(null);
-      const { data, error: qErr } = await fromTable("attempts")
+      const { data, error: qErr } = await fromTable("test_attempts")
         .select(
-          "id, status, score, max_score, total_questions, correct_count, submitted_at, started_at, chapter_id",
+          "id, score, total_questions, correct_count, completed_at, started_at, chapter_id",
         )
-        .order("submitted_at", { ascending: false, nullsFirst: false })
+        .order("started_at", { ascending: false })
         .limit(50);
 
       if (!alive) return;
@@ -64,7 +64,17 @@ function HistoryPage() {
         setLoading(false);
         return;
       }
-      const rows = (data ?? []) as Attempt[];
+      const rows = ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+        id: r.id as string,
+        status: r.completed_at ? "submitted" : "in_progress",
+        score: r.score as number | null,
+        max_score: r.total_questions as number | null,
+        total_questions: r.total_questions as number | null,
+        correct_count: r.correct_count as number | null,
+        submitted_at: (r.completed_at as string | null) ?? null,
+        started_at: r.started_at as string | null,
+        chapter_id: r.chapter_id as string | null,
+      })) as Attempt[];
       setAttempts(rows);
 
       const chapterIds = Array.from(

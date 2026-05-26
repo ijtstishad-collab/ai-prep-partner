@@ -48,9 +48,9 @@ function AnalyticsPage() {
     async function load() {
       setLoading(true);
       setError(null);
-      const { data, error: qErr } = await fromTable("attempts")
-        .select("id, status, score, max_score, total_questions, correct_count, chapter_id")
-        .eq("status", "submitted")
+      const { data, error: qErr } = await fromTable("test_attempts")
+        .select("id, score, total_questions, correct_count, chapter_id, completed_at")
+        .not("completed_at", "is", null)
         .limit(500);
 
       if (!alive) return;
@@ -59,7 +59,15 @@ function AnalyticsPage() {
         setLoading(false);
         return;
       }
-      const rows = (data ?? []) as Attempt[];
+      const rows = ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+        id: r.id as string,
+        status: "submitted",
+        score: r.score as number | null,
+        max_score: r.total_questions as number | null,
+        total_questions: r.total_questions as number | null,
+        correct_count: r.correct_count as number | null,
+        chapter_id: r.chapter_id as string | null,
+      })) as Attempt[];
       setAttempts(rows);
 
       const ids = Array.from(

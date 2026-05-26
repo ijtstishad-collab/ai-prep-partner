@@ -226,10 +226,17 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
               </div>
 
               {loadingChapters ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  অধ্যায় লোড হচ্ছে…
-                </div>
+                <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <li key={i} className="flex items-center gap-3 rounded border border-foreground/10 px-3 py-2">
+                      <Skeleton className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full" />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               ) : filteredChapters.length === 0 ? (
                 <p className="rounded border border-dashed border-foreground/20 p-6 text-center text-sm text-muted-foreground">
                   কোনো অধ্যায় পাওয়া যায়নি

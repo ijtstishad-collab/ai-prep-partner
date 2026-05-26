@@ -20,7 +20,7 @@ export const submitPracticeAnswer = createServerFn({ method: "POST" })
 
     const { data: question, error: questionError } = await supabaseAdmin
       .from("questions")
-      .select("id, chapter_id, correct_answer, question_type, is_approved")
+      .select("id, chapter_id, correct_answer, question_type, is_approved, options, explanation_bn, explanation")
       .eq("id", data.question_id)
       .eq("chapter_id", data.chapter_id)
       .maybeSingle();
@@ -39,8 +39,22 @@ export const submitPracticeAnswer = createServerFn({ method: "POST" })
     if (chapterError) throw new Error(chapterError.message);
     if (!chapter) throw new Error("Chapter is not available for this question.");
 
-    const isCorrect =
-      normalize(question.correct_answer) === normalize(data.selected_answer);
+    // Accept either an option key (e.g. "A") or the full option text.
+    const correct = normalize(question.correct_answer);
+    const selected = normalize(data.selected_answer);
+    let isCorrect = correct === selected;
+    let correctText: string | null = null;
+    if (question.options && typeof question.options === "object") {
+      const opts = question.options as Record<string, unknown>;
+      const keyVal = opts[question.correct_answer ?? ""];
+      if (typeof keyVal === "string") correctText = keyVal;
+      if (!isCorrect && correctText && normalize(correctText) === selected) isCorrect = true;
+      if (!isCorrect) {
+        const selectedVal = opts[data.selected_answer];
+        if (typeof selectedVal === "string" && normalize(selectedVal) === correct) isCorrect = true;
+      }
+    }
+
     const maxScore = 1;
     const score = isCorrect ? 1 : 0;
     const now = new Date().toISOString();
@@ -80,5 +94,11 @@ export const submitPracticeAnswer = createServerFn({ method: "POST" })
       score,
       maxScore,
       selectedAnswer: data.selected_answer,
+      correctAnswer: (question.correct_answer as string | null) ?? null,
+      correctText,
+      explanation:
+        (question.explanation_bn as string | null) ??
+        (question.explanation as string | null) ??
+        null,
     };
   });

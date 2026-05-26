@@ -75,10 +75,10 @@ function SubjectsPage() {
       setError(null);
 
       let { data, error: queryError } = (await fromTable("subjects")
-        .select("id, name, name_bn, slug, icon, sort_order")
+        .select("id, name, name_bn, slug, icon, group_type, sort_order")
         .eq("is_active", true)) as { data: Subject[] | null; error: Error | null };
 
-      if (queryError && /sort_order|t_order/i.test(queryError.message)) {
+      if (queryError && /sort_order|group_type/i.test(queryError.message)) {
         const fallback = (await fromTable("subjects")
           .select("id, name, name_bn, slug, icon")
           .eq("is_active", true)) as { data: Subject[] | null; error: Error | null };

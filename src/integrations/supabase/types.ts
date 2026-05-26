@@ -295,6 +295,7 @@ export type Database = {
           class: string | null
           created_at: string
           daily_minutes: number
+          exam_date: string | null
           full_name: string | null
           id: string
           onboarded: boolean
@@ -310,6 +311,7 @@ export type Database = {
           class?: string | null
           created_at?: string
           daily_minutes?: number
+          exam_date?: string | null
           full_name?: string | null
           id: string
           onboarded?: boolean
@@ -325,6 +327,7 @@ export type Database = {
           class?: string | null
           created_at?: string
           daily_minutes?: number
+          exam_date?: string | null
           full_name?: string | null
           id?: string
           onboarded?: boolean
@@ -588,27 +591,39 @@ export type Database = {
       }
       revision_items: {
         Row: {
+          chapter_id: string | null
           created_at: string
           id: string
           note: string | null
           question_id: string
+          reason: string
           source_table: string
+          status: string
+          subject_id: string | null
           user_id: string
         }
         Insert: {
+          chapter_id?: string | null
           created_at?: string
           id?: string
           note?: string | null
           question_id: string
+          reason?: string
           source_table?: string
+          status?: string
+          subject_id?: string | null
           user_id: string
         }
         Update: {
+          chapter_id?: string | null
           created_at?: string
           id?: string
           note?: string | null
           question_id?: string
+          reason?: string
           source_table?: string
+          status?: string
+          subject_id?: string | null
           user_id?: string
         }
         Relationships: []

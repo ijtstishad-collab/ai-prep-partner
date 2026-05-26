@@ -119,8 +119,7 @@ async function fetchApprovedQuestions(chapterId: string) {
     .eq("chapter_id", chapterId)
     .eq("is_approved", true)
     .eq("question_type", "mcq")
-    .order("created_at", { ascending: true })
-    .limit(25);
+    .order("created_at", { ascending: true });
 
   return { rows: (data ?? []) as PracticeQuestion[], error };
 }

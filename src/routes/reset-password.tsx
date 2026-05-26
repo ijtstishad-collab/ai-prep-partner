@@ -16,15 +16,58 @@ function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    // Supabase fires PASSWORD_RECOVERY when the user lands here via the email link.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
     });
-    // Also handle case where session already exists from the recovery link hash.
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
-    });
+
+    (async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+        const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        const errDesc = url.searchParams.get("error_description") || hash.get("error_description");
+        if (errDesc) {
+          setError(errDesc);
+          return;
+        }
+
+        if (code) {
+          const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
+          if (exErr) {
+            setError(exErr.message);
+            return;
+          }
+          setReady(true);
+          window.history.replaceState({}, "", url.pathname);
+          return;
+        }
+
+        const accessToken = hash.get("access_token");
+        const refreshToken = hash.get("refresh_token");
+        if (accessToken && refreshToken) {
+          const { error: sErr } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (sErr) {
+            setError(sErr.message);
+            return;
+          }
+          setReady(true);
+          window.history.replaceState({}, "", url.pathname);
+          return;
+        }
+
+        const { data } = await supabase.auth.getSession();
+        if (data.session) setReady(true);
+      } catch (e: any) {
+        setError(e?.message ?? "Could not verify reset link.");
+      }
+    })();
+
     return () => subscription.unsubscribe();
   }, []);
 

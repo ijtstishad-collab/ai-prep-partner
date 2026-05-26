@@ -178,6 +178,137 @@ export type Database = {
         }
         Relationships: []
       }
+      mock_test_questions: {
+        Row: {
+          answered_at: string | null
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          is_marked_for_review: boolean
+          mock_test_id: string
+          order_number: number
+          question_id: string
+          selected_answer: string | null
+          source_table: string
+          time_taken: number
+        }
+        Insert: {
+          answered_at?: string | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          is_marked_for_review?: boolean
+          mock_test_id: string
+          order_number: number
+          question_id: string
+          selected_answer?: string | null
+          source_table?: string
+          time_taken?: number
+        }
+        Update: {
+          answered_at?: string | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          is_marked_for_review?: boolean
+          mock_test_id?: string
+          order_number?: number
+          question_id?: string
+          selected_answer?: string | null
+          source_table?: string
+          time_taken?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mock_test_questions_mock_test_id_fkey"
+            columns: ["mock_test_id"]
+            isOneToOne: false
+            referencedRelation: "mock_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mock_tests: {
+        Row: {
+          accuracy: number
+          board: string | null
+          chapter_id: string | null
+          correct_count: number
+          created_at: string
+          difficulty: string
+          has_ai_similar: boolean
+          id: string
+          language: string
+          mock_type: string
+          question_count: number
+          score: number
+          skipped_count: number
+          source_mode: string
+          started_at: string
+          status: string
+          subject_id: string | null
+          submitted_at: string | null
+          time_taken: number
+          timer_minutes: number
+          user_id: string
+          wrong_count: number
+          year_range_end: number | null
+          year_range_start: number | null
+        }
+        Insert: {
+          accuracy?: number
+          board?: string | null
+          chapter_id?: string | null
+          correct_count?: number
+          created_at?: string
+          difficulty?: string
+          has_ai_similar?: boolean
+          id?: string
+          language?: string
+          mock_type: string
+          question_count?: number
+          score?: number
+          skipped_count?: number
+          source_mode?: string
+          started_at?: string
+          status?: string
+          subject_id?: string | null
+          submitted_at?: string | null
+          time_taken?: number
+          timer_minutes?: number
+          user_id: string
+          wrong_count?: number
+          year_range_end?: number | null
+          year_range_start?: number | null
+        }
+        Update: {
+          accuracy?: number
+          board?: string | null
+          chapter_id?: string | null
+          correct_count?: number
+          created_at?: string
+          difficulty?: string
+          has_ai_similar?: boolean
+          id?: string
+          language?: string
+          mock_type?: string
+          question_count?: number
+          score?: number
+          skipped_count?: number
+          source_mode?: string
+          started_at?: string
+          status?: string
+          subject_id?: string | null
+          submitted_at?: string | null
+          time_taken?: number
+          timer_minutes?: number
+          user_id?: string
+          wrong_count?: number
+          year_range_end?: number | null
+          year_range_start?: number | null
+        }
+        Relationships: []
+      }
       past_questions: {
         Row: {
           answer: string | null
@@ -633,6 +764,7 @@ export type Database = {
           chapter_id: string | null
           created_at: string
           id: string
+          mock_test_id: string | null
           note: string | null
           question_id: string
           reason: string
@@ -645,6 +777,7 @@ export type Database = {
           chapter_id?: string | null
           created_at?: string
           id?: string
+          mock_test_id?: string | null
           note?: string | null
           question_id: string
           reason?: string
@@ -657,6 +790,7 @@ export type Database = {
           chapter_id?: string | null
           created_at?: string
           id?: string
+          mock_test_id?: string | null
           note?: string | null
           question_id?: string
           reason?: string
@@ -665,7 +799,15 @@ export type Database = {
           subject_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "revision_items_mock_test_id_fkey"
+            columns: ["mock_test_id"]
+            isOneToOne: false
+            referencedRelation: "mock_tests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_plans: {
         Row: {

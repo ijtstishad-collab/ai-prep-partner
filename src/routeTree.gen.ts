@@ -32,6 +32,8 @@ import { Route as ResultAttemptIdRouteImport } from './routes/result.$attemptId'
 import { Route as PracticeChapterIdRouteImport } from './routes/practice.$chapterId'
 import { Route as DemoGravitationRouteImport } from './routes/demo.gravitation'
 import { Route as AdminQuestionReviewRouteImport } from './routes/admin.question-review'
+import { Route as ChaptersChapterIdBoardQuestionsRouteImport } from './routes/chapters.$chapterId.board-questions'
+import { Route as ChaptersChapterIdBoardPracticeRouteImport } from './routes/chapters.$chapterId.board-practice'
 
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
@@ -148,6 +150,18 @@ const AdminQuestionReviewRoute = AdminQuestionReviewRouteImport.update({
   path: '/question-review',
   getParentRoute: () => AdminRoute,
 } as any)
+const ChaptersChapterIdBoardQuestionsRoute =
+  ChaptersChapterIdBoardQuestionsRouteImport.update({
+    id: '/$chapterId/board-questions',
+    path: '/$chapterId/board-questions',
+    getParentRoute: () => ChaptersRoute,
+  } as any)
+const ChaptersChapterIdBoardPracticeRoute =
+  ChaptersChapterIdBoardPracticeRouteImport.update({
+    id: '/$chapterId/board-practice',
+    path: '/$chapterId/board-practice',
+    getParentRoute: () => ChaptersRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -155,7 +169,7 @@ export interface FileRoutesByFullPath {
   '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
-  '/chapters': typeof ChaptersRoute
+  '/chapters': typeof ChaptersRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
@@ -173,6 +187,8 @@ export interface FileRoutesByFullPath {
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
+  '/chapters/$chapterId/board-practice': typeof ChaptersChapterIdBoardPracticeRoute
+  '/chapters/$chapterId/board-questions': typeof ChaptersChapterIdBoardQuestionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -180,7 +196,7 @@ export interface FileRoutesByTo {
   '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
-  '/chapters': typeof ChaptersRoute
+  '/chapters': typeof ChaptersRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
@@ -198,6 +214,8 @@ export interface FileRoutesByTo {
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
+  '/chapters/$chapterId/board-practice': typeof ChaptersChapterIdBoardPracticeRoute
+  '/chapters/$chapterId/board-questions': typeof ChaptersChapterIdBoardQuestionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,7 +224,7 @@ export interface FileRoutesById {
   '/ai-generator': typeof AiGeneratorRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
-  '/chapters': typeof ChaptersRoute
+  '/chapters': typeof ChaptersRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
@@ -224,6 +242,8 @@ export interface FileRoutesById {
   '/practice/$chapterId': typeof PracticeChapterIdRoute
   '/result/$attemptId': typeof ResultAttemptIdRoute
   '/subjects/$slug': typeof SubjectsSlugRoute
+  '/chapters/$chapterId/board-practice': typeof ChaptersChapterIdBoardPracticeRoute
+  '/chapters/$chapterId/board-questions': typeof ChaptersChapterIdBoardQuestionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -251,6 +271,8 @@ export interface FileRouteTypes {
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
+    | '/chapters/$chapterId/board-practice'
+    | '/chapters/$chapterId/board-questions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -276,6 +298,8 @@ export interface FileRouteTypes {
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
+    | '/chapters/$chapterId/board-practice'
+    | '/chapters/$chapterId/board-questions'
   id:
     | '__root__'
     | '/'
@@ -301,6 +325,8 @@ export interface FileRouteTypes {
     | '/practice/$chapterId'
     | '/result/$attemptId'
     | '/subjects/$slug'
+    | '/chapters/$chapterId/board-practice'
+    | '/chapters/$chapterId/board-questions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -309,7 +335,7 @@ export interface RootRouteChildren {
   AiGeneratorRoute: typeof AiGeneratorRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
-  ChaptersRoute: typeof ChaptersRoute
+  ChaptersRoute: typeof ChaptersRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HistoryRoute: typeof HistoryRoute
@@ -489,6 +515,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminQuestionReviewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/chapters/$chapterId/board-questions': {
+      id: '/chapters/$chapterId/board-questions'
+      path: '/$chapterId/board-questions'
+      fullPath: '/chapters/$chapterId/board-questions'
+      preLoaderRoute: typeof ChaptersChapterIdBoardQuestionsRouteImport
+      parentRoute: typeof ChaptersRoute
+    }
+    '/chapters/$chapterId/board-practice': {
+      id: '/chapters/$chapterId/board-practice'
+      path: '/$chapterId/board-practice'
+      fullPath: '/chapters/$chapterId/board-practice'
+      preLoaderRoute: typeof ChaptersChapterIdBoardPracticeRouteImport
+      parentRoute: typeof ChaptersRoute
+    }
   }
 }
 
@@ -501,6 +541,20 @@ const AdminRouteChildren: AdminRouteChildren = {
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface ChaptersRouteChildren {
+  ChaptersChapterIdBoardPracticeRoute: typeof ChaptersChapterIdBoardPracticeRoute
+  ChaptersChapterIdBoardQuestionsRoute: typeof ChaptersChapterIdBoardQuestionsRoute
+}
+
+const ChaptersRouteChildren: ChaptersRouteChildren = {
+  ChaptersChapterIdBoardPracticeRoute: ChaptersChapterIdBoardPracticeRoute,
+  ChaptersChapterIdBoardQuestionsRoute: ChaptersChapterIdBoardQuestionsRoute,
+}
+
+const ChaptersRouteWithChildren = ChaptersRoute._addFileChildren(
+  ChaptersRouteChildren,
+)
 
 interface PracticeRouteChildren {
   PracticeChapterIdRoute: typeof PracticeChapterIdRoute
@@ -532,7 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   AiGeneratorRoute: AiGeneratorRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
-  ChaptersRoute: ChaptersRoute,
+  ChaptersRoute: ChaptersRouteWithChildren,
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HistoryRoute: HistoryRoute,
@@ -551,3 +605,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

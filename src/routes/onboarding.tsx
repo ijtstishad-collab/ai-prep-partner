@@ -263,18 +263,9 @@ function Onboarding() {
                 <span>120</span>
                 <span>240</span>
               </div>
-              <div className="mt-6">
-                <Label>পূর্ণ নাম (ঐচ্ছিক)</Label>
-                <Input
-                  placeholder="যেমন: রায়হান আহমেদ"
-                  defaultValue={profile?.full_name ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, ["__name" as any]: e.target.value }) as any)
-                  }
-                />
-              </div>
             </>
           )}
+
 
           {/* Navigation */}
           <div className="mt-8 flex items-center justify-between gap-2">

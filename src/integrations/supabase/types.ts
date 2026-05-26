@@ -181,12 +181,20 @@ export type Database = {
       past_questions: {
         Row: {
           answer: string | null
+          appeared_boards: string[]
+          appeared_years: number[]
           board: string | null
           chapter_id: string
+          common_mistake: string | null
           created_at: string
+          created_by: string | null
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           exam_level: string | null
           explanation_bn: string | null
+          explanation_en: string | null
+          formula_or_rule: string | null
+          frequency_count: number
+          group_type: string | null
           id: string
           options: Json | null
           paper: string | null
@@ -197,17 +205,30 @@ export type Database = {
           source_type: string
           subject_id: string
           topic: string | null
+          updated_at: string
           verification_status: string
+          why_a_wrong: string | null
+          why_b_wrong: string | null
+          why_c_wrong: string | null
+          why_d_wrong: string | null
           year: number | null
         }
         Insert: {
           answer?: string | null
+          appeared_boards?: string[]
+          appeared_years?: number[]
           board?: string | null
           chapter_id: string
+          common_mistake?: string | null
           created_at?: string
+          created_by?: string | null
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
           exam_level?: string | null
           explanation_bn?: string | null
+          explanation_en?: string | null
+          formula_or_rule?: string | null
+          frequency_count?: number
+          group_type?: string | null
           id?: string
           options?: Json | null
           paper?: string | null
@@ -218,17 +239,30 @@ export type Database = {
           source_type?: string
           subject_id: string
           topic?: string | null
+          updated_at?: string
           verification_status?: string
+          why_a_wrong?: string | null
+          why_b_wrong?: string | null
+          why_c_wrong?: string | null
+          why_d_wrong?: string | null
           year?: number | null
         }
         Update: {
           answer?: string | null
+          appeared_boards?: string[]
+          appeared_years?: number[]
           board?: string | null
           chapter_id?: string
+          common_mistake?: string | null
           created_at?: string
+          created_by?: string | null
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
           exam_level?: string | null
           explanation_bn?: string | null
+          explanation_en?: string | null
+          formula_or_rule?: string | null
+          frequency_count?: number
+          group_type?: string | null
           id?: string
           options?: Json | null
           paper?: string | null
@@ -239,7 +273,12 @@ export type Database = {
           source_type?: string
           subject_id?: string
           topic?: string | null
+          updated_at?: string
           verification_status?: string
+          why_a_wrong?: string | null
+          why_b_wrong?: string | null
+          why_c_wrong?: string | null
+          why_d_wrong?: string | null
           year?: number | null
         }
         Relationships: []

@@ -15,6 +15,7 @@ import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MockTestRouteImport } from './routes/mock-test'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ChaptersRouteImport } from './routes/chapters'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -55,6 +56,11 @@ const MockTestRoute = MockTestRouteImport.update({
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/chapters': typeof ChaptersRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/chapters': typeof ChaptersRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/chapters': typeof ChaptersRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/mock-test': typeof MockTestRoute
   '/onboarding': typeof OnboardingRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/chapters'
     | '/dashboard'
+    | '/forgot-password'
     | '/history'
     | '/mock-test'
     | '/onboarding'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/chapters'
     | '/dashboard'
+    | '/forgot-password'
     | '/history'
     | '/mock-test'
     | '/onboarding'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/chapters'
     | '/dashboard'
+    | '/forgot-password'
     | '/history'
     | '/mock-test'
     | '/onboarding'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ChaptersRoute: typeof ChaptersRoute
   DashboardRoute: typeof DashboardRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HistoryRoute: typeof HistoryRoute
   MockTestRoute: typeof MockTestRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -413,6 +433,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ChaptersRoute: ChaptersRoute,
   DashboardRoute: DashboardRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HistoryRoute: HistoryRoute,
   MockTestRoute: MockTestRoute,
   OnboardingRoute: OnboardingRoute,

@@ -7,10 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuickPractice } from "@/components/QuickPractice";
 import { Button } from "@/components/ui/button";
 import { toBnDigits } from "@/lib/bn";
+import { allowedGroupsFor, subjectMatchesGroup } from "@/lib/student-group";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
-type Subject = { id: string; name: string; name_bn: string | null };
+type Subject = { id: string; name: string; name_bn: string | null; group_type?: string | null };
 
 type LastAttempt = {
   id: string;
@@ -38,15 +39,18 @@ function Dashboard() {
     if (!loading && user && profile && !profile.onboarded) nav({ to: "/onboarding" });
   }, [loading, user, profile, nav]);
 
-  // Subjects strip
+  // Subjects strip — filtered by student's group
   useEffect(() => {
     if (!user) return;
     fromTable("subjects")
-      .select("id, name, name_bn")
+      .select("id, name, name_bn, group_type")
       .eq("is_active", true)
-      .limit(8)
-      .then(({ data }: { data: Subject[] | null }) => setSubjects(data ?? []));
-  }, [user]);
+      .then(({ data }: { data: Subject[] | null }) => {
+        const allowed = allowedGroupsFor(profile?.student_group);
+        const filtered = (data ?? []).filter((s) => subjectMatchesGroup(s, allowed));
+        setSubjects(filtered.slice(0, 8));
+      });
+  }, [user, profile?.student_group]);
 
   // Most recent attempt → resume / next chapter
   useEffect(() => {

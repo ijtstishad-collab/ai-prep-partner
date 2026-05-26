@@ -6,12 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { toBnDigits } from "@/lib/bn";
+import { useAuth } from "@/lib/auth";
+import { allowedGroupsFor, subjectMatchesGroup } from "@/lib/student-group";
 import { FileText, Library, Sparkles, Shuffle, Search, BookOpen } from "lucide-react";
 
 type Subject = {
   id: string;
   name: string;
   name_bn: string | null;
+  group_type?: string | null;
 };
 
 type Chapter = {
@@ -41,6 +44,7 @@ type Props = {
 
 export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
   const nav = useNavigate();
+  const { profile } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -60,23 +64,24 @@ export function QuickPractice({ open, onOpenChange, initialSubjectId }: Props) {
     }
   }, [open, initialSubjectId]);
 
-  // Load subjects once when opened
+  // Load subjects once when opened — filter by student group
   useEffect(() => {
     if (!open || subjects.length) return;
     let alive = true;
     setLoadingSubjects(true);
     fromTable("subjects")
-      .select("id, name, name_bn")
+      .select("id, name, name_bn, group_type")
       .eq("is_active", true)
       .then(({ data }: { data: Subject[] | null }) => {
         if (!alive) return;
-        setSubjects(data ?? []);
+        const allowed = allowedGroupsFor(profile?.student_group);
+        setSubjects((data ?? []).filter((s) => subjectMatchesGroup(s, allowed)));
         setLoadingSubjects(false);
       });
     return () => {
       alive = false;
     };
-  }, [open, subjects.length]);
+  }, [open, subjects.length, profile?.student_group]);
 
   // Load chapters when subject changes
   useEffect(() => {

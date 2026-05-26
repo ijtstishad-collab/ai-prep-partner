@@ -93,6 +93,8 @@ function Onboarding() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Science">বিজ্ঞান · Science</SelectItem>
+                  <SelectItem value="Business">ব্যবসায় শিক্ষা · Business Studies</SelectItem>
+                  <SelectItem value="Humanities">মানবিক · Humanities</SelectItem>
                 </SelectContent>
               </Select>
             </div>

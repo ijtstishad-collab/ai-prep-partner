@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, ChevronRight, GraduationCap, Loader2 } from "lucide-react";
 import { toBnDigits } from "@/lib/bn";
 import { QuickPractice } from "@/components/QuickPractice";
+import { allowedGroupsFor, subjectMatchesGroup } from "@/lib/student-group";
 
 export const Route = createFileRoute("/subjects")({ component: SubjectsPage });
 
@@ -44,21 +45,18 @@ const GROUPS: { key: GroupKey; label: string; bn: string }[] = [
 const groupMeta = (key: string) =>
   GROUPS.find((g) => g.key === key) ?? { key: "general" as GroupKey, label: "General", bn: "সাধারণ" };
 
-const inferGroup = (name: string): GroupKey => {
-  const n = name.toLowerCase();
-  if (/(phys|chem|bio|higher math|stat)/.test(n)) return "science";
-  if (/(account|business|finance|management|marketing|banking|insurance)/.test(n)) return "business";
-  if (/(history|civic|logic|geog|sociology|islam|psych|econ)/.test(n)) return "humanities";
-  return "general";
-};
+// inferGroup moved to @/lib/student-group
 
 function SubjectsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
   const [presetSubject, setPresetSubject] = useState<string | null>(null);
+
+  const allowed = allowedGroupsFor(profile?.student_group);
+  const visibleSubjects = subjects.filter((s) => subjectMatchesGroup(s, allowed));
 
   const openQuick = (subjectId: string) => {
     setPresetSubject(subjectId);
@@ -162,12 +160,10 @@ function SubjectsPage() {
         ) : (
           <>
             <p className="mb-6 text-sm text-muted-foreground">
-              {toBnDigits(subjects.length)} টি বিষয় পাওয়া গেছে
+              আপনার বিভাগ অনুযায়ী {toBnDigits(visibleSubjects.length)} টি বিষয় দেখা হচ্ছে
             </p>
-            {GROUPS.map((g) => {
-              const items = subjects.filter(
-                (s) => (s.group_type ?? inferGroup(s.name)) === g.key,
-              );
+            {GROUPS.filter((g) => allowed.includes(g.key)).map((g) => {
+              const items = visibleSubjects.filter((s) => subjectMatchesGroup(s, [g.key]));
               if (items.length === 0) return null;
               return (
                 <section key={g.key} className="mb-10">

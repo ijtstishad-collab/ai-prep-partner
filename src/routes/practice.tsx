@@ -29,7 +29,6 @@ import {
   CheckCircle2,
   ChevronRight,
   FileText,
-  FileText,
   GraduationCap,
   Loader2,
   ScrollText,

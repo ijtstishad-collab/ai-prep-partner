@@ -20,7 +20,7 @@ export const submitPracticeAnswer = createServerFn({ method: "POST" })
 
     const { data: question, error: questionError } = await supabaseAdmin
       .from("questions")
-      .select("id, chapter_id, correct_answer, question_type, is_approved, options, explanation_bn, explanation")
+      .select("id, chapter_id, correct_answer, question_type, is_approved, options, explanation_bn")
       .eq("id", data.question_id)
       .eq("chapter_id", data.chapter_id)
       .maybeSingle();

@@ -11,7 +11,7 @@ import { allowedGroupsFor, subjectMatchesGroup } from "@/lib/student-group";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
-type Subject = { id: string; name: string; name_bn: string | null };
+type Subject = { id: string; name: string; name_bn: string | null; group_type?: string | null };
 
 type LastAttempt = {
   id: string;

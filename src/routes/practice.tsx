@@ -240,7 +240,10 @@ function PracticePage() {
       setOptions(optionRows);
       setLoading(false);
 
-      // Empty state will offer the student a guided "Generate Practice Set" modal.
+      // Auto-generate 10 Bangla MCQs when no verified questions exist — no extra clicks.
+      if (safeQuestions.length === 0) {
+        void generateAiQuestions({ count: 10, difficulty: "medium", question_style: "mcq", language: "bn" });
+      }
     }
 
 
@@ -250,6 +253,7 @@ function PracticePage() {
       alive = false;
     };
   }, [chapterId, user]);
+
 
   const submitAnswer = async () => {
     if (!chapterId || !currentQuestion || !selectedOptionId || result) return;
